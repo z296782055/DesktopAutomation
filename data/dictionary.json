@@ -1,0 +1,11 @@
+{
+    "SmartLab CDS": {
+        "10001": "default_file_name",
+        "default_file_name": "%Y%m%d%H%M%S",
+        "\u68c0\u6d4b\u5668": "UV3230_(UV3230)",
+        "\u67f1\u6e29\u7bb1": "CT3230_(CT3230)",
+        "\u6cf5": "P3230Q_(P3230Q)",
+        "\u65b9\u6cd5\u6982\u8981": "\u65b9\u6cd5\u6982\u8981",
+        "image_save_path": "D:\\fk\\test"
+    }
+}

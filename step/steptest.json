@@ -1,0 +1,34 @@
+{
+  "SmartLab CDS": [
+    {"保存":[
+      {"auto_type" : "connect_window", "title" : "实时采集 "},
+      {"auto_type" : "control_click", "window" : "实时采集 ", "click_type":"click_input", "kwargs" : [
+        {"child_window":{"title":"The Ribbon", "auto_id":"ribbonControl1", "control_type":"Pane"}},
+        {"child_window":{"title":"Lower Ribbon", "control_type":"Pane"}},
+        {"child_window":{"title":"主页 ", "control_type":"Pane"}},
+        {"child_window":{"title":"方法 ", "control_type":"ToolBar"}},
+        {"child_window":{"title":"保存 ", "control_type":"Button"}}
+      ]},
+      {"auto_type" : "edit_write", "window" : "实时采集 ", "kwargs": [
+        {"child_window":{"title":"审计追踪", "auto_id":"AuditTraceForm", "control_type":"Window"}},
+        {"child_window":{"auto_id":"txtAuditTrace", "control_type":"Edit"}}
+      ]},
+      {"auto_type" : "control_click", "window" : "实时采集 ", "kwargs" : [
+        {"child_window":{"title":"审计追踪", "auto_id":"AuditTraceForm", "control_type":"Window"}},
+        {"child_window":{"title":"确定", "auto_id":"btnOK", "control_type":"Button"}}
+      ]},
+      {"auto_type" : "edit_write", "window" : "实时采集 ", "kwargs": [
+        {"child_window":{"title":"保存仪器方法", "auto_id":"SaveForm", "control_type":"Window"}},
+        {"child_window":{"auto_id":"txtBoxSelected", "control_type":"Edit"}}
+      ]},
+      {"auto_type" : "control_click", "window" : "实时采集 ", "kwargs" : [
+        {"child_window":{"title":"保存仪器方法", "auto_id":"SaveForm", "control_type":"Window"}},
+        {"child_window":{"title":"确定", "auto_id":"btnOK", "control_type":"Button"}}
+      ]},
+      {"auto_type" : "control_click", "window" : "实时采集 ", "kwargs" : [
+        {"child_window":{"title":"提示", "control_type":"Window"}},
+        {"child_window":{"title":"确定(&O)", "control_type":"Button"}}
+      ]}
+    ]}
+    ]
+}

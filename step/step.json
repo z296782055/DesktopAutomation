@@ -1,0 +1,317 @@
+{
+  "SmartLab CDS": [
+    {"点击“实时采集”":[
+      {"auto_type" : "connect_window", "title" : "导航"},
+      {"auto_type" : "control_click", "window" : "导航", "kwargs": [{"child_window":{"title":"实时采集", "auto_id":"btRealTimeAnalysis", "control_type":"Text"}}]}
+    ]
+    },
+    {"选择项目及色谱系统":[
+      {"auto_type" : "connect_window", "title" : "选择项目及色谱系统"},
+      {"auto_type" : "list_select", "window" : "选择项目及色谱系统", "click_type":"no_click", "kwargs" : [{"child_window":{"auto_id" : "listBoxItemA"}}]},
+      {"auto_type" : "list_select", "window" : "选择项目及色谱系统", "click_type":"no_click", "kwargs" : [{"child_window":{"auto_id" : "listBoxItemB"}}]},
+      {"auto_type" : "control_click", "window" : "选择项目及色谱系统", "kwargs": [{"child_window":{"title" : "确定", "auto_id" : "btnOK", "control_type" : "Button"}}]}
+    ]},
+    {"添加仪器方法":[
+      {"auto_type" : "connect_window", "title" : "实时采集 "},
+      {"auto_type" : "control_click", "window" : "实时采集 ", "kwargs" : [
+        {"child_window":{"title":"The Ribbon", "auto_id":"ribbonControl1", "control_type":"Pane"}},
+        {"child_window":{"title":"Lower Ribbon", "control_type":"Pane"}},
+        {"child_window":{"title":"主页 ", "control_type":"Pane"}},
+        {"child_window":{"title":"方法 ", "control_type":"ToolBar"}},
+        {"child_window":{"title":"新建 ", "control_type":"MenuItem"}}
+      ]},
+      {"auto_type" : "control_click", "window" : "实时采集 " , "kwargs":[
+        {"child_window":{"title":"The Ribbon", "auto_id":"ribbonControl1", "control_type":"Pane"}},
+        {"child_window":{"title":"Lower Ribbon", "control_type":"Pane"}},
+        {"child_window":{"title":"主页 ", "control_type":"Pane"}},
+        {"child_window":{"title":"方法 ", "control_type":"ToolBar"}},
+        {"child_window":{"title":"新建 ", "control_type":"MenuItem"}},
+        {"child_window":{"title":"仪器方法 ", "control_type":"MenuItem"}}
+      ]}
+    ]},
+    {"方法概要":[
+      {"auto_type" : "connect_window", "title" : "实时采集 "},
+      {"auto_type" : "connect_child_window", "title" : "方法概要", "window" : "实时采集 ", "kwargs": [
+        {"child_window":{"title":"sidePanel2", "auto_id":"sidePanel2", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"_Container", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"_ucInsMethodEditor", "control_type":"Pane"}},
+        {"child_window":{"title":"xtraScrollableControl1", "auto_id":"xtraScrollableControl1", "control_type":"Pane"}},
+        {"child_window":{"title":"panelControlMain", "auto_id":"panelControlMain", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"InstrumentEditor", "control_type":"Window"}},
+        {"child_window":{"title":"xtraTabPage1", "auto_id":"xtraTabPage1", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"NavBar", "control_type":"Pane"}}
+      ]},
+      {"auto_type" : "control_click", "window" : "方法概要", "kwargs": [
+        {"child_window":{"title":"组件列表", "auto_id":"navBarControl1", "control_type":"Pane"}},
+        {"child_window":{"title":"方法信息", "control_type":"List"}},
+        {"child_window":{"title":"方法概要", "control_type":"Hyperlink"}}
+      ]},
+      {"auto_type" : "edit_write", "window" : "方法概要", "kwargs": [
+        {"child_window":{"title":"panelControl", "auto_id":"panelControl", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"MethodGeneral", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"txtRunTime", "control_type":"Edit"}}
+      ]}
+    ]},
+    {"泵":[
+      {"auto_type" : "connect_window", "title" : "实时采集 "},
+      {"auto_type" : "connect_child_window", "title" : "泵", "window" : "实时采集 ", "kwargs": [
+        {"child_window":{"title":"sidePanel2", "auto_id":"sidePanel2", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"_Container", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"_ucInsMethodEditor", "control_type":"Pane"}},
+        {"child_window":{"title":"xtraScrollableControl1", "auto_id":"xtraScrollableControl1", "control_type":"Pane"}},
+        {"child_window":{"title":"panelControlMain", "auto_id":"panelControlMain", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"InstrumentEditor", "control_type":"Window"}},
+        {"child_window":{"title":"xtraTabPage1", "auto_id":"xtraTabPage1", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"NavBar", "control_type":"Pane"}}
+      ]},
+      {"auto_type" : "control_click", "window" : "泵", "kwargs": [
+        {"child_window":{"title":"组件列表", "auto_id":"navBarControl1", "control_type":"Pane"}},
+        {"child_window":{"title":"方法信息", "control_type":"List"}},
+        {"child_window":{"title":"P3230Q_(P3230Q)", "control_type":"Hyperlink"}}
+      ]},
+      {"auto_type" : "connect_child_window", "title" : "常规 ", "window" : "泵", "kwargs": [
+        {"child_window":{"title":"panelControl", "auto_id":"panelControl", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"LCQuatP0004IMEUI", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"xtraTabControl1", "control_type":"Tab"}},
+        {"child_window":{"title":"常规 ", "auto_id":"tpCommon", "control_type":"Pane"}}
+      ]},
+      {"auto_type" : "edit_write", "window" : "常规 ", "kwargs": [
+        {"child_window":{"auto_id":"txtFlowVelocity", "control_type":"Edit"}}
+      ]},
+      {"auto_type" : "edit_write", "window" : "常规 ", "kwargs": [
+        {"child_window":{"auto_id":"txtMaxLimit", "control_type":"Edit"}}
+      ]},
+      {"auto_type" : "edit_write", "window" : "常规 ", "kwargs": [
+        {"child_window":{"auto_id":"txtMinLimit", "control_type":"Edit"}}
+      ]},
+      {"auto_type" : "edit_write", "window" : "常规 ", "kwargs": [
+        {"child_window":{"auto_id":"A", "control_type":"Edit"}}
+      ]},
+      {"auto_type" : "edit_write", "window" : "常规 ", "kwargs": [
+        {"child_window":{"auto_id":"B", "control_type":"Edit"}}
+      ]},
+      {"auto_type" : "edit_write", "window" : "常规 ", "kwargs": [
+        {"child_window":{"auto_id":"C", "control_type":"Edit"}}
+      ]},
+      {"auto_type" : "list_select", "window" : "常规 ", "kwargs": [
+        {"child_window":{"auto_id":"txtSolventA", "control_type":"ComboBox"}}
+      ]},
+      {"auto_type" : "list_select", "window" : "常规 ", "kwargs": [
+        {"child_window":{"auto_id":"txtSolventB", "control_type":"ComboBox"}}
+      ]},
+      {"auto_type" : "list_select", "window" : "常规 ", "kwargs": [
+        {"child_window":{"auto_id":"txtSolventC", "control_type":"ComboBox"}}
+      ]},
+      {"auto_type" : "list_select", "window" : "常规 ", "kwargs": [
+        {"child_window":{"auto_id":"txtSolventD", "control_type":"ComboBox"}}
+      ]},
+      {"auto_type" : "edit_write", "window" : "常规 ", "kwargs": [
+        {"child_window":{"auto_id":"txtSolventCompressibility", "control_type":"Edit"}}
+      ]},
+      {"auto_type" : "table_fill", "title" : "gcGradient", "window" : "常规 ",
+        "clear": [
+          {"auto_type" : "control_click", "window" : "gcGradient", "click_type":"right_click",
+          "kwargs": [
+            {"descendants":{"title":"表头面板", "control_type":"Custom"}}
+          ]},
+          {"auto_type" : "control_click", "window" : "实时采集 ",
+          "kwargs": [
+            {"child_window":{"title":"DropDown", "control_type":"Menu"}},
+            {"child_window":{"title":"清空 ", "control_type":"MenuItem"}}
+          ]}
+        ],
+        "add": [
+          {"auto_type" : "control_click", "window" : "gcGradient", "click_type":"right_click",
+          "kwargs": [
+            {"descendants":{"title":"表头面板", "control_type":"Custom"}}
+          ]},
+          {"auto_type" : "control_click", "window" : "实时采集 ",
+          "kwargs": [
+            {"child_window":{"title":"DropDown", "control_type":"Menu"}},
+            {"child_window":{"title":"添加行 ", "control_type":"MenuItem"}}
+          ]},
+          {"auto_type" : "control_click", "window" : "实时采集 ",
+          "kwargs": [
+            {"child_window":{"title":"DropDown", "control_type":"Menu"}},
+            {"child_window":{"title":"添加行 ", "control_type":"MenuItem"}},
+            {"child_window":{"title":"1行 ", "control_type":"MenuItem"}}
+          ]}
+        ],
+        "table_kwargs": [
+          {"child_window":{"auto_id":"dvGradient", "control_type":"Pane"}},
+          {"child_window":{"auto_id":"splitContainer1", "control_type":"Pane"}},
+          {"child_window":{"auto_id":"gcGradient", "control_type":"Table"}}
+        ],
+        "table_head_kwargs": [
+          {"descendants":{"title":"表头面板", "control_type":"Custom"}}
+        ],
+        "table_body_kwargs": [
+          {"descendants":{"title":"数据面板", "control_type":"Custom"}}
+        ],
+        "table_column": {
+          "column" : [
+             {"kwargs" : [{"descendants":{"title":"数据面板", "control_type":"Custom"}},{"descendants":{"title":"时间(min) row%d", "control_type":"DataItem"}}], "auto_type" : "edit_write"},
+             {"kwargs" : [{"descendants":{"title":"数据面板", "control_type":"Custom"}},{"descendants":{"title":"线性类型 row%d", "control_type":"DataItem"}}], "auto_type" : "list_select", "click_type" : "double_click", "select_window_title" : "编辑控件" ,"select_window_kwargs" : [
+               {"child_window":{"title":"编辑控件", "control_type":"ComboBox"}}
+             ]},
+             {"kwargs" : [{"descendants":{"title":"数据面板", "control_type":"Custom"}},{"descendants":{"title":"流速(mL/min) row%d", "control_type":"DataItem"}}], "auto_type" : "edit_write"},
+             {"kwargs" : [{"descendants":{"title":"数据面板", "control_type":"Custom"}},{"descendants":{"title":"%%A row%d", "control_type":"DataItem"}}], "auto_type" : "edit_write"},
+             {"kwargs" : [{"descendants":{"title":"数据面板", "control_type":"Custom"}},{"descendants":{"title":"%%B row%d", "control_type":"DataItem"}}], "auto_type" : "edit_write"},
+             {"kwargs" : [{"descendants":{"title":"数据面板", "control_type":"Custom"}},{"descendants":{"title":"%%C row%d", "control_type":"DataItem"}}], "auto_type" : "edit_write"}
+          ]
+        }
+      }
+    ]},
+    {"柱温箱":[
+      {"auto_type" : "connect_window", "title" : "实时采集 "},
+      {"auto_type" : "connect_child_window", "title" : "柱温箱", "window" : "实时采集 ", "kwargs": [
+        {"child_window":{"title":"sidePanel2", "auto_id":"sidePanel2", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"_Container", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"_ucInsMethodEditor", "control_type":"Pane"}},
+        {"child_window":{"title":"xtraScrollableControl1", "auto_id":"xtraScrollableControl1", "control_type":"Pane"}},
+        {"child_window":{"title":"panelControlMain", "auto_id":"panelControlMain", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"InstrumentEditor", "control_type":"Window"}},
+        {"child_window":{"title":"xtraTabPage1", "auto_id":"xtraTabPage1", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"NavBar", "control_type":"Pane"}}
+      ]},
+      {"auto_type" : "control_click", "window" : "柱温箱", "kwargs": [
+        {"child_window":{"title":"组件列表", "auto_id":"navBarControl1", "control_type":"Pane"}},
+        {"child_window":{"title":"方法信息", "control_type":"List"}},
+        {"child_window":{"title":"CT3230_(CT3230)", "control_type":"Hyperlink"}}
+      ]},
+      {"auto_type" : "connect_child_window", "title" : "常规 ", "window" : "柱温箱", "kwargs": [
+        {"child_window":{"title":"panelControl", "auto_id":"panelControl", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"CT3100IMEUI", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"tabMain", "control_type":"Tab"}},
+        {"child_window":{"title":"常规 ", "auto_id":"tpGeneral", "control_type":"Pane"}}
+      ]},
+      {"auto_type" : "edit_write", "window" : "常规 ", "kwargs": [
+        {"child_window":{"auto_id":"txtWaitTime", "control_type":"Edit"}}
+      ]},
+      {"auto_type" : "edit_write", "window" : "常规 ", "kwargs": [
+        {"child_window":{"auto_id":"txtTemperatureAccuracy", "control_type":"Edit"}}
+      ]},
+      {"auto_type" : "edit_write", "window" : "常规 ", "kwargs": [
+        {"child_window":{"auto_id":"txtAimTemperatureSet", "control_type":"Edit"}}
+      ]},
+      {"auto_type" : "table_fill", "title" : "gcEvent", "window" : "常规 ",
+        "clear": [
+          {"auto_type" : "control_click", "window" : "gcEvent", "click_type":"right_click",
+          "kwargs": [
+            {"descendants":{"title":"表头面板", "control_type":"Custom"}}
+          ]},
+          {"auto_type" : "control_click", "window" : "实时采集 ",
+          "kwargs": [
+            {"child_window":{"title":"DropDown", "auto_id":"contextMenuStrip1", "control_type":"Menu"}},
+            {"child_window":{"title":"清空 ", "control_type":"MenuItem"}}
+          ]}
+        ],
+        "add": [
+          {"auto_type" : "control_click", "window" : "gcEvent", "click_type":"right_click",
+          "kwargs": [
+            {"descendants":{"title":"表头面板", "control_type":"Custom"}}
+          ]},
+          {"auto_type" : "control_click", "window" : "实时采集 ",
+          "kwargs": [
+            {"child_window":{"title":"DropDown", "auto_id":"contextMenuStrip1", "control_type":"Menu"}},
+            {"child_window":{"title":"添加行 ", "control_type":"MenuItem"}}
+          ]},
+          {"auto_type" : "control_click", "window" : "实时采集 ",
+          "kwargs": [
+            {"child_window":{"title":"DropDown", "auto_id":"contextMenuStrip1", "control_type":"Menu"}},
+            {"child_window":{"title":"添加行 ", "control_type":"MenuItem"}},
+            {"child_window":{"title":"1行 ", "control_type":"MenuItem"}}
+          ]}
+        ],
+        "table_kwargs": [
+          {"child_window":{"auto_id":"dvEvent", "control_type":"Pane"}},
+          {"child_window":{"auto_id":"gcEvent", "control_type":"Table"}}
+        ],
+        "table_head_kwargs": [
+          {"descendants":{"title":"表头面板", "control_type":"Custom"}}
+        ],
+        "table_body_kwargs": [
+          {"descendants":{"title":"数据面板", "control_type":"Custom"}}
+        ],
+        "table_column": {
+          "column" : [
+            {"kwargs" : [{"descendants":{"title":"数据面板", "control_type":"Custom"}},{"descendants":{"title":"时间(min) row%d", "control_type":"DataItem"}}], "auto_type" : "edit_write"},
+            {"kwargs" : [{"descendants":{"title":"数据面板", "control_type":"Custom"}},{"descendants":{"title":"事件类型 row%d", "control_type":"DataItem"}}], "auto_type" : "list_select", "click_type" : "double_click", "select_window_title" : "编辑控件" ,"select_window_kwargs" : [
+               {"child_window":{"title":"编辑控件", "control_type":"Edit"}}
+             ]},
+             {"kwargs" : [{"descendants":{"title":"数据面板", "control_type":"Custom"}},{"descendants":{"title":"事件值 row%d", "control_type":"DataItem"}}], "auto_type" : "edit_write"}
+          ]
+        }
+      }
+    ]},
+    {"检测器":[
+      {"auto_type" : "connect_window", "title" : "实时采集 "},
+      {"auto_type" : "connect_child_window", "title" : "检测器", "window" : "实时采集 ", "kwargs": [
+        {"child_window":{"title":"sidePanel2", "auto_id":"sidePanel2", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"_Container", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"_ucInsMethodEditor", "control_type":"Pane"}},
+        {"child_window":{"title":"xtraScrollableControl1", "auto_id":"xtraScrollableControl1", "control_type":"Pane"}},
+        {"child_window":{"title":"panelControlMain", "auto_id":"panelControlMain", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"InstrumentEditor", "control_type":"Window"}},
+        {"child_window":{"title":"xtraTabPage1", "auto_id":"xtraTabPage1", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"NavBar", "control_type":"Pane"}}
+      ]},
+      {"auto_type" : "control_click", "window" : "检测器", "kwargs": [
+        {"child_window":{"title":"组件列表", "auto_id":"navBarControl1", "control_type":"Pane"}},
+        {"child_window":{"title":"方法信息", "control_type":"List"}},
+        {"child_window":{"title":"UV3230_(UV3230)", "control_type":"Hyperlink"}}
+      ]},
+      {"auto_type" : "connect_child_window", "title" : "常规 ", "window" : "检测器", "kwargs": [
+        {"child_window":{"title":"panelControl", "auto_id":"panelControl", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"UV3100IMEUI_SLAMP", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"xtraTabControl1", "control_type":"Tab"}},
+        {"child_window":{"title":"常规 ", "auto_id":"tpCommon", "control_type":"Pane"}}
+      ]},
+      {"auto_type" : "list_select", "window" : "常规 ", "click_type":"no_click", "kwargs": [
+        {"child_window":{"auto_id":"rbLightType", "control_type":"List"}}
+      ]},
+      {"auto_type" : "list_select", "window" : "常规 ", "click_type":"no_click", "kwargs": [
+        {"child_window":{"auto_id":"rblAnalysisType", "control_type":"List"}}
+      ]},
+      {"auto_type" : "edit_write", "window" : "常规 ", "kwargs": [
+        {"child_window":{"auto_id":"txtLambda1", "control_type":"Edit"}}
+      ]},
+      {"auto_type" : "edit_write", "window" : "常规 ", "kwargs": [
+        {"child_window":{"auto_id":"txtLambda2", "control_type":"Edit"}}
+      ]},
+      {"auto_type" : "check", "window" : "常规 ", "kwargs": [
+        {"child_window":{"title":"参比和样品能量 ", "auto_id":"chkRefSmpChannel", "control_type":"CheckBox"}}
+      ]}
+    ]},
+    {"保存":[
+      {"auto_type" : "connect_window", "title" : "实时采集 "},
+      {"auto_type" : "control_click", "window" : "实时采集 ", "click_type":"click_input", "kwargs" : [
+        {"child_window":{"title":"The Ribbon", "auto_id":"ribbonControl1", "control_type":"Pane"}},
+        {"child_window":{"title":"Lower Ribbon", "control_type":"Pane"}},
+        {"child_window":{"title":"主页 ", "control_type":"Pane"}},
+        {"child_window":{"title":"方法 ", "control_type":"ToolBar"}},
+        {"child_window":{"title":"保存 ", "control_type":"Button"}}
+      ]},
+      {"auto_type" : "edit_write", "window" : "实时采集 ", "kwargs": [
+        {"child_window":{"title":"审计追踪", "auto_id":"AuditTraceForm", "control_type":"Window"}},
+        {"child_window":{"auto_id":"txtAuditTrace", "control_type":"Edit"}}
+      ]},
+      {"auto_type" : "control_click", "window" : "实时采集 ", "kwargs" : [
+        {"child_window":{"title":"审计追踪", "auto_id":"AuditTraceForm", "control_type":"Window"}},
+        {"child_window":{"title":"确定", "auto_id":"btnOK", "control_type":"Button"}}
+      ]},
+      {"auto_type" : "edit_write", "window" : "实时采集 ", "kwargs": [
+        {"child_window":{"title":"保存仪器方法", "auto_id":"SaveForm", "control_type":"Window"}},
+        {"child_window":{"auto_id":"txtBoxSelected", "control_type":"Edit"}}
+      ]},
+      {"auto_type" : "control_click", "window" : "实时采集 ", "kwargs" : [
+        {"child_window":{"title":"保存仪器方法", "auto_id":"SaveForm", "control_type":"Window"}},
+        {"child_window":{"title":"确定", "auto_id":"btnOK", "control_type":"Button"}}
+      ]},
+      {"auto_type" : "control_click", "window" : "实时采集 ", "kwargs" : [
+        {"child_window":{"title":"提示", "control_type":"Window"}},
+        {"child_window":{"title":"确定(&O)", "control_type":"Button"}}
+      ]}
+    ]}
+    ]
+}
