@@ -1,6 +1,0 @@
-default_sleep_time = 1
-default_file_name_format = YYYYMMDDHHmmss
-image_save_path = D:\fk\test
-default_log_file_name = app.log
-step = 6
-event_status = Flase

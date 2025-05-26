@@ -1,6 +1,7 @@
 import datetime
 import logging
 import os
+import tempfile
 import threading
 import uuid
 import json
@@ -13,12 +14,14 @@ from util.exception_util import ThreadException
 data_url = r'./data/data.json'
 config_url = r'./data/config.properties'
 log_dir_url = r'./log/'
-step_url = r'./step/step.json'
+step_url = r'./step/steptest.json'
 dictionary_url = r'./data/dictionary.json'
+temporary_url = r'./data/temporary.json'
 event = threading.Event()
 config_lock = threading.Lock()
 data_lock = threading.Lock()
 dictionary_lock = threading.Lock()
+temporary_lock = threading.Lock()
 
 window_dict = dict()
 
@@ -37,6 +40,9 @@ def set_data(key, value):
 
 def get_config(key, default=None):
     config = pr_properties.read(config_url)
+    if len(config.properties) == 0:
+        os.replace(config_url+".pr_bak", config_url)
+        config = pr_properties.read(config_url)
     return config.get(key, default)
 
 def set_config(key, value):
@@ -54,23 +60,68 @@ def set_dictionary(key, value):
         with open(dictionary_url, 'r', encoding='utf-8') as f:
             dictionary_data = json.load(f)
         with open(dictionary_url, 'w', encoding='utf-8') as f:
-            dictionary_data.get(get_config("software")).update({key : value})
-            json.dump(dictionary_data, f, indent=4)
+            with tempfile.NamedTemporaryFile(mode='w', delete=False, encoding='utf-8',
+                                             dir=os.path.dirname(dictionary_url)) as temp_f:
+                dictionary_data.get(get_config("software")).update({key : value})
+                json.dump(dictionary_data, temp_f, indent=4, ensure_ascii=False)
+                temp_file_path = temp_f.name
+        os.replace(temp_file_path, dictionary_url)
 
-def refer_dictionary(key):
+def get_temporary(step, key):
+    with open(temporary_url, 'r', encoding='utf-8') as f:
+        return json.load(f).get(get_config("software")).get(step,{}).get(key, "")
+
+def set_temporary(step, key, value):
+    with temporary_lock:
+        with open(temporary_url, 'r', encoding='utf-8') as f:
+            temporary_data = json.load(f)
+        with open(temporary_url, 'w', encoding='utf-8') as f:
+            with tempfile.NamedTemporaryFile(mode='w', delete=False, encoding='utf-8',
+                                             dir=os.path.dirname(temporary_url)) as temp_f:
+                temporary_data.get(get_config("software")).get(step).update({str(key): value})
+                json.dump(temporary_data, temp_f, indent=4, ensure_ascii=False)
+                temp_file_path = temp_f.name
+        os.replace(temp_file_path, temporary_url)
+
+def refer_dictionary(step, key):
     dictionary = get_dictionary(str(key))
-    match key:
-        case 10001:
-            dictionary = get_dictionary(dictionary)
-            now = datetime.datetime.now()
-            formatted_time = now.strftime(dictionary)
-            return formatted_time
-        case _:
-            return dictionary
+    value = ""
+    if isinstance(dictionary, dict):
+        for text_items in dictionary["text"]:
+            text_item_key = next(iter(text_items))
+            match text_item_key:
+                case "dictionary":
+                    value += get_dictionary(text_items[text_item_key])
+                case "text":
+                    value += text_items[text_item_key]
+                case "data":
+                    data = get_data(key=get_config("software"))
+                    for text_item in text_items[text_item_key].split(sep="."):
+                        data = data[text_item]
+                    if isinstance(data, int):
+                        data = get_temporary(step=text_items[text_item_key].split(sep=".")[0], key=str(data))
+                    value += data
+        match dictionary["type"]:
+            case "nowtime":
+                now = datetime.datetime.now()
+                formatted_time = now.strftime(value)
+                value = formatted_time
+            case "param":
+                pass
+            case _:
+                pass
+    else:
+        value = dictionary
+    if isinstance(key, int):
+        set_temporary(step=step, key=key, value=value)
+    return value
 
 def set_step(step_num = 0, step = 0):
     with config_lock:
         config = pr_properties.read(config_url)
+        if len(config.properties) == 0:
+            os.replace(config_url + ".pr_bak", config_url)
+            config = pr_properties.read(config_url)
         if step != 0:
             get_step(config["software"], step + step_num)
             config["step"] = step + step_num

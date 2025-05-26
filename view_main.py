@@ -140,6 +140,7 @@ class MyFrame(wx.Frame):
             self.on_restart_btn.Enable(True)
             self.on_btn.Enable(True)
         self.step_text.Label = next(iter(utils.get_step(utils.get_config("software"), utils.get_config("step"), default="")))
+        self.SetTitle(utils.get_config("software"))
 
     def form_init(self, form_panel):
         form_sizer = wx.GridBagSizer(vgap=10, hgap=10)

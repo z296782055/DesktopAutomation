@@ -1,13 +1,11 @@
 import copy
 import json
-import re
 import time
-
+import _ctypes
 import pyperclip
 import pywinauto
 from pywinauto import Application
 from pywinauto.controls.uiawrapper import UIAWrapper
-
 from util import utils
 from util.logger_util import logger
 
@@ -28,7 +26,6 @@ def start(self):
     utils.set_config("step", 1)
     utils.set_config("event_status", 0)
     utils.set_config("thread_status", 0)
-    self.SetTitle(utils.get_config("software"))
     self.refresh()
 
 def get_detail(automation):
@@ -52,10 +49,6 @@ def get_detail(automation):
             detail += ("\"" + (kwarg.get("title") if kwarg.get("title") else kwarg.get("auto_id")) + "\"")
         case "list_select":
             detail += "列表选择:"
-            kwarg = next(iter(automation.get("kwargs")[-1].values()))
-            detail += ("\"" + (kwarg.get("title") if kwarg.get("title") else kwarg.get("auto_id")) + "\"")
-        case "edit_write":
-            detail += "填写文本框:"
             kwarg = next(iter(automation.get("kwargs")[-1].values()))
             detail += ("\"" + (kwarg.get("title") if kwarg.get("title") else kwarg.get("auto_id")) + "\"")
         case "check":
@@ -82,7 +75,12 @@ def do_automation(step, automation, sleep_time=default_sleep_time, before_sleep_
         edit_write(window=automation.get("window"), kwargs = automation.get("kwargs"), step=step, sleep_time=sleep_time, before_sleep_time=before_sleep_time)
     elif auto_type == "table_fill":
         table_fill(window=automation.get("window"), table_kwargs = automation.get("table_kwargs"), table_head_kwargs = automation.get("table_head_kwargs"), table_body_kwargs = automation.get("table_body_kwargs"), title = automation.get("title"), step=step, add = automation.get("add"), clear = automation.get("clear"), table_column = automation.get("table_column"), sleep_time=sleep_time, before_sleep_time=before_sleep_time)
-
+    elif auto_type == "check":
+        check(window=automation.get("window"), kwargs = automation.get("kwargs"), step=step, sleep_time=sleep_time, before_sleep_time=before_sleep_time)
+    elif auto_type == "tree_click":
+        tree_click(window=automation.get("window"), kwargs=automation.get("kwargs"),
+                      click_type=automation.get("click_type"),title=automation.get("title"), up=automation.get("up"), down=automation.get("down"), step=step, sleep_time=sleep_time,
+                      before_sleep_time=before_sleep_time)
 
 def connect_window(title, backend = default_backend, sleep_time=default_sleep_time, before_sleep_time=0):
     if before_sleep_time != 0:
@@ -135,7 +133,7 @@ def control_click(window, kwargs, step, click_type=None, sleep_time=default_slee
         for kw in kwargs:
             for key,value in kw.items():
                 if value.get("control_type") == "Hyperlink":
-                    value["title"] = utils.refer_dictionary(window)
+                    value["title"] = utils.refer_dictionary(step=step, key=window)
                 target_control = getattr(target_control, key)(**value)
                 if isinstance(target_control, list) :
                     target_control = target_control[0]
@@ -145,7 +143,7 @@ def control_click(window, kwargs, step, click_type=None, sleep_time=default_slee
             getattr(target_control, click_type)()
         except AttributeError:
             getattr(target_control, click_type+"_input")()
-    except (pywinauto.findwindows.ElementNotFoundError,IndexError) as e:
+    except (pywinauto.findwindows.ElementNotFoundError,IndexError,_ctypes.COMError) as e:
         logger.log("找不到控件:\nwindow:" + window + "\nkwargs:" + str(kwargs))
         time.sleep(sleep_time)
         control_click(window=window, kwargs=kwargs, step = step, click_type=click_type, sleep_time=sleep_time)
@@ -153,6 +151,7 @@ def control_click(window, kwargs, step, click_type=None, sleep_time=default_slee
         logger.log("找到了多个控件:\nwindow:" + window + "\nkwargs:" + str(kwargs))
         time.sleep(sleep_time)
         control_click(window=window, kwargs=kwargs, step=step, click_type=click_type, sleep_time=sleep_time)
+
 
 
 def list_select(window, kwargs, step, click_type=None, select_window_title = None, select_window_kwargs=None, sleep_time=default_sleep_time, before_sleep_time=0):
@@ -194,7 +193,7 @@ def list_select(window, kwargs, step, click_type=None, select_window_title = Non
                 target_list_item = utils.window_dict.get(window).descendants(title=item)
             if len(target_list_item) != 0:
                 target_list_item[0].click_input()
-    except (pywinauto.findwindows.ElementNotFoundError,IndexError) as e:
+    except (pywinauto.findwindows.ElementNotFoundError,IndexError,_ctypes.COMError) as e:
         logger.log("找不到列表:\nwindow:" + window + "\nkwargs:" + str(kwargs))
         time.sleep(sleep_time)
         list_select(window=window, kwargs=kwargs, step = step, click_type = click_type, select_window_title = select_window_title, select_window_kwargs=select_window_kwargs, sleep_time=sleep_time)
@@ -220,14 +219,14 @@ def edit_write(window, kwargs, step, sleep_time=default_sleep_time, before_sleep
             target_edit = target_edit.wrapper_object()
         text = utils.get_data(utils.get_config("software")).get(step,"").get(target_edit.element_info.automation_id if target_edit.element_info.automation_id else target_edit.element_info.name)
         if isinstance(text, int):
-            text = utils.refer_dictionary(text)
+            text = utils.refer_dictionary(step=step, key=text)
         target_edit.type_keys("^a")
         try:
             target_edit.set_text(text)
         except AttributeError:
             pyperclip.copy(text)
             target_edit.type_keys("^v")
-    except (pywinauto.findwindows.ElementNotFoundError,IndexError):
+    except (pywinauto.findwindows.ElementNotFoundError,IndexError,_ctypes.COMError):
         logger.log("找不到控件:\nwindow:" + window + "\nkwargs:" + str(kwargs))
         time.sleep(sleep_time)
         edit_write(window=window, kwargs=kwargs, step = step, sleep_time=sleep_time)
@@ -250,11 +249,15 @@ def check(window, kwargs, step, sleep_time=default_sleep_time, before_sleep_time
         if not isinstance(target_check_box, UIAWrapper):
             target_check_box = target_check_box.wrapper_object()
         check_status = utils.get_data(utils.get_config("software")).get(step,"").get(target_check_box.element_info.automation_id if target_check_box.element_info.automation_id else target_check_box.element_info.name)
-        if check_status == "True":
-            target_check_box.check()
-        else:
-            target_check_box.uncheck()
-    except (pywinauto.findwindows.ElementNotFoundError,IndexError):
+        try:
+            if check_status == "True":
+                target_check_box.check()
+            else:
+                target_check_box.uncheck()
+        except AttributeError:
+            if check_status == "True":
+                target_check_box.click_input()
+    except (pywinauto.findwindows.ElementNotFoundError,IndexError,_ctypes.COMError):
         logger.log("找不到控件:\nwindow:" + window + "\nkwargs:" + str(kwargs))
         time.sleep(sleep_time)
         check(window=window, kwargs=kwargs, step = step, sleep_time=sleep_time)
@@ -291,3 +294,71 @@ def table_fill(window, step, table_kwargs, table_head_kwargs, table_body_kwargs,
         table_fill(window=window, step=step, table_kwargs=table_kwargs, table_head_kwargs=table_head_kwargs,
                    table_body_kwargs=table_body_kwargs, title=title, add=add, clear=clear, table_column=table_column,
                    sleep_time=sleep_time)
+
+def tree_click(window, kwargs, step, title, up, down, click_type=None, sleep_time=default_sleep_time, before_sleep_time=0):
+    if before_sleep_time != 0:
+        time.sleep(before_sleep_time)
+    utils.pause()
+    if click_type is None:
+        click_type = "click"
+    connect_child_window(window=window, kwargs=kwargs, title=title, step=step, sleep_time=default_sleep_time)
+    target_tree = utils.window_dict.get(title)
+    try:
+        if not isinstance (target_tree, UIAWrapper) :
+            target_tree = target_tree.wrapper_object()
+        text = utils.get_data(utils.get_config("software")).get(step, "").get(
+            target_tree.element_info.automation_id if target_tree.element_info.automation_id else target_tree.element_info.name)
+        if isinstance(text, int):
+            text = utils.refer_dictionary(step=step, key=text)
+        target_nodes = target_tree.descendants(**{"control_type": "TreeItem"})
+        flag = True
+        for target_node in target_nodes:
+            if target_node.legacy_properties()["Value"] == text:
+                flag = False
+                target_node.select()
+                try:
+                    getattr(target_node, click_type)()
+                except AttributeError:
+                    getattr(target_node, click_type + "_input")()
+        if flag:
+            for down_item in down:
+                do_automation(step, down_item, sleep_time=sleep_time, before_sleep_time=before_sleep_time)
+            logger.log("找不到树状图:\nwindow:" + window + "\nkwargs:" + str(kwargs))
+            time.sleep(sleep_time)
+            tree_click(window=window, kwargs=kwargs, step=step, title=title, up=up, down=down, click_type=click_type, sleep_time=default_sleep_time)
+    except (pywinauto.findwindows.ElementNotFoundError,IndexError,_ctypes.COMError) as e:
+        logger.log("找不到树状图:\nwindow:" + window + "\nkwargs:" + str(kwargs))
+        time.sleep(sleep_time)
+        tree_click(window=window, kwargs=kwargs, step=step, title=title, up=up, down=down, click_type=click_type, sleep_time=default_sleep_time)
+    except pywinauto.findwindows.ElementAmbiguousError:
+        logger.log("找到了多个树状图:\nwindow:" + window + "\nkwargs:" + str(kwargs))
+        time.sleep(sleep_time)
+        tree_click(window=window, kwargs=kwargs, step=step, title=title, up=up, down=down, click_type=click_type, sleep_time=default_sleep_time)
+
+def table_click(window, table_kwargs, kwargs, replace, step, title, click_type=None, sleep_time=default_sleep_time, before_sleep_time=0):
+    if before_sleep_time != 0:
+        time.sleep(before_sleep_time)
+    utils.pause()
+    if click_type is None:
+        click_type = "click"
+    connect_child_window(window=window, kwargs=table_kwargs, title=title, step=step, sleep_time=default_sleep_time)
+    target_table = utils.window_dict.get(title)
+    try:
+        i = None
+        match replace.get("type"):
+            case "len-1":
+                i = len(target_table.child_window(**replace.get("kwargs")).children())-1
+            case "len":
+                i = len(target_table.child_window(**replace.get("kwargs")).children())
+        try:
+            getattr(target_table.child_window(**json.loads(json.dumps(kwargs) % i)), click_type)()
+        except AttributeError:
+            getattr(target_table.child_window(**json.loads(json.dumps(kwargs) % i)), click_type + "_input")()
+    except (pywinauto.findwindows.ElementNotFoundError,IndexError,_ctypes.COMError) as e:
+        logger.log("找不到表格:\nwindow:" + window + "\nkwargs:" + str(kwargs))
+        time.sleep(sleep_time)
+        table_click(window=window, table_kwargs=table_kwargs, step=step, title=title, replace=replace, kwargs=kwargs, click_type=click_type, sleep_time=default_sleep_time)
+    except pywinauto.findwindows.ElementAmbiguousError:
+        logger.log("找不到表格:\nwindow:" + window + "\nkwargs:" + str(kwargs))
+        time.sleep(sleep_time)
+        table_click(window=window, table_kwargs=table_kwargs, step=step, title=title, replace=replace, kwargs=kwargs, click_type=click_type, sleep_time=default_sleep_time)

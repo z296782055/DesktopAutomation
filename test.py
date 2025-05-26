@@ -1,25 +1,57 @@
+import datetime
 import json
+import os
+import tempfile
 import time
 
+from pr_properties import pr_properties
 from pywinauto.application import Application
 from pywinauto import Desktop
+from pywinauto.controls.uia_controls import TreeViewWrapper
 
 from util import utils
 
-kwargs = [{"descendants": {"title": "时间(min) row{}", "control_type": "Custom"}}]
-
+config_url = r'./data/config.properties'
 
 
 # print(json.loads(json.dumps(kwargs).format(1)))
 
-desktop = Desktop(backend="uia")  # 或者使用"win32"作为后端，取决于你的需求
-windows = desktop.windows()
-for window in windows:
-    print(window.window_text())
+# desktop = Desktop(backend="uia")  # 或者使用"win32"作为后端，取决于你的需求
+# windows = desktop.windows()
+# for window in windows:
+#     print(window.window_text())
 
-# app = Application("uia").connect(title="实时采集 ")
-# window = app.window(title="实时采集 ")
 
+app = Application("uia").connect(title="实时采集 ")
+window = app.window(title="实时采集 ")
+
+main_window = window.child_window(**{"title":"sidePanel2", "auto_id":"sidePanel2", "control_type":"Pane"})
+main_window = main_window.child_window(**{"auto_id":"_Container", "control_type":"Pane"})
+main_window = main_window.child_window(**{"auto_id":"_ucInsMethodEditor", "control_type":"Pane"})
+main_window = main_window.child_window(**{"title":"xtraScrollableControl1", "auto_id":"xtraScrollableControl1", "control_type":"Pane"})
+main_window = main_window.child_window(**{"title":"panelControlMain", "auto_id":"panelControlMain", "control_type":"Pane"})
+main_window = main_window.child_window(**{"auto_id":"InstrumentEditor", "control_type":"Window"})
+main_window = main_window.child_window(**{"title":"xtraTabPage1", "auto_id":"xtraTabPage1", "control_type":"Pane"})
+main_window = main_window.child_window(**{"auto_id":"NavBar", "control_type":"Pane"})
+main_window = main_window.child_window(**{"title":"panelControl", "auto_id":"panelControl", "control_type":"Pane"})
+main_window = main_window.child_window(**{"auto_id":"CT3100IMEUI", "control_type":"Pane"})
+main_window = main_window.child_window(**{"auto_id":"tabMain", "control_type":"Tab"})
+main_window = main_window.child_window(**{"title":"常规 ", "auto_id":"tpGeneral", "control_type":"Pane"})
+main_window = main_window.child_window(**{"auto_id":"dvEvent", "control_type":"Pane"})
+main_window = main_window.child_window(**{"auto_id":"gcEvent", "control_type":"Table"})
+print(len(main_window.children()))
+# main_window = main_window.wrapper_object()
+# nodes = main_window.descendants(**{"control_type":"TreeItem"})
+# for node in nodes:
+#     if node.legacy_properties()["Value"] == "新建文件夹":
+#         node.select()
+#         node.click_input()
+
+# for child in main_window.children() :
+#     print(child.select())
+# main_window.get_item(r"\新建项目新建项目新建项目新建项目新建项目新建项目新建项目新建项目").select()
+
+# (**{"Value" : "新建文件夹"})
 # main_window = window.child_window(**{"title":"DropDown", "control_type":"Menu"})
 # main_window = main_window.child_window(**{"title":"添加行 ", "control_type":"MenuItem"})
 # main_window.click_input()

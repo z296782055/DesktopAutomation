@@ -34,8 +34,8 @@
       "时间(min) row2": "5", "事件类型 row2": "停止控温", "事件值 row2": "75"
     },
     "检测器": {
-      "txtLambda1": "200",
-      "txtLambda2": "250",
+      "txtLambda1": "400",
+      "txtLambda2": "700",
       "rbLightType": "氘灯",
       "rblAnalysisType": "双波长Vis",
       "chkRefSmpChannel": "False"
@@ -43,6 +43,18 @@
     "保存": {
       "txtAuditTrace": "没有理由",
       "txtBoxSelected": 10001
+    },
+    "数据采集": {
+      "sampleNameBtnEdit": "未知样",
+      "spinEditInjectVolume": "10",
+      "cbxSampleType": "标准样",
+      "tbxSampleVia": "A1",
+      "cbxMethod": "1",
+      "cbxInjectFunction": "进样",
+      "tlData": 10002
+    },
+    "数据处理": {
+      "lupReportMethod": "默认报告方法模板"
     }
   }
 }
