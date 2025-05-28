@@ -23336,3 +23336,75 @@ kwargs:[{'child_window': {'title': 'sidePanel2', 'auto_id': 'sidePanel2', 'contr
 2025-05-26 21:53:34,160 - DEBUG - Lock 2703792723376 acquired on ./data/config.properties.lock
 2025-05-26 21:53:34,161 - DEBUG - Attempting to release lock 2703792723376 on ./data/config.properties.lock
 2025-05-26 21:53:34,163 - DEBUG - Lock 2703792723376 released on ./data/config.properties.lock
+2025-05-27 12:05:04,499 - DEBUG - Attempting to acquire lock 1526822971152 on ./data/config.properties.lock
+2025-05-27 12:05:04,514 - DEBUG - Lock 1526822971152 acquired on ./data/config.properties.lock
+2025-05-27 12:05:04,514 - DEBUG - Attempting to release lock 1526822971152 on ./data/config.properties.lock
+2025-05-27 12:05:04,515 - DEBUG - Lock 1526822971152 released on ./data/config.properties.lock
+2025-05-27 12:05:06,823 - DEBUG - Attempting to acquire lock 1526824490384 on ./data/config.properties.lock
+2025-05-27 12:05:06,826 - DEBUG - Lock 1526824490384 acquired on ./data/config.properties.lock
+2025-05-27 12:05:06,827 - DEBUG - Attempting to release lock 1526824490384 on ./data/config.properties.lock
+2025-05-27 12:05:06,828 - DEBUG - Lock 1526824490384 released on ./data/config.properties.lock
+2025-05-27 12:05:08,353 - DEBUG - Attempting to acquire lock 1526831178128 on ./data/config.properties.lock
+2025-05-27 12:05:08,354 - DEBUG - Lock 1526831178128 acquired on ./data/config.properties.lock
+2025-05-27 12:05:08,355 - DEBUG - Attempting to release lock 1526831178128 on ./data/config.properties.lock
+2025-05-27 12:05:08,358 - DEBUG - Lock 1526831178128 released on ./data/config.properties.lock
+2025-05-27 12:05:09,042 - DEBUG - Attempting to acquire lock 1526831177824 on ./data/config.properties.lock
+2025-05-27 12:05:09,044 - DEBUG - Lock 1526831177824 acquired on ./data/config.properties.lock
+2025-05-27 12:05:09,044 - DEBUG - Attempting to release lock 1526831177824 on ./data/config.properties.lock
+2025-05-27 12:05:09,045 - DEBUG - Lock 1526831177824 released on ./data/config.properties.lock
+2025-05-27 12:05:09,046 - DEBUG - Attempting to acquire lock 1526782179472 on ./data/config.properties.lock
+2025-05-27 12:05:09,047 - DEBUG - Lock 1526782179472 acquired on ./data/config.properties.lock
+2025-05-27 12:05:09,048 - DEBUG - Attempting to release lock 1526782179472 on ./data/config.properties.lock
+2025-05-27 12:05:09,049 - DEBUG - Lock 1526782179472 released on ./data/config.properties.lock
+2025-05-27 12:05:09,111 - DEBUG - Attempting to acquire lock 1526831280976 on ./data/config.properties.lock
+2025-05-27 12:05:09,113 - DEBUG - Lock 1526831280976 acquired on ./data/config.properties.lock
+2025-05-27 12:05:09,113 - DEBUG - Attempting to release lock 1526831280976 on ./data/config.properties.lock
+2025-05-27 12:05:09,114 - DEBUG - Lock 1526831280976 released on ./data/config.properties.lock
+2025-05-27 17:32:58,789 - DEBUG - Attempting to acquire lock 2120358012688 on ./data/config.properties.lock
+2025-05-27 17:32:58,803 - DEBUG - Lock 2120358012688 acquired on ./data/config.properties.lock
+2025-05-27 17:32:58,804 - DEBUG - Attempting to release lock 2120358012688 on ./data/config.properties.lock
+2025-05-27 17:32:58,806 - DEBUG - Lock 2120358012688 released on ./data/config.properties.lock
+2025-05-27 17:33:00,312 - DEBUG - Attempting to acquire lock 2120359531600 on ./data/config.properties.lock
+2025-05-27 17:33:00,316 - DEBUG - Lock 2120359531600 acquired on ./data/config.properties.lock
+2025-05-27 17:33:00,317 - DEBUG - Attempting to release lock 2120359531600 on ./data/config.properties.lock
+2025-05-27 17:33:00,320 - DEBUG - Lock 2120359531600 released on ./data/config.properties.lock
+2025-05-27 17:33:01,245 - DEBUG - Attempting to acquire lock 2120366219664 on ./data/config.properties.lock
+2025-05-27 17:33:01,247 - DEBUG - Lock 2120366219664 acquired on ./data/config.properties.lock
+2025-05-27 17:33:01,248 - DEBUG - Attempting to release lock 2120366219664 on ./data/config.properties.lock
+2025-05-27 17:33:01,249 - DEBUG - Lock 2120366219664 released on ./data/config.properties.lock
+2025-05-27 17:33:01,760 - DEBUG - Attempting to acquire lock 2120366219360 on ./data/config.properties.lock
+2025-05-27 17:33:01,761 - DEBUG - Lock 2120366219360 acquired on ./data/config.properties.lock
+2025-05-27 17:33:01,762 - DEBUG - Attempting to release lock 2120366219360 on ./data/config.properties.lock
+2025-05-27 17:33:01,764 - DEBUG - Lock 2120366219360 released on ./data/config.properties.lock
+2025-05-27 17:33:01,766 - DEBUG - Attempting to acquire lock 2120316385712 on ./data/config.properties.lock
+2025-05-27 17:33:01,768 - DEBUG - Lock 2120316385712 acquired on ./data/config.properties.lock
+2025-05-27 17:33:01,769 - DEBUG - Attempting to release lock 2120316385712 on ./data/config.properties.lock
+2025-05-27 17:33:01,771 - DEBUG - Lock 2120316385712 released on ./data/config.properties.lock
+2025-05-27 17:33:01,828 - DEBUG - Attempting to acquire lock 2120366322512 on ./data/config.properties.lock
+2025-05-27 17:33:01,831 - DEBUG - Lock 2120366322512 acquired on ./data/config.properties.lock
+2025-05-27 17:33:01,832 - DEBUG - Attempting to release lock 2120366322512 on ./data/config.properties.lock
+2025-05-27 17:33:01,834 - DEBUG - Lock 2120366322512 released on ./data/config.properties.lock
+2025-05-27 17:49:09,480 - DEBUG - Attempting to acquire lock 2594190860176 on ./data/config.properties.lock
+2025-05-27 17:49:09,481 - DEBUG - Lock 2594190860176 acquired on ./data/config.properties.lock
+2025-05-27 17:49:09,482 - DEBUG - Attempting to release lock 2594190860176 on ./data/config.properties.lock
+2025-05-27 17:49:09,482 - DEBUG - Lock 2594190860176 released on ./data/config.properties.lock
+2025-05-27 17:49:09,870 - DEBUG - Attempting to acquire lock 2594192478032 on ./data/config.properties.lock
+2025-05-27 17:49:09,871 - DEBUG - Lock 2594192478032 acquired on ./data/config.properties.lock
+2025-05-27 17:49:09,872 - DEBUG - Attempting to release lock 2594192478032 on ./data/config.properties.lock
+2025-05-27 17:49:09,873 - DEBUG - Lock 2594192478032 released on ./data/config.properties.lock
+2025-05-27 17:49:10,081 - DEBUG - Attempting to acquire lock 2594226525008 on ./data/config.properties.lock
+2025-05-27 17:49:10,083 - DEBUG - Lock 2594226525008 acquired on ./data/config.properties.lock
+2025-05-27 17:49:10,083 - DEBUG - Attempting to release lock 2594226525008 on ./data/config.properties.lock
+2025-05-27 17:49:10,085 - DEBUG - Lock 2594226525008 released on ./data/config.properties.lock
+2025-05-27 17:49:10,219 - DEBUG - Attempting to acquire lock 2594226525008 on ./data/config.properties.lock
+2025-05-27 17:49:10,221 - DEBUG - Lock 2594226525008 acquired on ./data/config.properties.lock
+2025-05-27 17:49:10,222 - DEBUG - Attempting to release lock 2594226525008 on ./data/config.properties.lock
+2025-05-27 17:49:10,222 - DEBUG - Lock 2594226525008 released on ./data/config.properties.lock
+2025-05-27 17:49:10,223 - DEBUG - Attempting to acquire lock 2594227130096 on ./data/config.properties.lock
+2025-05-27 17:49:10,224 - DEBUG - Lock 2594227130096 acquired on ./data/config.properties.lock
+2025-05-27 17:49:10,225 - DEBUG - Attempting to release lock 2594227130096 on ./data/config.properties.lock
+2025-05-27 17:49:10,226 - DEBUG - Lock 2594227130096 released on ./data/config.properties.lock
+2025-05-27 17:49:10,230 - DEBUG - Attempting to acquire lock 2594217829488 on ./data/config.properties.lock
+2025-05-27 17:49:10,232 - DEBUG - Lock 2594217829488 acquired on ./data/config.properties.lock
+2025-05-27 17:49:10,232 - DEBUG - Attempting to release lock 2594217829488 on ./data/config.properties.lock
+2025-05-27 17:49:10,233 - DEBUG - Lock 2594217829488 released on ./data/config.properties.lock

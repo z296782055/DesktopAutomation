@@ -14,7 +14,7 @@ from util.exception_util import ThreadException
 data_url = r'./data/data.json'
 config_url = r'./data/config.properties'
 log_dir_url = r'./log/'
-step_url = r'./step/steptest.json'
+step_url = r'./step/step.json'
 dictionary_url = r'./data/dictionary.json'
 temporary_url = r'./data/temporary.json'
 event = threading.Event()

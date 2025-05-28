@@ -54,7 +54,8 @@
       "tlData": 10002
     },
     "数据处理": {
-      "lupReportMethod": "默认报告方法模板"
+      "lupReportMethod": "默认报告方法模板",
+      "1001": "自定义名称"
     }
   }
 }
