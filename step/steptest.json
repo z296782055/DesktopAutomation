@@ -2,10 +2,9 @@
   "SmartLab CDS": [
     {"方法概要":[
       {"auto_type" : "connect_window", "title" : "实时采集 "},
-      {"auto_type" : "control_click", "window" : "实时采集 ", "click_type":"set_focus", "kwargs": [
-        {"child_window":{"title":"sidePanel2", "auto_id":"sidePanel2", "control_type":"Pane"}},
-        {"child_window":{"title":"审计追踪 ", "auto_id":"dpnlMessage", "control_type":"Pane"}}
+      {"auto_type" : "control_click", "window" : "实时采集 ", "click_type":"close", "kwargs": [
       ]}
+
     ]}
   ]
 }

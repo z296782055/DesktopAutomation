@@ -8,7 +8,7 @@
       "txtRunTime": "2"
     },
     "泵": {
-      "txtFlowVelocity": "6",
+      "txtFlowVelocity": "0.1",
       "txtMaxLimit": "40",
       "txtMinLimit": "0",
       "A": "10",

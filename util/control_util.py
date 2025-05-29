@@ -42,8 +42,11 @@ def get_detail(automation):
             detail += automation.get("title")
         case "control_click":
             detail += "点击控件:"
-            kwarg = next(iter(automation.get("kwargs")[-1].values()))
-            detail += ("\"" + (kwarg.get("title") if kwarg.get("title") else kwarg.get("auto_id")) + "\"")
+            if (len(automation.get("kwargs"))) == 0:
+                detail += ("\"" + automation.get("window") + "\"")
+            else:
+                kwarg = next(iter(automation.get("kwargs")[-1].values()))
+                detail += ("\"" + (kwarg.get("title") if kwarg.get("title") else kwarg.get("auto_id")) + "\"")
         case "edit_write":
             detail += "填写文本框:"
             kwarg = next(iter(automation.get("kwargs")[-1].values()))

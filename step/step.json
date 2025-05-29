@@ -541,10 +541,18 @@
         {"child_window":{"title":"文件名:", "auto_id":"1001", "control_type":"Edit"}}
       ]},
       {"auto_type" : "control_click", "window" : "数据处理", "kwargs": [
-        {"child_window":{"title":"打印记录", "auto_id":"ReportPrintList", "control_type":"Window"}},
-        {"child_window":{"title":"报告打印记录", "control_type":"MenuItem"}},
+        {"child_window":{"title":"打印记录 ", "auto_id":"ReportPrintList", "control_type":"Window"}},
         {"child_window":{"title":"另存为", "control_type":"Window"}},
         {"child_window":{"title":"保存(S)", "auto_id":"1", "control_type":"Button"}}
+      ]},
+      {"auto_type" : "control_click", "window" : "数据处理", "kwargs": [
+        {"child_window":{"title":"打印记录 ", "auto_id":"ReportPrintList", "control_type":"Window"}},
+        {"child_window":{"title":"toolStripContainer1", "auto_id":"toolStripContainer1", "control_type":"Pane"}},
+        {"child_window":{"title":"关闭", "control_type":"Button"}}
+      ]},
+      {"auto_type" : "control_click", "window" : "实时采集 ", "click_type":"close", "kwargs": [
+      ]},
+      {"auto_type" : "control_click", "window" : "数据处理", "click_type":"close", "kwargs": [
       ]}
     ]}
   ]
