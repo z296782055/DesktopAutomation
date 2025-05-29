@@ -49,7 +49,7 @@
       "spinEditInjectVolume": "10",
       "cbxSampleType": "标准样",
       "tbxSampleVia": "A1",
-      "cbxMethod": "1",
+      "cbxMethod": 10003,
       "cbxInjectFunction": "进样",
       "tlData": 10002
     },

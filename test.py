@@ -25,22 +25,17 @@ config_url = r'./data/config.properties'
 app = Application("uia").connect(title="实时采集 ")
 window = app.window(title="实时采集 ")
 
+
 main_window = window.child_window(**{"title":"sidePanel2", "auto_id":"sidePanel2", "control_type":"Pane"})
-main_window = main_window.child_window(**{"title":"项目 ", "auto_id":"dpnlProject", "control_type":"Pane"})
-main_window = main_window.child_window(**{"auto_id":"dockPanel1_Container", "control_type":"Pane"})
-main_window = main_window.child_window(**{"auto_id":"_ucProjectBrowser", "control_type":"Pane"})
-main_window = main_window.child_window(**{"title":"navBarControl1", "auto_id":"navBarControl1", "control_type":"Pane"})
-main_window = main_window.child_window(**{"auto_id":"navBarGroupControlContainer3", "control_type":"Pane"})
-main_window = main_window.child_window(**{"auto_id":"splitContainer1", "control_type":"Pane"})
-main_window = main_window.child_window(**{"auto_id":"tlData", "control_type":"Tree"})
-target_nodes = main_window.descendants(**{"control_type": "TreeItem"})
-for target_node in target_nodes:
-    if target_node.is_selected():
-        try:
-            getattr(target_node, "right_click")()
-        except AttributeError:
-            getattr(target_node, "right_click" + "_input")()
-# main_window = main_window.wrapper_object()
+main_window = main_window.child_window(**{"title":"数据采集 ", "auto_id":"dPanelDataCollection", "control_type":"Pane"})
+main_window = main_window.child_window(**{"auto_id":"dockPanelDataCollection_Container", "control_type":"Pane"})
+main_window = main_window.child_window(**{"title":"splitCCMain", "auto_id":"splitCCMain", "control_type":"Pane"})
+main_window = main_window.child_window(**{"title":"splitContainerControl3", "auto_id":"splitContainerControl3", "control_type":"Pane"})
+main_window = main_window.child_window(**{"auto_id":"xtbMethods", "control_type":"Tab"})
+main_window = main_window.child_window(**{"title":"单次进样 ", "control_type":"TabItem"})
+main_window = main_window.wrapper_object()
+main_window.set_focus()
+# main_window.click_input()
 # nodes = main_window.descendants(**{"control_type":"TreeItem"})
 # for node in nodes:
 #     if node.legacy_properties()["Value"] == "新建文件夹":

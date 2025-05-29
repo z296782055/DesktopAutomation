@@ -3,8 +3,7 @@
     {"点击“实时采集”":[
       {"auto_type" : "connect_window", "title" : "导航"},
       {"auto_type" : "control_click", "window" : "导航", "kwargs": [{"child_window":{"title":"实时采集", "auto_id":"btRealTimeAnalysis", "control_type":"Text"}}]}
-    ]
-    },
+    ]},
     {"选择项目及色谱系统":[
       {"auto_type" : "connect_window", "title" : "选择项目及色谱系统"},
       {"auto_type" : "list_select", "window" : "选择项目及色谱系统", "click_type":"no_click", "kwargs" : [{"child_window":{"auto_id" : "listBoxItemA"}}]},
@@ -322,19 +321,23 @@
         {"child_window":{"title":"xtraScrollableControl1", "auto_id":"xtraScrollableControl1", "control_type":"Pane"}},
         {"child_window":{"title":"加载", "auto_id":"btnLoad", "control_type":"Button"}}
       ]},
-      {"auto_type" : "control_click", "window" : "实时采集 ", "before_sleep_time":"5", "kwargs": [
+      {"auto_type" : "control_click", "window" : "实时采集 ", "ready":"enabled", "kwargs": [
         {"child_window":{"title":"The Ribbon", "auto_id":"ribbonControl1", "control_type":"Pane"}},
         {"child_window":{"title":"Lower Ribbon", "control_type":"Pane"}},
         {"child_window":{"title":"主页 ", "control_type":"Pane"}},
         {"child_window":{"title":"设备控制 ", "control_type":"ToolBar"}},
         {"child_window":{"title":"启动设备 ", "control_type":"Button"}}
       ]},
-      {"auto_type" : "control_click", "window" : "实时采集 ", "kwargs": [
+      {"auto_type" : "control_click", "window" : "实时采集 ", "ready":"enabled", "kwargs": [
         {"child_window":{"title":"The Ribbon", "auto_id":"ribbonControl1", "control_type":"Pane"}},
         {"child_window":{"title":"Lower Ribbon", "control_type":"Pane"}},
         {"child_window":{"title":"主页 ", "control_type":"Pane"}},
         {"child_window":{"title":"设备控制 ", "control_type":"ToolBar"}},
-        {"child_window":{"title":"启动监视", "control_type":"Button"}}
+        {"child_window":{"title":"启动监视 ", "control_type":"Button"}}
+      ]},
+      {"auto_type" : "control_click", "window" : "实时采集 ", "click_type":"set_focus", "kwargs": [
+        {"child_window":{"title":"sidePanel2", "auto_id":"sidePanel2", "control_type":"Pane"}},
+        {"child_window":{"title":"数据采集 ", "auto_id":"dPanelDataCollection", "control_type":"Pane"}}
       ]},
       {"auto_type" : "connect_child_window", "title" : "单次进样 ", "window" : "实时采集 ", "kwargs": [
         {"child_window":{"title":"sidePanel2", "auto_id":"sidePanel2", "control_type":"Pane"}},
@@ -344,7 +347,7 @@
         {"child_window":{"title":"splitContainerControl3", "auto_id":"splitContainerControl3", "control_type":"Pane"}},
         {"child_window":{"auto_id":"xtbMethods", "control_type":"Tab"}},
         {"child_window":{"title":"单次进样 ", "auto_id":"tpSingleInject", "control_type":"Pane"}}
-        ]},
+      ]},
       {"auto_type" : "control_click", "window" : "实时采集 ", "kwargs": [
         {"child_window":{"title":"sidePanel2", "auto_id":"sidePanel2", "control_type":"Pane"}},
         {"child_window":{"title":"数据采集 ", "auto_id":"dPanelDataCollection", "control_type":"Pane"}},
@@ -395,6 +398,20 @@
       {"auto_type" : "control_click", "window" : "实时采集 ", "kwargs": [
         {"child_window":{"title":"信息", "control_type":"Window"}},
         {"child_window":{"title":"确定(&O)", "control_type":"Button"}}
+      ]},
+      {"auto_type" : "wait", "window" : "实时采集 ", "ready":"text", "condition":"完成","kwargs": [
+        {"child_window":{"title":"sidePanel2", "auto_id":"sidePanel2", "control_type":"Pane"}},
+        {"child_window":{"title":"数据采集 ", "auto_id":"dPanelDataCollection", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"dockPanelDataCollection_Container", "control_type":"Pane"}},
+        {"child_window":{"title":"splitCCMain", "auto_id":"splitCCMain", "control_type":"Pane"}},
+        {"child_window":{"title":"splitContainerControl3", "auto_id":"splitContainerControl3", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"xtbMethods", "control_type":"Tab"}},
+        {"child_window":{"title":"正在运行进样 ", "auto_id":"tpRunningSeq", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"_ucRunningSeq", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"gcRunningSeq", "control_type":"Table"}},
+        {"child_window":{"title":"数据面板", "control_type":"Custom"}},
+        {"child_window":{"title":"行 1", "control_type":"Custom"}},
+        {"child_window":{"title":"运行状态 row0", "control_type":"DataItem"}}
       ]},
       {"auto_type" : "tree_click", "title":"tlData", "window" : "实时采集 ", "click_type":"right_click", "is_select":"True",
         "up" : [
@@ -476,6 +493,10 @@
       {"auto_type" : "control_click", "window" : "数据处理", "kwargs": [
         {"child_window":{"title":"快速打印-选择报告方法", "auto_id":"QuickPrintSelectMethodForm", "control_type":"Window"}},
         {"child_window":{"title":"确定", "auto_id":"btnOK", "control_type":"Button"}}
+      ]},
+      {"auto_type" : "control_click", "window" : "数据处理", "kwargs": [
+        {"child_window":{"auto_id":"PDFPreview", "control_type":"Window"}},
+        {"child_window":{"title":"关闭", "control_type":"Button"}}
       ]},
       {"auto_type" : "table_click", "window" : "数据处理","click_type" : "right_click", "title" : "gcCompletedInjects",
         "table_kwargs": [
