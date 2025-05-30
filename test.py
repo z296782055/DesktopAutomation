@@ -1,110 +1,92 @@
-import datetime
-import json
-import os
-import tempfile
-import time
+import wx
+import wx.lib.agw.aui as aui # 导入 AUI 模块
 
-from pr_properties import pr_properties
-from pywinauto.application import Application
-from pywinauto import Desktop
-from pywinauto.controls.uia_controls import TreeViewWrapper
+# 定义每个页面的内容面板 (与上面相同)
+class PagePanel(wx.Panel):
+    def __init__(self, parent, page_name, bg_color):
+        super().__init__(parent)
+        self.SetBackgroundColour(bg_color)
 
-from util import utils
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        text = wx.StaticText(self, label=f"这是 {page_name} 的内容。")
+        text.SetFont(wx.Font(14, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD))
+        sizer.Add(text, 0, wx.ALL | wx.CENTER, 50)
 
-config_url = r'./data/config.properties'
+        if page_name == "动态页":
+            self.count = 0
+            self.dynamic_text = wx.StaticText(self, label=f"点击次数: {self.count}")
+            btn = wx.Button(self, label="增加计数")
+            sizer.Add(self.dynamic_text, 0, wx.ALL | wx.CENTER, 5)
+            sizer.Add(btn, 0, wx.ALL | wx.CENTER, 10)
+            btn.Bind(wx.EVT_BUTTON, self.on_increase_count)
+
+        self.SetSizer(sizer)
+
+    def on_increase_count(self, event):
+        self.count += 1
+        self.dynamic_text.SetLabel(f"点击次数: {self.count}")
 
 
-# print(json.loads(json.dumps(kwargs).format(1)))
+class MyFrame(wx.Frame):
+    def __init__(self, parent, title):
+        super().__init__(parent, title=title, size=(700, 500))
 
-# desktop = Desktop(backend="uia")  # 或者使用"win32"作为后端，取决于你的需求
-# windows = desktop.windows()
-# for window in windows:
-#     print(window.window_text())
+        # AuiManager 是管理 AUI 控件布局的核心，对于 AuiNotebook 并非强制，但推荐使用
+        self._mgr = aui.AuiManager()
+        self._mgr.SetManagedWindow(self)
 
+        # 创建 AuiNotebook 实例
+        # 可以在这里设置样式，例如 aui.AUI_NB_TOP, aui.AUI_NB_TAB_SPLIT, aui.AUI_NB_CLOSE_BUTTON
+        self.notebook = aui.AuiNotebook(self, style=aui.AUI_NB_TOP | aui.AUI_NB_TAB_SPLIT | aui.AUI_NB_CLOSE_BUTTON)
 
-app = Application("uia").connect(title="实时采集 ")
-window = app.window(title="实时采集 ")
+        # 创建并添加页面
+        page1 = PagePanel(self.notebook, "主页", wx.Colour(255, 220, 220))
+        self.notebook.AddPage(page1, "主页", True) # True 表示默认选中
 
+        page2 = PagePanel(self.notebook, "设置", wx.Colour(220, 255, 220))
+        self.notebook.AddPage(page2, "设置")
 
-main_window = window.child_window(**{"title":"sidePanel2", "auto_id":"sidePanel2", "control_type":"Pane"})
-main_window = main_window.child_window(**{"title":"数据采集 ", "auto_id":"dPanelDataCollection", "control_type":"Pane"})
-main_window = main_window.child_window(**{"auto_id":"dockPanelDataCollection_Container", "control_type":"Pane"})
-main_window = main_window.child_window(**{"title":"splitCCMain", "auto_id":"splitCCMain", "control_type":"Pane"})
-main_window = main_window.child_window(**{"title":"splitContainerControl3", "auto_id":"splitContainerControl3", "control_type":"Pane"})
-main_window = main_window.child_window(**{"auto_id":"xtbMethods", "control_type":"Tab"})
-main_window = main_window.child_window(**{"title":"单次进样 ", "control_type":"TabItem"})
-main_window = main_window.wrapper_object()
-main_window.set_focus()
-# main_window.click_input()
-# nodes = main_window.descendants(**{"control_type":"TreeItem"})
-# for node in nodes:
-#     if node.legacy_properties()["Value"] == "新建文件夹":
-#         node.select()
-#         node.click_input()
+        page3 = PagePanel(self.notebook, "动态页", wx.Colour(220, 220, 255))
+        self.notebook.AddPage(page3, "动态页")
 
-# for child in main_window.children() :
-#     print(child.select())
-# main_window.get_item(r"\新建项目新建项目新建项目新建项目新建项目新建项目新建项目新建项目").select()
+        # 将 AuiNotebook 添加到 AuiManager
+        self._mgr.AddPane(self.notebook, aui.AuiPaneInfo().CenterPane())
+        self._mgr.Update() # 更新布局
 
-# (**{"Value" : "新建文件夹"})
-# main_window = window.child_window(**{"title":"DropDown", "control_type":"Menu"})
-# main_window = main_window.child_window(**{"title":"添加行 ", "control_type":"MenuItem"})
-# main_window.click_input()
-#
-# main_window = window.child_window(**{"title":"DropDown", "control_type":"Menu"})
-# main_window = main_window.child_window(**{"title":"添加行 ", "control_type":"MenuItem"})
-# main_window = main_window.child_window(**{"title":"1行 ", "control_type":"MenuItem"})
-#
-# main_window = main_window.child_window(**{"title":"sidePanel2", "auto_id":"sidePanel2", "control_type":"Pane"})
-# main_window = main_window.child_window(**{"auto_id":"_Container","control_type":"Pane"})
-# main_window = main_window.child_window(**{"auto_id":"_ucInsMethodEditor", "control_type":"Pane"})
-# main_window = main_window.child_window(**{"title":"xtraScrollableControl1", "auto_id":"xtraScrollableControl1", "control_type":"Pane"})
-# main_window = main_window.child_window(**{"title":"panelControlMain", "auto_id":"panelControlMain", "control_type":"Pane"})
-# main_window = main_window.child_window(**{"auto_id":"InstrumentEditor", "control_type":"Window"})
-# main_window = main_window.child_window(**{"title":"xtraTabPage1", "auto_id":"xtraTabPage1", "control_type":"Pane"})
-# main_window = main_window.child_window(**{"auto_id":"NavBar", "control_type":"Pane"})
-# main_window = main_window.child_window(**{"auto_id":"panelControl", "control_type":"Pane"})
-# main_window = main_window.child_window(**{"auto_id":"CT3100IMEUI", "control_type":"Pane"})
-# main_window = main_window.child_window(**{"auto_id":"tabMain", "control_type":"Tab"})
-# main_window = main_window.child_window(**{"title":"常规 ", "auto_id":"tpGeneral", "control_type":"Pane"})
-# main_window = main_window.child_window(**{"auto_id":"dvEvent", "control_type":"Pane"})
-# main_window = main_window.child_window(**{"auto_id":"gcEvent", "control_type":"Table"})
-# main_window1 = main_window.child_window(**{"title":"数据面板", "control_type":"Custom"})
-# main_window1 = main_window1.child_window(**{"title":"行 1", "control_type":"Custom"})
-# main_window1 = main_window1.child_window(**{"title":"事件类型 row0", "control_type":"DataItem"})
-# main_window1.click_input()
-# time.sleep(1)
-# main_window1.click_input()
-# main_window2 = main_window.child_window(**{"title":"编辑控件", "control_type":"Edit"})
-# main_window2 = main_window2.wrapper_object()
-# main_window2.set_text("停止控温")
-# main_window2.select("停止控温")
+        self.Centre()
+        self.Show()
 
-# main_window = app.window(title="实时采集 ")
-# main_window = main_window.child_window(**{"title":"sidePanel2", "auto_id":"sidePanel2", "control_type":"Pane"})
-# main_window = main_window.child_window(**{"title":"仪器方法-新仪器方法?", "control_type":"Pane"})
-# main_window = main_window.child_window(**{"auto_id":"_Container", "control_type":"Pane"})
-# main_window = main_window.child_window(**{"auto_id":"_ucInsMethodEditor", "control_type":"Pane"})
-# main_window = main_window.child_window(**{"title":"xtraScrollableControl1", "auto_id":"xtraScrollableControl1", "control_type":"Pane"})
-# main_window.click_input()
-# target_control = main_window.child_window(**{'auto_id':'btRealTimeAnalysis'})
-# target_control.right_click()
-# target_control.wait("visible", timeout=5)
-# target_control.wait("enabled", timeout=5)
+        # 绑定 AuiNotebook 页面切换事件
+        self.notebook.Bind(aui.EVT_AUINOTEBOOK_PAGE_CHANGED, self.on_aui_page_changed)
+        self.notebook.Bind(aui.EVT_AUINOTEBOOK_PAGE_CLOSE, self.on_aui_page_close)
 
-# control_type = target_control.element_info.control_type
-# print("控件类型",control_type)
-# target_control.click_input()
-# if control_type == "Button":
-#     print("控件是按钮，正在点击...")
-#     target_control.click()
-#     print("按钮点击完成。")
-# elif control_type == "Edit":
-#     text_to_type = "your_input_text" # 替换为你要输入的文本
-#     print(f"控件是编辑框，正在输入文本: '{text_to_type}'...")
-#     target_control.type_keys(text_to_type, with_spaces=True) # with_spaces=True 保留空格
-#     print("文本输入完成。")
-# elif control_type == "CheckBox":
-#     print("控件是复选框，正在切换状态...")
-#     target_control.toggle() # 切换复选框状态
-#     print("复选框状态切换完成。")
+        # 确保在关闭 Frame 时释放 AuiManager 资源
+        self.Bind(wx.EVT_CLOSE, self.on_close)
+
+    def on_aui_page_changed(self, event):
+        old_sel = event.GetOldSelection()
+        new_sel = event.GetSelection()
+        page_text = self.notebook.GetPageText(new_sel)
+        print(f"AuiNotebook 页面已切换：从索引 {old_sel} 到索引 {new_sel} ({page_text})")
+        event.Skip()
+
+    def on_aui_page_close(self, event):
+        page_index = event.GetSelection()
+        page_text = self.notebook.GetPageText(page_index)
+        print(f"AuiNotebook 页面 '{page_text}' (索引 {page_index}) 正在关闭。")
+        # 如果你想阻止页面关闭，可以调用 event.Veto()
+        # if page_text == "设置":
+        #     wx.MessageBox("设置页不能关闭！", "警告", wx.OK | wx.ICON_WARNING)
+        #     event.Veto()
+        event.Skip()
+
+    def on_close(self, event):
+        # 释放 AuiManager 资源，重要！
+        self._mgr.Uninit()
+        self.Destroy()
+        event.Skip()
+
+if __name__ == '__main__':
+    app = wx.App()
+    frame = MyFrame(None, "AuiNotebook 分页示例")
+    app.MainLoop()

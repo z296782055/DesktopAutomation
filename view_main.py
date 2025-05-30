@@ -9,6 +9,9 @@ from util.validator_util import NumberValidator
 from view.config_dialog import ConfigDialog
 import keyboard
 
+from view.info_dialog import InfoDialog
+
+
 class MyFrame(wx.Frame):
     def __init__(self):
         super().__init__(parent=None, title=utils.get_config("software"), size=wx.Size(500, 300), style=wx.DEFAULT_FRAME_STYLE & ~wx.RESIZE_BORDER)
@@ -19,7 +22,7 @@ class MyFrame(wx.Frame):
         self.Bind(wx.EVT_CONTEXT_MENU, self.show_context_menu)  # 绑定右键事件:ml-citation{ref="4" data="citationList"}
 
         # 创建菜单栏
-        menubar = wx.MenuBar()
+        self.menubar = wx.MenuBar()
         menu_menu = wx.Menu()
 
         new_item = menu_menu.Append(wx.ID_NEW, "新建(&N)\tCtrl+N")
@@ -30,14 +33,18 @@ class MyFrame(wx.Frame):
 
         menu_menu.AppendSeparator()  # 添加分隔线:ml-citation{ref="2" data="citationList"}
         exit_item = menu_menu.Append(wx.ID_EXIT, "退出(&Q)\tCtrl+Q")
+        self.menubar.Append(menu_menu, "&菜单")
 
-        menubar.Append(menu_menu, "&菜单")
-        self.SetMenuBar(menubar)
+        view_menu = wx.Menu()
+        info_item = view_menu.Append(wx.ID_ANY, "详细信息(&I)\tCtrl+I")
+        self.menubar.Append(view_menu, "&查看")
+        self.SetMenuBar(self.menubar)
 
         self.Bind(wx.EVT_MENU, self.on_new, new_item)
         self.Bind(wx.EVT_MENU, self.on_config, config_item)
         self.Bind(wx.EVT_MENU, self.on_log, log_itm)
         self.Bind(wx.EVT_MENU, self.on_exit, exit_item)
+        self.Bind(wx.EVT_MENU, self.on_info, info_item)
 
         box = wx.BoxSizer(wx.VERTICAL)
         top_panel = wx.Panel(self, size=wx.Size(-1, 40), style=wx.BORDER_SUNKEN)
@@ -92,7 +99,13 @@ class MyFrame(wx.Frame):
         top_sizer_3.AddStretchSpacer(1)  # 这将添加一个伸展的空间器，使得按钮在底部中间
         top_panel_3.SetSizer(top_sizer_3)
 
-        self.form_init(center_panel)
+        form_panel = wx.Panel(center_panel, size=wx.Size(-1, -1))
+        center_right_panel = wx.Panel(center_panel, size=wx.Size(0, -1))
+        center_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        center_sizer.Add(form_panel, 1, wx.ALIGN_CENTER_VERTICAL)
+        center_sizer.Add(center_right_panel, 0, wx.ALIGN_CENTER_VERTICAL)
+        center_panel.SetSizer(center_sizer)
+        self.form_init(form_panel)
 
         bottom_sizer = wx.BoxSizer(wx.HORIZONTAL)
         on_btn_panel = wx.Panel(bottom_panel)
@@ -132,6 +145,7 @@ class MyFrame(wx.Frame):
             self.on_go_back_btn.Enable(False)
             self.on_go_forward_btn.Enable(False)
             self.on_restart_btn.Enable(False)
+            self.menubar.EnableTop(0, False)
         else:
             self.on_btn.Bind(wx.EVT_BUTTON, self.on_on)
             self.on_btn.SetLabel("开始(&F11)")
@@ -139,6 +153,7 @@ class MyFrame(wx.Frame):
             self.on_go_forward_btn.Enable(True)
             self.on_restart_btn.Enable(True)
             self.on_btn.Enable(True)
+            self.menubar.EnableTop(0, True)
         self.step_text.Label = next(iter(utils.get_step(utils.get_config("software"), utils.get_config("step"), default="")))
         self.SetTitle(utils.get_config("software"))
 
@@ -274,6 +289,12 @@ class MyFrame(wx.Frame):
                 self.refresh()
         else:
             self.init()
+
+    def on_info(self, event):
+        dlg = InfoDialog(self)
+        dlg.ShowModal()  # 显示模态对话框
+        dlg.Destroy()  # 关闭后销毁对话框
+
     def disable(self):
         self.on_btn.Enable(False)
         self.on_go_back_btn.Enable(False)

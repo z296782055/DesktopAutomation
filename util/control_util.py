@@ -75,6 +75,12 @@ def get_detail(automation):
             detail += "等待:"
             kwarg = next(iter(automation.get("kwargs")[-1].values()))
             detail += ("\"" + (kwarg.get("title") if kwarg.get("title") else kwarg.get("auto_id")) + "\"")
+        case "window_close":
+            detail += "关闭窗口:"
+            detail += "\"" + automation.get("title") + "\""
+            if (len(automation.get("kwargs"))) != 0:
+                kwarg = next(iter(automation.get("kwargs")[-1].values()))
+                detail += ("\"" + (kwarg.get("title") if kwarg.get("title") else kwarg.get("auto_id")) + "\"")
     return detail
 
 def do_automation(step, automation, sleep_time=default_sleep_time, before_sleep_time=0):
@@ -102,6 +108,8 @@ def do_automation(step, automation, sleep_time=default_sleep_time, before_sleep_
                         sleep_time=sleep_time, before_sleep_time=before_sleep_time)
     elif auto_type == "wait":
         wait(window=automation.get("window"), kwargs=automation.get("kwargs"), step=step, ready=automation.get("ready"), index=automation.get("index"), condition=automation.get("condition"), sleep_time=sleep_time, before_sleep_time=before_sleep_time)
+    elif auto_type == "window_close":
+        window_close(title=automation.get("title"), kwargs=automation.get("kwargs"), step=step, index=automation.get("index"), before_sleep_time=before_sleep_time)
 
 def connect_window(title, backend = default_backend, sleep_time=default_sleep_time, before_sleep_time=0):
     if before_sleep_time != 0:
@@ -114,7 +122,7 @@ def connect_window(title, backend = default_backend, sleep_time=default_sleep_ti
             window = app.window(title=title)
             window.wait('ready',timeout=60)
             utils.window_dict[title] = window
-        except pywinauto.findwindows.ElementNotFoundError:
+        except (pywinauto.findwindows.ElementNotFoundError,pywinauto.timings.TimeoutError):
             logger.log("找不到窗口:\ntitle:" + title)
             time.sleep(sleep_time)
             continue
@@ -219,7 +227,7 @@ def list_select(window, kwargs, step, click_type=None, select_window_title = Non
                 connect_child_window(window = window, kwargs=select_window_kwargs, title=select_window_title, step=step, sleep_time=sleep_time)
                 target_select_window = utils.window_dict.get(select_window_title)
 
-            item = utils.get_data(utils.get_config("software")).get(step, "").get(target_list.element_info.automation_id if target_list.element_info.automation_id else target_list.element_info.name)
+            item = utils.get_data(step).get(target_list.element_info.automation_id if target_list.element_info.automation_id else target_list.element_info.name)
             try:
                 if click_type == "double_click":
                     target_list.click_input()
@@ -270,7 +278,7 @@ def edit_write(window, kwargs, step, ready=None, sleep_time=default_sleep_time, 
                     target_edit = target_edit.wrapper_object()
                 else:
                     target_edit = target_edit.wait(ready, timeout=60)
-            text = utils.get_data(utils.get_config("software")).get(step,"").get(target_edit.element_info.automation_id if target_edit.element_info.automation_id else target_edit.element_info.name)
+            text = utils.get_data(step).get(target_edit.element_info.automation_id if target_edit.element_info.automation_id else target_edit.element_info.name)
             if isinstance(text, int):
                 text = utils.refer_dictionary(step=step, key=text)
             target_edit.type_keys("^a")
@@ -310,7 +318,7 @@ def check(window, kwargs, step, ready=None, sleep_time=default_sleep_time, befor
                     target_check_box = target_check_box.wrapper_object()
                 else:
                     target_check_box = target_check_box.wait(ready, timeout=60)
-            check_status = utils.get_data(utils.get_config("software")).get(step,"").get(target_check_box.element_info.automation_id if target_check_box.element_info.automation_id else target_check_box.element_info.name)
+            check_status = utils.get_data(step).get(target_check_box.element_info.automation_id if target_check_box.element_info.automation_id else target_check_box.element_info.name)
             try:
                 if check_status == "True":
                     target_check_box.check()
@@ -459,6 +467,7 @@ def table_click(window, table_kwargs, kwargs, replace, step, title, click_type=N
             continue
             # table_click(window=window, table_kwargs=table_kwargs, step=step, title=title, replace=replace, kwargs=kwargs, click_type=click_type, sleep_time=default_sleep_time)
         loop = False
+
 def wait(window, kwargs, step, ready, condition, index=None, sleep_time=default_sleep_time, before_sleep_time=0):
     if before_sleep_time != 0:
         time.sleep(before_sleep_time)
@@ -491,4 +500,28 @@ def wait(window, kwargs, step, ready, condition, index=None, sleep_time=default_
             time.sleep(sleep_time)
             continue
             # wait(window=window, kwargs=kwargs, ready=ready, text=text, step=step, index=index, sleep_time=sleep_time)
+        loop = False
+
+def window_close(title, kwargs, step, index=None, before_sleep_time=0):
+    if before_sleep_time != 0:
+        time.sleep(before_sleep_time)
+    loop = True
+    while loop:
+        utils.pause()
+        if index is None:
+            index = 0
+        try:
+            app = Application(default_backend).connect(title=title)
+            target_window = app.window(title=title)
+            target_window.wait('ready', timeout=60)
+            for kw in kwargs:
+                for key, value in kw.items():
+                    target_window = getattr(target_window, key)(**value)
+                    if isinstance(target_window, list):
+                        if not isinstance(index, int):
+                            index = int(index)
+                        target_window = target_window[index]
+            target_window.close()
+        except (pywinauto.findwindows.ElementNotFoundError,TimeoutError) as e:
+            pass
         loop = False

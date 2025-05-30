@@ -8,7 +8,7 @@ from util import utils
 class MessageLogger:
     def __init__(self):
         self.logger = logging.getLogger()
-        self.logger.setLevel(logging.DEBUG)
+        self.logger.setLevel(logging.INFO)
         # 设置TimedRotatingFileHandler处理器，将日志按照日期切分
         handler = TimedRotatingFileHandler('./log/'+utils.get_config("default_log_file_name"), encoding='utf-8', when='D', interval=1, backupCount=7)
         handler.suffix = "%Y-%m-%d.log"
@@ -19,7 +19,7 @@ class MessageLogger:
         self.logger.addHandler(handler)
     def log(self, message):
         print(message)
-        self.logger.debug(message)
+        self.logger.info(message)
 
 logger = MessageLogger()
 

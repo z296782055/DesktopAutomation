@@ -17,26 +17,37 @@ log_dir_url = r'./log/'
 step_url = r'./step/step.json'
 dictionary_url = r'./data/dictionary.json'
 temporary_url = r'./data/temporary.json'
+info_url = r'./data/info.json'
 event = threading.Event()
 config_lock = threading.Lock()
 data_lock = threading.Lock()
 dictionary_lock = threading.Lock()
 temporary_lock = threading.Lock()
-
+info_lock = threading.Lock()
 window_dict = dict()
 
 def generate_random_string(length=36):
     random_string = str(uuid.uuid4())[:length]
     return random_string
 
-def get_data(key, default=None):
+def get_data(key=None, default=None):
     with open(data_url, 'r', encoding='utf-8') as f:
-        return json.load(f).get(key, "")
+        if key is None:
+            return json.load(f).get(get_config("software"))
+        else:
+            return json.load(f).get(get_config("software")).get(key, "")
 
 def set_data(key, value):
     with data_lock:
-        with open(data_url, 'w', encoding='utf-8') as f:
-            json.load(f).set(key, value)
+        with open(data_url, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        with open(dictionary_url, 'w', encoding='utf-8') as f:
+            with tempfile.NamedTemporaryFile(mode='w', delete=False, encoding='utf-8',
+                                             dir=os.path.dirname(data_url)) as temp_f:
+                data.get(get_config("software")).update({key: value})
+                json.dump(data, temp_f, indent=4, ensure_ascii=False)
+                temp_file_path = temp_f.name
+        os.replace(temp_file_path, data_url)
 
 def get_config(key, default=None):
     config = pr_properties.read(config_url)
@@ -82,6 +93,13 @@ def set_temporary(step, key, value):
                 json.dump(temporary_data, temp_f, indent=4, ensure_ascii=False)
                 temp_file_path = temp_f.name
         os.replace(temp_file_path, temporary_url)
+
+def get_info(key=None, default=None):
+    with open(info_url, 'r', encoding='utf-8') as f:
+        if key is None:
+            return json.load(f).get(get_config("software"))
+        else:
+            return json.load(f).get(get_config("software")).get(key, "")
 
 def refer_dictionary(step, key):
     dictionary = get_dictionary(str(key))

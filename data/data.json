@@ -5,10 +5,10 @@
       "listBoxItemB": "新建色谱系统10"
     },
     "方法概要": {
-      "txtRunTime": "2"
+      "txtRunTime": "5"
     },
     "泵": {
-      "txtFlowVelocity": "0.1",
+      "txtFlowVelocity": "1",
       "txtMaxLimit": "40",
       "txtMinLimit": "0",
       "A": "10",
@@ -21,8 +21,8 @@
       "txtSolventD": "水",
       "txtSolventCompressibility": "0",
       "gcGradient": "2",
-      "时间(min) row0": "0", "线性类型 row0": "后阶梯", "流速(mL/min) row0": "2", "%A row0": "10", "%B row0": "0", "%C row0": "0",
-      "时间(min) row1": "2", "线性类型 row1": "前阶梯", "流速(mL/min) row1": "3", "%A row1": "20", "%B row1": "0", "%C row1": "0"
+      "时间(min) row0": "0", "线性类型 row0": "后阶梯", "流速(mL/min) row0": "1", "%A row0": "10", "%B row0": "0", "%C row0": "0",
+      "时间(min) row1": "2", "线性类型 row1": "前阶梯", "流速(mL/min) row1": "1 ", "%A row1": "20", "%B row1": "0", "%C row1": "0"
     },
     "柱温箱": {
       "txtWaitTime": "30",
