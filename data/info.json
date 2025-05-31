@@ -1,54 +1,52 @@
 {
   "SmartLab CDS": {
     "选择项目及色谱系统": {
-      "listBoxItemA" : "项目列表",
-      "listBoxItemB": "色谱系统列表"
+      "listBoxItemA" : {"info":"项目列表"},
+      "listBoxItemB": {"info":"色谱系统列表"}
     },
     "方法概要": {
-      "txtRunTime": "运行时间"
+      "txtRunTime": {"info":"运行时间"}
     },
     "泵": {
-      "txtFlowVelocity": "流速",
-      "txtMaxLimit": "最大压力",
-      "txtMinLimit": "最小压力",
-      "A": "阀A比例",
-      "B": "阀B比例",
-      "C": "阀C比例",
-      "D": "阀D比例",
-      "txtSolventA": "A阀溶液",
-      "txtSolventB": "B阀溶液",
-      "txtSolventC": "C阀溶液",
-      "txtSolventD": "D阀溶液",
-      "txtSolventCompressibility": "溶剂压缩系数"
+      "txtFlowVelocity": {"info":"流速"},
+      "txtMaxLimit": {"info":"最大压力"},
+      "txtMinLimit": {"info":"最小压力"},
+      "txtSolventCompressibility": {"info":"溶剂压缩系数"},
+      "A": {"team":"阀A\\\\B\\\\C\\\\D比例"},
+      "B": {"team":"阀A\\\\B\\\\C\\\\D比例"},
+      "C": {"team":"阀A\\\\B\\\\C\\\\D比例"},
+      "D": {"team":"阀A\\\\B\\\\C\\\\D比例"},
+      "txtSolventA": {"info":"A阀溶液"},
+      "txtSolventB": {"info":"B阀溶液"},
+      "txtSolventC": {"info":"C阀溶液"},
+      "txtSolventD": {"info":"D阀溶液"}
+
     },
     "柱温箱": {
-      "txtWaitTime": "稳定时间",
-      "txtTemperatureAccuracy": "控温精度",
-      "txtAimTemperatureSet": "目标温度"
+      "txtWaitTime": {"info":"稳定时间"},
+      "txtTemperatureAccuracy": {"info":"控温精度"},
+      "txtAimTemperatureSet": {"info":"目标温度"}
     },
     "检测器": {
-      "txtLambda1": "波长1",
-      "txtLambda2": "波长2",
-      "rbLightType": "灯选择",
-      "rblAnalysisType": "程序类型",
-      "chkRefSmpChannel": "诊断通道"
+      "txtLambda1": {"info":"波长1"},
+      "txtLambda2": {"info":"波长2"},
+      "rbLightType": {"info":"灯选择"},
+      "rblAnalysisType": {"info":"程序类型"},
+      "chkRefSmpChannel": {"info":"诊断通道"}
     },
     "保存": {
-      "txtAuditTrace": "添加或更新理由",
-      "txtBoxSelected": "方法名称"
+      "txtAuditTrace": {"info":"添加或更新理由"}
     },
     "数据采集": {
-      "sampleNameBtnEdit": "样品名称",
-      "spinEditInjectVolume": "进样体积",
-      "cbxSampleType": "样品类型",
-      "tbxSampleVia": "样品位置",
-      "cbxMethod": "仪器方法",
-      "cbxInjectFunction": "仪器方法",
-      "tlData": "采集数据"
+      "sampleNameBtnEdit": {"info":"样品名称"},
+      "spinEditInjectVolume": {"info":"进样体积"},
+      "cbxSampleType": {"info":"样品类型"},
+      "tbxSampleVia": {"info":"样品位置"},
+      "cbxInjectFunction": {"info":"仪器方法"}
     },
     "数据处理": {
-      "lupReportMethod": "选择报告方法",
-      "1001": "文件名(N)"
+      "lupReportMethod": {"info":"选择报告方法"},
+      "1001": {"info":"文件名(N)"}
     }
   }
 }

@@ -3,6 +3,8 @@ from wx.lib.agw import aui
 from util import utils
 from view.config_dialog import ConfigDialog
 
+col_num = 8
+
 # 定义每个页面的内容面板
 class PagePanel(wx.Panel):
     def __init__(self, parent, step, data):
@@ -16,26 +18,35 @@ class PagePanel(wx.Panel):
 
         form_sizer = wx.GridBagSizer(vgap=5, hgap=0)
 
-        keys_to_delete = []
-        for key, value in data.items():  # 这里的 .items() 仍然是原始字典的视图，但我们只是收集要删除的键
-            if isinstance(value, int):
-                keys_to_delete.append(key)
-        for key in keys_to_delete:  # 在迭代完后，再执行删除操作
-            del data[key]
-
-        for i,(key,value) in enumerate(data.items()):
-            info = utils.get_info(step, {}).get(key)
-            if info is not None:
+        info_dict = utils.get_info(step, {})
+        data_now = dict()
+        for key, value in data.items():
+            if not isinstance(value, int):
+                data_now.update({key : value})
+        team = None
+        for i,(key,value) in enumerate(info_dict.items()):
+            data = data_now.get(key)
+            if value.get("info") is not None:
                 if " " not in key:
-                    exec('self.static_text_'+key+ ' = wx.StaticText(parent=form_panel, label="' + (info if info is not None else key) + '：")')
-                    exec('ConfigDialog.draw_static_text(self.static_text_'+key+')')
-                    exec('form_sizer.Add(window=self.static_text_'+key+', flag=wx.ALIGN_CENTER | wx.ALL, pos=('+str((2*i)//6)+', '+str((2*i)%6)+'), border=5)')
+                    exec(r'self.static_text_'+key+ ' = wx.StaticText(parent=form_panel, label="' + (value.get("info") if value.get("info") is not None else key) + '：")')
+                    exec(r'ConfigDialog.draw_static_text(self.static_text_'+key+')')
+                    exec(r'form_sizer.Add(window=self.static_text_'+key+', flag=wx.ALIGN_CENTER | wx.ALL, pos=('+str((2*i)//col_num)+', '+str((2*i)%col_num)+'), border=5)')
 
-                    exec('self.text_ctrl_'+key+' = wx.TextCtrl(form_panel, size=wx.Size(140, -1), name="'+key+'", value="'+value+'")')
-                    exec('ConfigDialog.draw_text_ctrl(self.text_ctrl_'+key+')')
-                    exec('form_sizer.Add(window=self.text_ctrl_'+key+', flag=wx.ALIGN_CENTER | wx.ALL, pos=('+str((2*i)//6)+', '+str((((2*i)%6)+1))+'), border=5)')
+                    exec(r'self.text_ctrl_'+key+' = wx.TextCtrl(form_panel, size=wx.Size(140, -1), name="'+key+'", value="'+data+'")')
+                    exec(r'ConfigDialog.draw_text_ctrl(self.text_ctrl_'+key+')')
+                    exec(r'form_sizer.Add(window=self.text_ctrl_'+key+', flag=wx.ALIGN_CENTER | wx.ALL, pos=('+str((2*i)//col_num)+', '+str((((2*i)%col_num)+1))+'), border=5)')
                 else :
                     pass
+            elif value.get("team") is not None:
+                if value.get("team") != team:
+                    exec(r'self.static_text_' + key + ' = wx.StaticText(parent=form_panel, label="' + (value.get("team") if value.get("team") is not None else key) + '：")')
+                    exec(r'ConfigDialog.draw_static_text(self.static_text_' + key + ')')
+                    exec(r'form_sizer.Add(window=self.static_text_' + key + ', flag=wx.ALIGN_CENTER | wx.ALL, pos=(' + str((2 * i) // col_num) + ', ' + str((2 * i) % col_num) + '), border=5)')
+                    team = value.get("team")
+                exec(r'self.text_ctrl_' + key + ' = wx.TextCtrl(form_panel, size=wx.Size(140, -1), name="' + key + '", value="' + data + '")')
+                exec(r'ConfigDialog.draw_text_ctrl(self.text_ctrl_' + key + ')')
+                exec(r'form_sizer.Add(window=self.text_ctrl_' + key + ', flag=wx.ALIGN_CENTER | wx.ALL, pos=(' + str(
+                    (2 * i) // col_num) + ', ' + str((((2 * i) % col_num) + 1)) + '), border=5)')
 
 
         form_panel.SetSizer(form_sizer)
