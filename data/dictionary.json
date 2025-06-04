@@ -31,6 +31,14 @@
                 }
             ]
         },
+        "10004": {
+            "type": "nowtime",
+            "text": [
+                {
+                    "dictionary": "default_file_name"
+                }
+            ]
+        },
         "检测器": "UV3230_(UV3230)",
         "柱温箱": "CT3230_(CT3230)",
         "泵": "P3230Q_(P3230Q)",

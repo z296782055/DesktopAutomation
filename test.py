@@ -1,92 +1,123 @@
 import wx
-import wx.lib.agw.aui as aui # 导入 AUI 模块
+import os
 
-# 定义每个页面的内容面板 (与上面相同)
-class PagePanel(wx.Panel):
-    def __init__(self, parent, page_name, bg_color):
-        super().__init__(parent)
-        self.SetBackgroundColour(bg_color)
+class MyDirDialog(wx.Dialog):
+    def __init__(self, parent):
+        super().__init__(parent, title="选择目录", size=(400, 200),
+                         style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
 
-        sizer = wx.BoxSizer(wx.VERTICAL)
-        text = wx.StaticText(self, label=f"这是 {page_name} 的内容。")
-        text.SetFont(wx.Font(14, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD))
-        sizer.Add(text, 0, wx.ALL | wx.CENTER, 50)
+        panel = wx.Panel(self) # <-- 这个 panel 是 main_sizer 的关联窗口
+        main_sizer = wx.BoxSizer(wx.VERTICAL)
 
-        if page_name == "动态页":
-            self.count = 0
-            self.dynamic_text = wx.StaticText(self, label=f"点击次数: {self.count}")
-            btn = wx.Button(self, label="增加计数")
-            sizer.Add(self.dynamic_text, 0, wx.ALL | wx.CENTER, 5)
-            sizer.Add(btn, 0, wx.ALL | wx.CENTER, 10)
-            btn.Bind(wx.EVT_BUTTON, self.on_increase_count)
+        self.path_label = wx.StaticText(panel, label="当前未选择任何目录。")
+        main_sizer.Add(self.path_label, 0, wx.ALL | wx.EXPAND, 10)
 
-        self.SetSizer(sizer)
+        select_button = wx.Button(panel, label="选择目录...")
+        select_button.Bind(wx.EVT_BUTTON, self.on_select_directory)
+        main_sizer.Add(select_button, 0, wx.ALL | wx.ALIGN_CENTER_HORIZONTAL, 10)
 
-    def on_increase_count(self, event):
-        self.count += 1
-        self.dynamic_text.SetLabel(f"点击次数: {self.count}")
+        # --- 核心修改在这里 ---
+        # 1. 创建一个标准的对话框按钮 Sizer
+        btn_sizer = wx.StdDialogButtonSizer()
 
+        # 2. 手动创建 OK 和 Cancel 按钮，并指定它们的父窗口为 'panel'
+        ok_button = wx.Button(panel, wx.ID_OK, "确定") # 父窗口是 panel
+        cancel_button = wx.Button(panel, wx.ID_CANCEL, "取消") # 父窗口是 panel
 
+        # 3. 将这些按钮添加到 btn_sizer
+        btn_sizer.AddButton(ok_button)
+        btn_sizer.AddButton(cancel_button)
+
+        # 4. 调用 Realize() 来布局按钮
+        btn_sizer.Realize()
+        # --- 核心修改结束 ---
+
+        # 绑定按钮事件 (注意：这里绑定的是按钮的 ID，而不是按钮对象本身)
+        self.Bind(wx.EVT_BUTTON, self.on_ok, id=wx.ID_OK)
+        self.Bind(wx.EVT_BUTTON, self.on_cancel, id=wx.ID_CANCEL)
+
+        main_sizer.Add(btn_sizer, 0, wx.ALL | wx.EXPAND, 10)
+
+        panel.SetSizer(main_sizer) # <-- main_sizer 与 panel 关联
+        main_sizer.Fit(self)
+        self.Centre()
+
+        self.selected_path = ""
+
+    # def on_select_directory(self, event):
+    #     """
+    #     点击“选择目录”按钮时触发。
+    #     打开 wx.DirDialog 让用户选择目录。
+    #     """
+    #     with wx.DirDialog(self, "请选择一个目录",
+    #                       defaultPath=self.selected_path if self.selected_path else os.getcwd(),
+    #                       style=wx.DD_DEFAULT_STYLE | wx.DD_DIR_MUST_EXIST) as dir_dialog:
+    #
+    #         if dir_dialog.ShowModal() == wx.ID_OK:
+    #             self.selected_path = dir_dialog.GetPath()
+    #             self.path_label.SetLabel(f"已选择目录: {self.selected_path}")
+    #         else:
+    #             print("用户取消了目录选择。")
+
+    def on_select_directory(self, event):
+        dlg = wx.DirDialog(self, "选择一个文件夹", style=wx.DD_DEFAULT_STYLE)
+        if dlg.ShowModal() == wx.ID_OK:
+            folder_path = dlg.GetPath()
+        print("选择的文件夹是:", folder_path)
+        dlg.Destroy()
+
+    def on_ok(self, event):
+        """
+        点击 OK 按钮时触发。
+        设置对话框的返回值并关闭对话框。
+        """
+        self.EndModal(wx.ID_OK)
+
+    def on_cancel(self, event):
+        """
+        点击 Cancel 按钮时触发。
+        设置对话框的返回值并关闭对话框。
+        """
+        self.EndModal(wx.ID_CANCEL)
+
+# --- 主应用程序框架 (保持不变) ---
 class MyFrame(wx.Frame):
     def __init__(self, parent, title):
-        super().__init__(parent, title=title, size=(700, 500))
+        super().__init__(parent, title=title, size=(300, 150))
 
-        # AuiManager 是管理 AUI 控件布局的核心，对于 AuiNotebook 并非强制，但推荐使用
-        self._mgr = aui.AuiManager()
-        self._mgr.SetManagedWindow(self)
+        panel = wx.Panel(self)
+        sizer = wx.BoxSizer(wx.VERTICAL)
 
-        # 创建 AuiNotebook 实例
-        # 可以在这里设置样式，例如 aui.AUI_NB_TOP, aui.AUI_NB_TAB_SPLIT, aui.AUI_NB_CLOSE_BUTTON
-        self.notebook = aui.AuiNotebook(self, style=aui.AUI_NB_TOP | aui.AUI_NB_TAB_SPLIT | aui.AUI_NB_CLOSE_BUTTON)
+        open_dialog_button = wx.Button(panel, label="打开目录选择对话框")
+        open_dialog_button.Bind(wx.EVT_BUTTON, self.on_open_dialog)
+        sizer.Add(open_dialog_button, 0, wx.ALL | wx.CENTER, 20)
 
-        # 创建并添加页面
-        page1 = PagePanel(self.notebook, "主页", wx.Colour(255, 220, 220))
-        self.notebook.AddPage(page1, "主页", True) # True 表示默认选中
+        self.selected_dir_text = wx.StaticText(panel, label="未从对话框获取目录。")
+        sizer.Add(self.selected_dir_text, 0, wx.ALL | wx.EXPAND, 10)
 
-        page2 = PagePanel(self.notebook, "设置", wx.Colour(220, 255, 220))
-        self.notebook.AddPage(page2, "设置")
-
-        page3 = PagePanel(self.notebook, "动态页", wx.Colour(220, 220, 255))
-        self.notebook.AddPage(page3, "动态页")
-
-        # 将 AuiNotebook 添加到 AuiManager
-        self._mgr.AddPane(self.notebook, aui.AuiPaneInfo().CenterPane())
-        self._mgr.Update() # 更新布局
-
+        panel.SetSizer(sizer)
+        self.Layout()
         self.Centre()
         self.Show()
 
-        # 绑定 AuiNotebook 页面切换事件
-        self.notebook.Bind(aui.EVT_AUINOTEBOOK_PAGE_CHANGED, self.on_aui_page_changed)
-        self.notebook.Bind(aui.EVT_AUINOTEBOOK_PAGE_CLOSE, self.on_aui_page_close)
+    def on_open_dialog(self, event):
+        with MyDirDialog(self) as dialog:
+            result = dialog.ShowModal()
 
-        # 确保在关闭 Frame 时释放 AuiManager 资源
-        self.Bind(wx.EVT_CLOSE, self.on_close)
+            if result == wx.ID_OK:
+                selected_path = dialog.selected_path
+                if selected_path:
+                    self.selected_dir_text.SetLabel(f"从对话框获取的目录: {selected_path}")
+                    print(f"用户选择了目录: {selected_path}")
+                else:
+                    self.selected_dir_text.SetLabel("对话框返回OK，但未选择目录。")
+                    print("对话框返回OK，但未选择目录。")
+            else:
+                self.selected_dir_text.SetLabel("对话框被取消。")
+                print("对话框被取消。")
 
-    def on_aui_page_changed(self, event):
-        old_sel = event.GetOldSelection()
-        new_sel = event.GetSelection()
-        page_text = self.notebook.GetPageText(new_sel)
-        print(f"AuiNotebook 页面已切换：从索引 {old_sel} 到索引 {new_sel} ({page_text})")
-        event.Skip()
-
-    def on_aui_page_close(self, event):
-        page_index = event.GetSelection()
-        page_text = self.notebook.GetPageText(page_index)
-        print(f"AuiNotebook 页面 '{page_text}' (索引 {page_index}) 正在关闭。")
-        # 如果你想阻止页面关闭，可以调用 event.Veto()
-        # if page_text == "设置":
-        #     wx.MessageBox("设置页不能关闭！", "警告", wx.OK | wx.ICON_WARNING)
-        #     event.Veto()
-        event.Skip()
-
-    def on_close(self, event):
-        # 释放 AuiManager 资源，重要！
-        self._mgr.Uninit()
-        self.Destroy()
-        event.Skip()
-
+# --- 运行应用程序 (保持不变) ---
 if __name__ == '__main__':
-    app = wx.App()
-    frame = MyFrame(None, "AuiNotebook 分页示例")
+    app = wx.App(False)
+    frame = MyFrame(None, "主窗口")
     app.MainLoop()

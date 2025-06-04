@@ -1,8 +1,7 @@
 {
   "SmartLab CDS": [
-    {"方法概要":[
-      {"auto_type" : "window_close", "title" : "实时采集 ", "kwargs": []},
-      {"auto_type" : "window_close", "title" : "数据处理", "kwargs": []}
+    {"AI请求":[
+      {"auto_type" : "ai_post"}
     ]}
   ]
 }

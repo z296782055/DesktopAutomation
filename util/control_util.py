@@ -1,9 +1,11 @@
 import copy
 import json
+import os
 import time
 import _ctypes
 import pyperclip
 import pywinauto
+import requests
 from pywinauto import Application
 from pywinauto.controls.uiawrapper import UIAWrapper
 from util import utils
@@ -81,6 +83,8 @@ def get_detail(automation):
             if (len(automation.get("kwargs"))) != 0:
                 kwarg = next(iter(automation.get("kwargs")[-1].values()))
                 detail += ("\"" + (kwarg.get("title") if kwarg.get("title") else kwarg.get("auto_id")) + "\"")
+        case "ai_post":
+            detail += "请求AI"
     return detail
 
 def do_automation(step, automation, sleep_time=default_sleep_time, before_sleep_time=0):
@@ -110,6 +114,8 @@ def do_automation(step, automation, sleep_time=default_sleep_time, before_sleep_
         wait(window=automation.get("window"), kwargs=automation.get("kwargs"), step=step, ready=automation.get("ready"), index=automation.get("index"), condition=automation.get("condition"), sleep_time=sleep_time, before_sleep_time=before_sleep_time)
     elif auto_type == "window_close":
         window_close(title=automation.get("title"), kwargs=automation.get("kwargs"), step=step, index=automation.get("index"), before_sleep_time=before_sleep_time)
+    elif auto_type == "ai_post":
+        ai_post(step=step, sleep_time=sleep_time, before_sleep_time=before_sleep_time)
 
 def connect_window(title, backend = default_backend, sleep_time=default_sleep_time, before_sleep_time=0):
     if before_sleep_time != 0:
@@ -524,4 +530,49 @@ def window_close(title, kwargs, step, index=None, before_sleep_time=0):
             target_window.close()
         except (pywinauto.findwindows.ElementNotFoundError,TimeoutError) as e:
             pass
+        loop = False
+
+def ai_post(step, sleep_time=default_sleep_time, before_sleep_time=0):
+    if before_sleep_time != 0:
+        time.sleep(before_sleep_time)
+    loop = True
+    while loop:
+        utils.pause()
+        try:
+            headers = {
+                "Content-Type": "application/json",  # 或者 "application/x-www-form-urlencoded"
+                "Authorization": f"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsInNjb3BlcyI6WyJhZG1pbiJdLCJleHAiOjE3NDkwNTU4MDB9.Jh3lvB2zvYg9bMto2n9dqUll1DlHn6aOq93YNmFgNIQ"  # 注意 'Bearer ' 后面的空格
+            }
+            if int(utils.get_config("index")) == 0:
+                data_payload = {
+                    "software": utils.get_config("software"),
+                    "index": int(utils.get_config("index"))
+                }
+                response = requests.post(url=utils.get_config("ai_url"), headers=headers, data=data_payload)
+            else:
+                img_url = utils.get_dictionary("image_save_path")+"\\"+utils.get_temporary("数据处理", "1001")+"\\.pdf"
+                with open(img_url, "rb") as img_file:  # 注意这里是 "rb" (read binary) 模式
+                    files_payload = {
+                        'img': (os.path.basename(img_url), img_file, 'image/png')
+                    }
+                with open("ai/"+utils.get_config("software")+"/text/index.txt", "rb") as text_file:
+                    data_payload = {
+                        "software":utils.get_config("software"),
+                        "index": utils.get_config("index"),
+                        "text": text_file.read()
+                    }
+                response = requests.post(url=utils.get_config("ai_url"), headers=headers, data=data_payload, files=files_payload)
+            # 检查响应
+            if response.status_code == 200:
+                print("\nRequest successful!")
+                print("Response JSON:")
+                print(json.dumps(response.json(), indent=4))
+            else:
+                print(f"\nRequest failed with status code: {response.status_code}")
+                print("Response text:")
+                print(response.text)
+        except Exception as e:
+            logger.log({e})
+            time.sleep(sleep_time)
+            continue
         loop = False

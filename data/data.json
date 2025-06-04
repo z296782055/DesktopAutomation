@@ -1,61 +1,77 @@
 {
-  "SmartLab CDS": {
-    "选择项目及色谱系统": {
-      "listBoxItemA" : "新建项目新建项目新建项目新建项目新建项目新建项目新建项目新建项目",
-      "listBoxItemB": "新建色谱系统10"
-    },
-    "方法概要": {
-      "txtRunTime": "5"
-    },
-    "泵": {
-      "txtFlowVelocity": "1",
-      "txtMaxLimit": "40",
-      "txtMinLimit": "0",
-      "A": "10",
-      "B": "20",
-      "C": "30",
-      "D": "10",
-      "txtSolventA": "混合溶液",
-      "txtSolventB": "乙烷",
-      "txtSolventC": "甲醇",
-      "txtSolventD": "水",
-      "txtSolventCompressibility": "0",
-      "gcGradient": "2",
-      "时间(min) row0": "0", "线性类型 row0": "后阶梯", "流速(mL/min) row0": "1", "%A row0": "10", "%B row0": "0", "%C row0": "0",
-      "时间(min) row1": "2", "线性类型 row1": "前阶梯", "流速(mL/min) row1": "1 ", "%A row1": "20", "%B row1": "0", "%C row1": "0"
-    },
-    "柱温箱": {
-      "txtWaitTime": "30",
-      "txtTemperatureAccuracy": "0.1",
-      "txtAimTemperatureSet": "5",
-      "gcEvent": "3",
-      "时间(min) row0": "1", "事件类型 row0": "停止控温", "事件值 row0": "30",
-      "时间(min) row1": "4", "事件类型 row1": "停止控温", "事件值 row1": "20",
-      "时间(min) row2": "5", "事件类型 row2": "停止控温", "事件值 row2": "75"
-    },
-    "检测器": {
-      "txtLambda1": "400",
-      "txtLambda2": "700",
-      "rbLightType": "氘灯",
-      "rblAnalysisType": "双波长Vis",
-      "chkRefSmpChannel": "False"
-    },
-    "保存": {
-      "txtAuditTrace": "没有理由",
-      "txtBoxSelected": 10001
-    },
-    "数据采集": {
-      "sampleNameBtnEdit": "未知样",
-      "spinEditInjectVolume": "10",
-      "cbxSampleType": "标准样",
-      "tbxSampleVia": "A1",
-      "cbxMethod": 10003,
-      "cbxInjectFunction": "进样",
-      "tlData": 10002
-    },
-    "数据处理": {
-      "lupReportMethod": "默认报告方法模板",
-      "1001": "自定义名称"
+    "SmartLab CDS": {
+        "选择项目及色谱系统": {
+            "listBoxItemA": "新建项目新建项目新建项目新建项目新建项目新建项目新建项目新建项目",
+            "listBoxItemB": "新建色谱系统10"
+        },
+        "方法概要": {
+            "txtRunTime": "5"
+        },
+        "泵": {
+            "txtFlowVelocity": "1",
+            "txtMaxLimit": "40",
+            "txtMinLimit": "0",
+            "A": "10",
+            "B": "20",
+            "C": "30",
+            "D": "10",
+            "txtSolventA": "混合溶液",
+            "txtSolventB": "乙烷",
+            "txtSolventC": "甲醇",
+            "txtSolventD": "水",
+            "txtSolventCompressibility": "0",
+            "gcGradient": "2",
+            "时间(min) row0": "0",
+            "线性类型 row0": "后阶梯",
+            "流速(mL/min) row0": "1",
+            "%A row0": "10",
+            "%B row0": "0",
+            "%C row0": "0",
+            "时间(min) row1": "2",
+            "线性类型 row1": "前阶梯",
+            "流速(mL/min) row1": "1 ",
+            "%A row1": "20",
+            "%B row1": "0",
+            "%C row1": "0"
+        },
+        "柱温箱": {
+            "txtWaitTime": "30",
+            "txtTemperatureAccuracy": "0.1",
+            "txtAimTemperatureSet": "5",
+            "gcEvent": "3",
+            "时间(min) row0": "1",
+            "事件类型 row0": "停止控温",
+            "事件值 row0": "30",
+            "时间(min) row1": "4",
+            "事件类型 row1": "停止控温",
+            "事件值 row1": "20",
+            "时间(min) row2": "5",
+            "事件类型 row2": "停止控温",
+            "事件值 row2": "75"
+        },
+        "检测器": {
+            "txtLambda1": "400",
+            "txtLambda2": "700",
+            "rbLightType": "氘灯",
+            "rblAnalysisType": "双波长Vis",
+            "chkRefSmpChannel": "False"
+        },
+        "保存": {
+            "txtAuditTrace": "没有理由",
+            "txtBoxSelected": 10001
+        },
+        "数据采集": {
+            "sampleNameBtnEdit": "未知样",
+            "spinEditInjectVolume": "10",
+            "cbxSampleType": "标准样",
+            "tbxSampleVia": "A1",
+            "cbxMethod": 10003,
+            "cbxInjectFunction": "进样",
+            "tlData": 10002
+        },
+        "数据处理": {
+            "lupReportMethod": "默认报告方法模板",
+            "1001": 1001
+        }
     }
-  }
 }

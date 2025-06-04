@@ -1,10 +1,7 @@
 import threading
 import time
-from time import sleep
-
 import wx
-import main
-from util import utils, control_util
+from util import utils
 from util.validator_util import NumberValidator
 from view.config_dialog import ConfigDialog
 import keyboard
@@ -238,6 +235,7 @@ class MyFrame(wx.Frame):
 
     def on_on(self, event):
         with self.lock:
+            from util import control_util
             utils.set_config("event_status", 1)
             utils.event.set()
             if utils.thread_is_alive("auto_thread"):

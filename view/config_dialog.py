@@ -1,3 +1,5 @@
+import threading
+
 import wx
 from util import utils
 from util.validator_util import NumberValidator, OsPathValidator
@@ -51,11 +53,6 @@ class ConfigDialog(wx.Dialog):
         ConfigDialog.draw_text_ctrl(self.检测器_text_ctrl)
         form_sizer.Add(window=self.检测器_text_ctrl, flag=wx.ALIGN_CENTER | wx.ALL, pos=(2, 1), border=5)
 
-        # self.泵_unit_static_text = wx.StaticText(parent=form_panel, label="  秒")
-        # ConfigDialog.draw_static_text(self.泵_unit_static_text)
-        # form_sizer.Add(window=self.泵_unit_static_text, flag=wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL,
-        #                pos=wx.GBPosition(0, 2), border=5)
-
         self.default_file_name_static_text=wx.StaticText(form_panel, label="文件默认名称格式：")
         ConfigDialog.draw_static_text(self.default_file_name_static_text)
         form_sizer.Add(window=self.default_file_name_static_text, flag=wx.ALIGN_CENTER | wx.ALL,
@@ -103,8 +100,8 @@ class ConfigDialog(wx.Dialog):
         btn_sizer.Add(cancel_btn_panel, 0, wx.ALIGN_CENTER | wx.BOTTOM, 10)  # 添加按钮到主Sizer，并使其居中，留出底部空间
         btn_sizer.AddStretchSpacer(1)  # 这将添加一个伸展的空间器，使得按钮在底部中间
         btn_panel.SetSizer(btn_sizer)
-
         self.reverse_display_form()
+        self.Centre()
 
     def on_submit(self, event):
         # 获取文本框中的值
@@ -129,7 +126,7 @@ class ConfigDialog(wx.Dialog):
         self.Close()
 
     def image_save_path_btn_click(self, event):
-        dlg = wx.DirDialog(self, "选择一个文件夹", style=wx.DD_DEFAULT_STYLE)
+        dlg = wx.DirDialog(self, message="选择一个文件夹", style=wx.DD_DEFAULT_STYLE, defaultPath=self.image_save_path_text_ctrl.GetValue())
         if dlg.ShowModal() == wx.ID_OK:
             folder_path = dlg.GetPath()
         print("选择的文件夹是:", folder_path)

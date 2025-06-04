@@ -1,4 +1,5 @@
 import wx
+from wx import Colour
 from wx.lib.agw import aui
 from util import utils
 from view.config_dialog import ConfigDialog
@@ -9,13 +10,12 @@ col_num = 8
 class PagePanel(wx.Panel):
     def __init__(self, parent, step, data):
         super().__init__(parent)
-
-        sizer = wx.BoxSizer(wx.HORIZONTAL)
-        form_left_panel = wx.Panel(self, size=wx.Size(4, -1))
+        self.step = step
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        bottom_panel = wx.Panel(self, size=wx.Size(-1, 50))
         form_panel = wx.Panel(self, size=wx.Size(-1, -1))
-        sizer.Add(form_left_panel, 0, wx.EXPAND)
         sizer.Add(form_panel, 1, wx.EXPAND)
-
+        sizer.Add(bottom_panel, 0, wx.EXPAND)
         form_sizer = wx.GridBagSizer(vgap=5, hgap=0)
 
         info_dict = utils.get_info(step, {})
@@ -48,9 +48,36 @@ class PagePanel(wx.Panel):
                 exec(r'form_sizer.Add(window=self.text_ctrl_' + key + ', flag=wx.ALIGN_CENTER | wx.ALL, pos=(' + str(
                     (2 * i) // col_num) + ', ' + str((((2 * i) % col_num) + 1)) + '), border=5)')
 
+        bottom_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        on_btn_panel = wx.Panel(bottom_panel)
+        if step == "选择项目及色谱系统":
+            # 创建确定按钮控件
+            self.submit_btn = wx.Button(on_btn_panel, label="保存")
+            self.submit_btn.Bind(wx.EVT_BUTTON, self.on_submit)
+            on_btn_sizer = wx.BoxSizer(wx.HORIZONTAL)
+            on_btn_sizer.Add(self.submit_btn, 0, wx.ALIGN_CENTER_VERTICAL)
+            on_btn_panel.SetSizer(on_btn_sizer)
+            bottom_sizer.AddStretchSpacer(1)  # 这将添加一个伸展的空间器，使得按钮在底部中间
+            bottom_sizer.Add(on_btn_panel, 0, wx.ALIGN_CENTER_VERTICAL)  # 添加按钮到主Sizer，并使其居中，留出底部空间
+            bottom_sizer.AddStretchSpacer(1)
+
+            bottom_panel.SetSizer(bottom_sizer)
 
         form_panel.SetSizer(form_sizer)
         self.SetSizer(sizer)
+        self.Centre()
+
+    def on_submit(self, event):
+        data_dict = dict()
+        info_dict = utils.get_info(self.step, {})
+        for i, (key, value) in enumerate(info_dict.items()):
+            if value.get("info") is not None:
+                if " " not in key:
+                    exec('data_dict.update({key:self.text_ctrl_'+key+'.GetValue()})')
+        utils.set_data(self.step, data_dict)
+        dlg = wx.MessageDialog(self, "保存成功！", "提示", wx.OK | wx.ICON_INFORMATION)
+        dlg.ShowModal()  # 显示对话框
+        dlg.Destroy()  # 销毁对话框，释放资源
 
 class InfoDialog(wx.Dialog):
     def __init__(self, parent):

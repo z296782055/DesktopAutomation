@@ -5,7 +5,6 @@ import tempfile
 import threading
 import uuid
 import json
-
 from pr_properties import pr_properties
 import wx
 from pathlib import Path
@@ -14,7 +13,7 @@ from util.exception_util import ThreadException
 data_url = r'./data/data.json'
 config_url = r'./data/config.properties'
 log_dir_url = r'./log/'
-step_url = r'./step/step.json'
+step_url = r'./step/steptest.json'
 dictionary_url = r'./data/dictionary.json'
 temporary_url = r'./data/temporary.json'
 info_url = r'./data/info.json'
@@ -41,7 +40,7 @@ def set_data(key, value):
     with data_lock:
         with open(data_url, 'r', encoding='utf-8') as f:
             data = json.load(f)
-        with open(dictionary_url, 'w', encoding='utf-8') as f:
+        with open(data_url, 'w', encoding='utf-8') as f:
             with tempfile.NamedTemporaryFile(mode='w', delete=False, encoding='utf-8',
                                              dir=os.path.dirname(data_url)) as temp_f:
                 data.get(get_config("software")).update({key: value})
