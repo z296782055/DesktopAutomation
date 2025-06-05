@@ -5,15 +5,19 @@ import tempfile
 import threading
 import uuid
 import json
+
+import requests
 from pr_properties import pr_properties
 import wx
 from pathlib import Path
+
+from util import keyring_util
 from util.exception_util import ThreadException
 
 data_url = r'./data/data.json'
 config_url = r'./data/config.properties'
 log_dir_url = r'./log/'
-step_url = r'./step/steptest.json'
+step_url = r'./step/step.json'
 dictionary_url = r'./data/dictionary.json'
 temporary_url = r'./data/temporary.json'
 info_url = r'./data/info.json'
@@ -163,6 +167,18 @@ def get_step_all(key):
         step_list = list(json.load(f).get(key, []))
         return step_list
 
+def set_index(index_num = 0, index = 0):
+    with config_lock:
+        config = pr_properties.read(config_url)
+        if len(config.properties) == 0:
+            os.replace(config_url + ".pr_bak", config_url)
+            config = pr_properties.read(config_url)
+        if index != 0:
+            config["index"] = index + index_num
+        else :
+            config["index"] = int(config["index"]) + index_num
+        config.write()
+
 # def set_step_name(key, value):
 #     with data_lock:
 #         with open(step_url, 'w', encoding='utf-8') as f:
@@ -211,3 +227,30 @@ def pause():
         event.wait()
     if get_config("thread_status", 1) != "1":
         raise ThreadException("线程关闭...")
+
+def login_verify():
+    try:
+        if get_config("username") == "":
+            return False
+        token = keyring_util.load_token_from_keyring(get_config("username"))
+        if not token:
+            return False
+        headers = {
+            "Authorization": f"Bearer {token}"
+        }
+        response = requests.post(url=get_config("server_url")+"/user/verify", headers=headers)
+
+        print("Status Code:", response.status_code)
+        print("Response JSON:", json.dumps(response.json(), indent=2, ensure_ascii=False))
+
+        # 检查响应状态码
+        response.raise_for_status()
+
+        print("Status Code:", response.status_code)
+        print("Response JSON:", json.dumps(response.json(), indent=2, ensure_ascii=False))
+
+        if response.status_code != 200:
+            return False
+    except Exception:
+        return False
+    return True

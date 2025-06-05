@@ -1,12 +1,14 @@
 import threading
 import time
 import wx
-from util import utils
+from util import utils, keyring_util
 from util.validator_util import NumberValidator
 from view.config_dialog import ConfigDialog
 import keyboard
 
 from view.info_dialog import InfoDialog
+from view.login_dialog import LoginDialog
+from view.logon_dialog import LogonDialog
 
 
 class MyFrame(wx.Frame):
@@ -32,9 +34,14 @@ class MyFrame(wx.Frame):
         exit_item = menu_menu.Append(wx.ID_EXIT, "退出(&Q)\tCtrl+Q")
         self.menubar.Append(menu_menu, "&菜单")
 
+        operate_menu = wx.Menu()
+        restart_item = operate_menu.Append(wx.ID_ANY, "初始化(&R)\tCtrl+R")
+        self.menubar.Append(operate_menu, "&操作")
+
         view_menu = wx.Menu()
         info_item = view_menu.Append(wx.ID_ANY, "详细信息(&I)\tCtrl+I")
         self.menubar.Append(view_menu, "&查看")
+
         self.SetMenuBar(self.menubar)
 
         self.Bind(wx.EVT_MENU, self.on_new, new_item)
@@ -42,6 +49,8 @@ class MyFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.on_log, log_itm)
         self.Bind(wx.EVT_MENU, self.on_exit, exit_item)
         self.Bind(wx.EVT_MENU, self.on_info, info_item)
+        self.Bind(wx.EVT_MENU, self.on_restart, restart_item)
+
 
         box = wx.BoxSizer(wx.VERTICAL)
         top_panel = wx.Panel(self, size=wx.Size(-1, 40), style=wx.BORDER_SUNKEN)
@@ -87,12 +96,15 @@ class MyFrame(wx.Frame):
         top_panel.SetSizer(top_sizer)
 
         # 创建重新开始按钮控件
-        self.on_restart_btn = wx.BitmapButton(parent=top_panel_3, style=wx.BORDER_SUNKEN, bitmap=wx.ArtProvider.GetBitmap(wx.ART_REDO))
-        self.on_restart_btn.SetToolTip("初始化")
-        self.on_restart_btn.Bind(wx.EVT_BUTTON, self.on_restart)
+        image = wx.Bitmap("img/icon/login.png", wx.BITMAP_TYPE_ANY).ConvertToImage()
+        scaled_image = image.Rescale(20, 20, wx.IMAGE_QUALITY_HIGH)
+        scaled_bitmap = scaled_image.ConvertToBitmap()
+        self.on_login_btn = wx.BitmapButton(parent=top_panel_3, style=wx.BORDER_NONE, bitmap=scaled_image)
+        self.on_login_btn.SetToolTip("登录")
+
         top_sizer_3 = wx.BoxSizer(wx.HORIZONTAL)
         top_sizer_3.AddStretchSpacer(1)  # 这将添加一个伸展的空间器，使得按钮在底部中间
-        top_sizer_3.Add(self.on_restart_btn, 0, wx.ALIGN_CENTER_VERTICAL, 0)  # 添加按钮到主Sizer，并使其居中，留出底部空间
+        top_sizer_3.Add(self.on_login_btn, 0, wx.ALIGN_CENTER_VERTICAL, 0)  # 添加按钮到主Sizer，并使其居中，留出底部空间
         top_sizer_3.AddStretchSpacer(1)  # 这将添加一个伸展的空间器，使得按钮在底部中间
         top_panel_3.SetSizer(top_sizer_3)
 
@@ -133,6 +145,7 @@ class MyFrame(wx.Frame):
         self.Show()
         self.Layout()  # 调用Layout来应用sizer布局
         self.init()
+        self.login_verify()
 
     def init(self):
         auto_thread = utils.thread_is_alive("auto_thread")
@@ -141,16 +154,34 @@ class MyFrame(wx.Frame):
             self.on_btn.SetLabel("停止(&F12)")
             self.on_go_back_btn.Enable(False)
             self.on_go_forward_btn.Enable(False)
-            self.on_restart_btn.Enable(False)
+            self.on_login_btn.Enable(False)
             self.menubar.EnableTop(0, False)
+            self.menubar.EnableTop(1, False)
         else:
             self.on_btn.Bind(wx.EVT_BUTTON, self.on_on)
             self.on_btn.SetLabel("开始(&F11)")
             self.on_go_back_btn.Enable(True)
             self.on_go_forward_btn.Enable(True)
-            self.on_restart_btn.Enable(True)
+            self.on_login_btn.Enable(True)
             self.on_btn.Enable(True)
             self.menubar.EnableTop(0, True)
+            self.menubar.EnableTop(1, True)
+        if utils.get_config("username", "") == "":
+            image = wx.Bitmap("img/icon/login.png", wx.BITMAP_TYPE_ANY).ConvertToImage()
+            scaled_image = image.Rescale(20, 20, wx.IMAGE_QUALITY_HIGH)
+            scaled_bitmap = scaled_image.ConvertToBitmap()
+            self.on_login_btn.SetBitmapLabel(scaled_bitmap)  # 设置新的位图
+            self.on_login_btn.Bind(wx.EVT_BUTTON, self.on_login)
+            self.on_login_btn.SetToolTip("登录")
+            self.on_login_btn.Refresh()
+        else:
+            image = wx.Bitmap("img/icon/logon.png", wx.BITMAP_TYPE_ANY).ConvertToImage()
+            scaled_image = image.Rescale(24, 24, wx.IMAGE_QUALITY_HIGH)
+            scaled_bitmap = scaled_image.ConvertToBitmap()
+            self.on_login_btn.SetBitmapLabel(scaled_bitmap)  # 设置新的位图
+            self.on_login_btn.Bind(wx.EVT_BUTTON, self.on_logon)
+            self.on_login_btn.SetToolTip(utils.get_config("username", ""))
+            self.on_login_btn.Refresh()
         self.step_text.Label = next(iter(utils.get_step(utils.get_config("software"), utils.get_config("step"), default="")))
         self.SetTitle(utils.get_config("software"))
 
@@ -234,11 +265,17 @@ class MyFrame(wx.Frame):
         event.Skip()
 
     def on_on(self, event):
+        if not self.login_verify():
+            dlg = wx.MessageDialog(self, "登录信息失效，请重新登录", "提示", wx.OK | wx.ICON_INFORMATION)
+            dlg.ShowModal()  # 显示对话框
+            dlg.Destroy()  # 销毁对话框，释放资源
+            self.on_login(self)
+            return
         with self.lock:
             from util import control_util
             utils.set_config("event_status", 1)
             utils.event.set()
-            if utils.thread_is_alive("auto_thread"):
+            if utils.thread_is_alive("auto_thread" ):
                 pass
             else:
                 thread = threading.Thread(target=getattr(control_util, "start"),args=(self,),name="auto_thread")
@@ -262,6 +299,7 @@ class MyFrame(wx.Frame):
     def on_restart(self, event):
         result = wx.MessageBox("初始化后将重新开始，您确定吗？", "确认", wx.YES_NO | wx.ICON_QUESTION)
         if result == wx.YES:
+            utils.set_config("index", 0)
             utils.set_config("thread_status", 0)
             utils.set_config("step", 1)
             utils.set_config("event_status", 1)
@@ -293,11 +331,30 @@ class MyFrame(wx.Frame):
         dlg.ShowModal()  # 显示模态对话框
         dlg.Destroy()  # 关闭后销毁对话框
 
+    def on_login(self, event):
+        dlg = LoginDialog(self)
+        dlg.ShowModal()  # 显示模态对话框
+        dlg.Destroy()  # 关闭后销毁对话框
+
+    def on_logon(self, event):
+        dlg = LogonDialog(self)
+        dlg.ShowModal()  # 显示模态对话框
+        dlg.Destroy()  # 关闭后销毁对话框
+
+    def login_verify(self):
+        if not utils.login_verify():
+            keyring_util.delete_token_from_keyring(utils.get_config("username"))
+            utils.set_config("username", "")
+            utils.set_config("password", "")
+            self.init()
+            return False
+        return True
+
     def disable(self):
         self.on_btn.Enable(False)
         self.on_go_back_btn.Enable(False)
         self.on_go_forward_btn.Enable(False)
-        self.on_restart_btn.Enable(False)
+        self.on_login_btn.Enable(False)
 
     def reverse_display_form(self):
         pass

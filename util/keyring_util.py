@@ -1,7 +1,5 @@
 import keyring
-import wx
-
-SERVICE_ID = "YourWxPythonAppService" # 你的应用的服务ID
+SERVICE_ID = "DesktopAutomation" # 你的应用的服务ID
 
 def save_token_to_keyring(username, token):
     try:

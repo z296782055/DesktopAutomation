@@ -26,6 +26,8 @@ class PagePanel(wx.Panel):
         team = None
         for i,(key,value) in enumerate(info_dict.items()):
             data = data_now.get(key)
+            if not data:
+                print(123)
             if value.get("info") is not None:
                 if " " not in key:
                     exec(r'self.static_text_'+key+ ' = wx.StaticText(parent=form_panel, label="' + (value.get("info") if value.get("info") is not None else key) + '：")')

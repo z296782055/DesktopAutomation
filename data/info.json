@@ -20,7 +20,6 @@
       "txtSolventB": {"info":"B阀溶液"},
       "txtSolventC": {"info":"C阀溶液"},
       "txtSolventD": {"info":"D阀溶液"}
-
     },
     "柱温箱": {
       "txtWaitTime": {"info":"稳定时间"},
@@ -45,8 +44,7 @@
       "cbxInjectFunction": {"info":"仪器方法"}
     },
     "数据处理": {
-      "lupReportMethod": {"info":"选择报告方法"},
-      "1001": {"info":"文件名(N)"}
+      "lupReportMethod": {"info":"选择报告方法"}
     }
   }
 }

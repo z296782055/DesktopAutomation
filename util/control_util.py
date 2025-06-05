@@ -8,7 +8,9 @@ import pywinauto
 import requests
 from pywinauto import Application
 from pywinauto.controls.uiawrapper import UIAWrapper
-from util import utils
+import wx
+
+from util import utils, keyring_util
 from util.logger_util import logger
 from pywinauto.timings import TimeoutError
 
@@ -29,6 +31,7 @@ def start(self):
     utils.set_config("step", 1)
     utils.set_config("event_status", 0)
     utils.set_config("thread_status", 0)
+    utils.set_index(1)
     self.refresh()
 
 def get_detail(automation):
@@ -353,7 +356,7 @@ def table_fill(window, step, table_kwargs, table_head_kwargs, table_body_kwargs,
         utils.pause()
         connect_child_window(window=window, kwargs=table_kwargs, title=title, step=step, sleep_time=default_sleep_time)
         try:
-            list_len = int(utils.get_data(utils.get_config("software")).get(step, "").get(title))
+            list_len = int(utils.get_data(step).get(title))
             for clear_item in clear:
                 do_automation(step, clear_item, sleep_time=sleep_time, before_sleep_time=before_sleep_time)
             for i in range(list_len):
@@ -395,7 +398,7 @@ def tree_click(window, kwargs, step, title, up, down, click_type=None, is_select
                 flag = True
                 for target_node in target_nodes:
                     if target_node.is_selected():
-                        text = utils.get_data(utils.get_config("software")).get(step, "").get(
+                        text = utils.get_data(step).get(
                             target_tree.element_info.automation_id if target_tree.element_info.automation_id else target_tree.element_info.name)
                         if isinstance(text, int):
                             utils.set_temporary(step=step, key=text, value=target_node.legacy_properties()["Value"])
@@ -405,7 +408,7 @@ def tree_click(window, kwargs, step, title, up, down, click_type=None, is_select
                         except AttributeError:
                             getattr(target_node, click_type + "_input")()
             else:
-                text = utils.get_data(utils.get_config("software")).get(step, "").get(
+                text = utils.get_data(step).get(
                     target_tree.element_info.automation_id if target_tree.element_info.automation_id else target_tree.element_info.name)
                 if isinstance(text, int):
                     text = utils.refer_dictionary(step=step, key=text)
@@ -539,21 +542,23 @@ def ai_post(step, sleep_time=default_sleep_time, before_sleep_time=0):
     while loop:
         utils.pause()
         try:
-            headers = {
-                "Content-Type": "application/json",  # 或者 "application/x-www-form-urlencoded"
-                "Authorization": f"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsInNjb3BlcyI6WyJhZG1pbiJdLCJleHAiOjE3NDkwNTU4MDB9.Jh3lvB2zvYg9bMto2n9dqUll1DlHn6aOq93YNmFgNIQ"  # 注意 'Bearer ' 后面的空格
-            }
             if int(utils.get_config("index")) == 0:
+                headers = {
+                    "Authorization": f"Bearer " + keyring_util.load_token_from_keyring(utils.get_config("username"))
+                }
                 data_payload = {
                     "software": utils.get_config("software"),
                     "index": int(utils.get_config("index"))
                 }
-                response = requests.post(url=utils.get_config("ai_url"), headers=headers, data=data_payload)
+                response = requests.post(url=utils.get_config("server_url")+"/ai_post/", headers=headers, data=data_payload)
             else:
-                img_url = utils.get_dictionary("image_save_path")+"\\"+utils.get_temporary("数据处理", "1001")+"\\.pdf"
+                headers = {
+                    "Authorization": f"Bearer " + keyring_util.load_token_from_keyring(utils.get_config("username"))
+                }
+                img_url = utils.get_dictionary("image_save_path")+"\\"+utils.get_temporary("数据处理", "1001")+".png"
                 with open(img_url, "rb") as img_file:  # 注意这里是 "rb" (read binary) 模式
                     files_payload = {
-                        'img': (os.path.basename(img_url), img_file, 'image/png')
+                        'img': (os.path.basename(img_url), img_file.read(), 'image/png')
                     }
                 with open("ai/"+utils.get_config("software")+"/text/index.txt", "rb") as text_file:
                     data_payload = {
@@ -561,18 +566,50 @@ def ai_post(step, sleep_time=default_sleep_time, before_sleep_time=0):
                         "index": utils.get_config("index"),
                         "text": text_file.read()
                     }
-                response = requests.post(url=utils.get_config("ai_url"), headers=headers, data=data_payload, files=files_payload)
+                response = requests.post(url=utils.get_config("server_url")+"/ai_post/", headers=headers, data=data_payload, files=files_payload)
             # 检查响应
             if response.status_code == 200:
-                print("\nRequest successful!")
-                print("Response JSON:")
-                print(json.dumps(response.json(), indent=4))
+                result_dict = dict()
+                for item in response.json()["message"].split("\n"):
+                    kv = item.split(": ", 1)
+                    result_dict.update({kv[0]: kv[1]})
+                if result_dict["Column_Temperature_C"] != "无":
+                    new_data = utils.get_data("柱温箱")
+                    new_data.update({"txtAimTemperatureSet":result_dict["Column_Temperature_C"]})
+                    utils.set_data("柱温箱", new_data)
+                if result_dict["Estimated_Run_Time_min"] != "无":
+                    new_data = utils.get_data("方法概要")
+                    new_data.update({"txtRunTime":result_dict["Estimated_Run_Time_min"]})
+                    utils.set_data("方法概要", new_data)
+                if result_dict["Detection_Wavelength_nm"] != "无":
+                    new_data = utils.get_data("检测器")
+                    new_data.update({"txtLambda1":result_dict["Detection_Wavelength_nm"]})
+                    utils.set_data("检测器", new_data)
+                if result_dict["Flow_Rate_mL_min"] != "无":
+                    new_data = utils.get_data("泵")
+                    new_data.update({"txtFlowVelocity": result_dict["Flow_Rate_mL_min"]})
+                    utils.set_data("泵", new_data)
+                if result_dict["Gradient_Program"] != "无":
+                    gradient_list = json.loads(result_dict["Gradient_Program"])
+                    new_data = {key: value for key, value in utils.get_data("泵").items() if " row" not in key}
+                    new_data.update({"gcGradient": str(len(gradient_list))})
+                    for i,gradient in enumerate(gradient_list):
+                        new_data.update({"时间(min) row"+str(i): str(gradient[0])})
+                        new_data.update({"线性类型 row"+str(i): "线性"})
+                        new_data.update({"流速(mL/min) row"+str(i): result_dict["Flow_Rate_mL_min"]})
+                        new_data.update({"%A row"+str(i): str(gradient[1])})
+                        if len(gradient)>2:
+                            new_data.update({"%B row"+str(i): str(gradient[2])})
+                        if len(gradient) > 3:
+                            new_data.update({"%C row"+str(i): str(gradient[3])})
+                    utils.set_data("泵", new_data)
             else:
-                print(f"\nRequest failed with status code: {response.status_code}")
-                print("Response text:")
-                print(response.text)
+                # dlg = wx.MessageDialog(None, response.json()["detail"], "提示", wx.OK | wx.ICON_INFORMATION)
+                # dlg.ShowModal()  # 显示对话框
+                # dlg.Destroy()  # 销毁对话框，释放资源
+                raise Exception(response.text)
         except Exception as e:
-            logger.log({e})
-            time.sleep(sleep_time)
+            logger.log(e)
+            time.sleep(10)
             continue
         loop = False

@@ -129,8 +129,7 @@ class ConfigDialog(wx.Dialog):
         dlg = wx.DirDialog(self, message="选择一个文件夹", style=wx.DD_DEFAULT_STYLE, defaultPath=self.image_save_path_text_ctrl.GetValue())
         if dlg.ShowModal() == wx.ID_OK:
             folder_path = dlg.GetPath()
-        print("选择的文件夹是:", folder_path)
-        self.image_save_path_text_ctrl.SetValue(folder_path)
+            self.image_save_path_text_ctrl.SetValue(folder_path)
         dlg.Destroy()
 
     def reverse_display_form(self):
