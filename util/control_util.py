@@ -11,6 +11,7 @@ from pywinauto.controls.uiawrapper import UIAWrapper
 import wx
 
 from util import utils, keyring_util
+from util.keyring_util import api_client
 from util.logger_util import logger
 from pywinauto.timings import TimeoutError
 
@@ -26,12 +27,11 @@ def start(self):
         utils.window_dict.clear()
         for key, value in step.items():
             for automation in list(value):
+                self.SetTitle(utils.get_config("software")+"-"+get_detail(automation))
                 do_automation(key, automation)
-                self.SetTitle(get_detail(automation))
     utils.set_config("step", 1)
     utils.set_config("event_status", 0)
     utils.set_config("thread_status", 0)
-    utils.set_index(1)
     self.refresh()
 
 def get_detail(automation):
@@ -543,18 +543,12 @@ def ai_post(step, sleep_time=default_sleep_time, before_sleep_time=0):
         utils.pause()
         try:
             if int(utils.get_config("index")) == 0:
-                headers = {
-                    "Authorization": f"Bearer " + keyring_util.load_token_from_keyring(utils.get_config("username"))
-                }
                 data_payload = {
                     "software": utils.get_config("software"),
                     "index": int(utils.get_config("index"))
                 }
-                response = requests.post(url=utils.get_config("server_url")+"/ai_post/", headers=headers, data=data_payload)
+                response = api_client.make_api_request_sync(method="post", endpoint="ai_post/", data=data_payload)
             else:
-                headers = {
-                    "Authorization": f"Bearer " + keyring_util.load_token_from_keyring(utils.get_config("username"))
-                }
                 img_url = utils.get_dictionary("image_save_path")+"\\"+utils.get_temporary("数据处理", "1001")+".png"
                 with open(img_url, "rb") as img_file:  # 注意这里是 "rb" (read binary) 模式
                     files_payload = {
@@ -566,7 +560,7 @@ def ai_post(step, sleep_time=default_sleep_time, before_sleep_time=0):
                         "index": utils.get_config("index"),
                         "text": text_file.read()
                     }
-                response = requests.post(url=utils.get_config("server_url")+"/ai_post/", headers=headers, data=data_payload, files=files_payload)
+                response = api_client.make_api_request_sync(method="post", endpoint="ai_post/", data=data_payload, files=files_payload)
             # 检查响应
             if response.status_code == 200:
                 result_dict = dict()
@@ -603,13 +597,21 @@ def ai_post(step, sleep_time=default_sleep_time, before_sleep_time=0):
                         if len(gradient) > 3:
                             new_data.update({"%C row"+str(i): str(gradient[3])})
                     utils.set_data("泵", new_data)
+            elif response.status_code == 409:
+                if response.json()["detail"] == "请求重复":
+                    utils.set_index(1)
+                elif response.json()["detail"] == "请求无效":
+                    utils.set_index(-1)
+                raise Exception(response.text)
             else:
-                # dlg = wx.MessageDialog(None, response.json()["detail"], "提示", wx.OK | wx.ICON_INFORMATION)
-                # dlg.ShowModal()  # 显示对话框
-                # dlg.Destroy()  # 销毁对话框，释放资源
+                dlg = wx.MessageDialog(None, response.json()["detail"], "提示", wx.OK | wx.ICON_INFORMATION)
+                dlg.ShowModal()  # 显示对话框
+                dlg.Destroy()  # 销毁对话框，释放资源
+                time.sleep(1)
                 raise Exception(response.text)
         except Exception as e:
             logger.log(e)
-            time.sleep(10)
+            time.sleep(sleep_time+10)
             continue
+        utils.set_index(1)
         loop = False

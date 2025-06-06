@@ -3,6 +3,7 @@ import wx
 
 import util.utils
 from util import utils, keyring_util
+from util.keyring_util import api_client
 from view.config_dialog import ConfigDialog
 
 class LogonDialog(wx.Dialog):
@@ -34,14 +35,14 @@ class LogonDialog(wx.Dialog):
         ConfigDialog.draw_text_ctrl(self.username_text_ctrl)
         form_sizer.Add(window=self.username_text_ctrl, flag=wx.ALIGN_CENTER|wx.ALL, pos=(0,1), border=5)
 
-        self.password_static_text = wx.StaticText(parent=form_panel, label="密码：")
-        ConfigDialog.draw_static_text(self.password_static_text)
-        form_sizer.Add(window=self.password_static_text, flag=wx.ALIGN_CENTER|wx.ALL,
-                       pos=wx.GBPosition(1, 0), border=5)
-
-        self.password_text_ctrl = wx.TextCtrl(form_panel, size=wx.Size(140, -1,), style=wx.TE_PASSWORD, name="password")
-        ConfigDialog.draw_text_ctrl(self.password_text_ctrl)
-        form_sizer.Add(window=self.password_text_ctrl, flag=wx.ALIGN_CENTER|wx.ALL, pos=(1, 1), border=5)
+        # self.password_static_text = wx.StaticText(parent=form_panel, label="密码：")
+        # ConfigDialog.draw_static_text(self.password_static_text)
+        # form_sizer.Add(window=self.password_static_text, flag=wx.ALIGN_CENTER|wx.ALL,
+        #                pos=wx.GBPosition(1, 0), border=5)
+        #
+        # self.password_text_ctrl = wx.TextCtrl(form_panel, size=wx.Size(140, -1,), style=wx.TE_PASSWORD, name="password")
+        # ConfigDialog.draw_text_ctrl(self.password_text_ctrl)
+        # form_sizer.Add(window=self.password_text_ctrl, flag=wx.ALIGN_CENTER|wx.ALL, pos=(1, 1), border=5)
 
         form_panel.SetSizer(form_sizer)
 
@@ -65,14 +66,12 @@ class LogonDialog(wx.Dialog):
 
     def init(self):
         self.username_text_ctrl.SetValue(utils.get_config("username"))
-        self.password_text_ctrl.SetValue(utils.get_config("password"))
         self.username_text_ctrl.Enable(False)
-        self.password_text_ctrl.Enable(False)
 
     def on_logoff(self, event):
-        keyring_util.delete_token_from_keyring(self.username_text_ctrl.GetValue())
+        # keyring_util.delete_token_from_keyring(self.username_text_ctrl.GetValue())
+        api_client.logout()
         util.utils.set_config("username", "")
-        util.utils.set_config("password", "")
         self.parent.init()
         self.Close()
         dlg = wx.MessageDialog(self, "注销成功！", "提示", wx.OK | wx.ICON_INFORMATION)

@@ -3,6 +3,7 @@ import wx
 
 import util.utils
 from util import utils, keyring_util
+from util.keyring_util import api_client
 from view.config_dialog import ConfigDialog
 
 class LoginDialog(wx.Dialog):
@@ -73,26 +74,41 @@ class LoginDialog(wx.Dialog):
             dlg.ShowModal()  # 显示对话框
             dlg.Destroy()  # 销毁对话框，释放资源
             return
-        # 获取文本框中的值
-        headers = {
-            "Content-Type":"application/x-www-form-urlencoded"
-        }
-        payload = {
-            "username" : self.username_text_ctrl.GetValue(),
-            "password" : self.password_text_ctrl.GetValue()
-        }
-        response = requests.post(url=utils.get_config("server_url")+"/user/token", headers=headers, data=payload)
-        if response.status_code == 200:
+        api_client.login(self.username_text_ctrl.GetValue(), self.password_text_ctrl.GetValue(), self._on_login_complete)
+        # # 获取文本框中的值
+        # headers = {
+        #     "Content-Type":"application/x-www-form-urlencoded"
+        # }
+        # payload = {
+        #     "username" : self.username_text_ctrl.GetValue(),
+        #     "password" : self.password_text_ctrl.GetValue()
+        # }
+        # response = requests.post(url=utils.get_config("server_url")+"/user/token", headers=headers, data=payload)
+        # if response.status_code == 200:
+        #     util.utils.set_config("username", self.username_text_ctrl.GetValue())
+        #     util.utils.set_config("password", self.password_text_ctrl.GetValue())
+        #     keyring_util.save_token_to_keyring(self.username_text_ctrl.GetValue(), response.json()["access_token"])
+        #     self.parent.init()
+        #     self.Close()
+        #     dlg = wx.MessageDialog(self, "登录成功！", "提示", wx.OK | wx.ICON_INFORMATION)
+        #     dlg.ShowModal()  # 显示对话框
+        #     dlg.Destroy()  # 销毁对话框，释放资源
+        # else:
+        #     dlg = wx.MessageDialog(self, response.json()["detail"], "提示", wx.OK | wx.ICON_INFORMATION)
+        #     dlg.ShowModal()  # 显示对话框
+        #     dlg.Destroy()  # 销毁对话框，释放资源
+
+    def _on_login_complete(self, success, message):
+        if success:
             util.utils.set_config("username", self.username_text_ctrl.GetValue())
-            util.utils.set_config("password", self.password_text_ctrl.GetValue())
-            keyring_util.save_token_to_keyring(self.username_text_ctrl.GetValue(), response.json()["access_token"])
-            self.parent.init()
+            # util.utils.set_config("password", self.password_text_ctrl.GetValue())
+            self.parent.init(token_flag=True)
             self.Close()
             dlg = wx.MessageDialog(self, "登录成功！", "提示", wx.OK | wx.ICON_INFORMATION)
             dlg.ShowModal()  # 显示对话框
             dlg.Destroy()  # 销毁对话框，释放资源
         else:
-            dlg = wx.MessageDialog(self, response.json()["detail"], "提示", wx.OK | wx.ICON_INFORMATION)
+            dlg = wx.MessageDialog(self, message, "提示", wx.OK | wx.ICON_INFORMATION)
             dlg.ShowModal()  # 显示对话框
             dlg.Destroy()  # 销毁对话框，释放资源
 

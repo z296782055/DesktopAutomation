@@ -2,6 +2,7 @@ import threading
 import time
 import wx
 from util import utils, keyring_util
+from util.keyring_util import EVT_FORCE_RELOGIN_TYPE, api_client, EVT_FORCE_RELOGIN
 from util.validator_util import NumberValidator
 from view.config_dialog import ConfigDialog
 import keyboard
@@ -144,10 +145,23 @@ class MyFrame(wx.Frame):
         self.Centre()
         self.Show()
         self.Layout()  # 调用Layout来应用sizer布局
-        self.init()
-        self.login_verify()
+        self.init(token_flag=True if utils.get_config("username") else False)
 
-    def init(self):
+        # 4. 绑定自定义事件，使用你创建的事件绑定器常量
+        self.Bind(EVT_FORCE_RELOGIN, self.on_login)  # <<< 直接使用 EVT_FORCE_RELOGIN
+
+        # 启动时尝试通过refresh token自动登录
+        def callback(success, message):
+            if success:
+                self.init(token_flag=True)
+            else:
+                self.init(token_flag=False)
+        if api_client.refresh_token:
+            api_client.refresh_access_token(callback)
+
+    # self.login_verify()
+
+    def init(self,token_flag=False):
         auto_thread = utils.thread_is_alive("auto_thread")
         if auto_thread and utils.get_config("event_status", 1) == "1":
             self.on_btn.Bind(wx.EVT_BUTTON, self.on_off)
@@ -166,21 +180,21 @@ class MyFrame(wx.Frame):
             self.on_btn.Enable(True)
             self.menubar.EnableTop(0, True)
             self.menubar.EnableTop(1, True)
-        if utils.get_config("username", "") == "":
-            image = wx.Bitmap("img/icon/login.png", wx.BITMAP_TYPE_ANY).ConvertToImage()
-            scaled_image = image.Rescale(20, 20, wx.IMAGE_QUALITY_HIGH)
-            scaled_bitmap = scaled_image.ConvertToBitmap()
-            self.on_login_btn.SetBitmapLabel(scaled_bitmap)  # 设置新的位图
-            self.on_login_btn.Bind(wx.EVT_BUTTON, self.on_login)
-            self.on_login_btn.SetToolTip("登录")
-            self.on_login_btn.Refresh()
-        else:
+        if token_flag:
             image = wx.Bitmap("img/icon/logon.png", wx.BITMAP_TYPE_ANY).ConvertToImage()
             scaled_image = image.Rescale(24, 24, wx.IMAGE_QUALITY_HIGH)
             scaled_bitmap = scaled_image.ConvertToBitmap()
             self.on_login_btn.SetBitmapLabel(scaled_bitmap)  # 设置新的位图
             self.on_login_btn.Bind(wx.EVT_BUTTON, self.on_logon)
             self.on_login_btn.SetToolTip(utils.get_config("username", ""))
+            self.on_login_btn.Refresh()
+        else:
+            image = wx.Bitmap("img/icon/login.png", wx.BITMAP_TYPE_ANY).ConvertToImage()
+            scaled_image = image.Rescale(20, 20, wx.IMAGE_QUALITY_HIGH)
+            scaled_bitmap = scaled_image.ConvertToBitmap()
+            self.on_login_btn.SetBitmapLabel(scaled_bitmap)  # 设置新的位图
+            self.on_login_btn.Bind(wx.EVT_BUTTON, self.on_login)
+            self.on_login_btn.SetToolTip("登录")
             self.on_login_btn.Refresh()
         self.step_text.Label = next(iter(utils.get_step(utils.get_config("software"), utils.get_config("step"), default="")))
         self.SetTitle(utils.get_config("software"))
@@ -228,7 +242,7 @@ class MyFrame(wx.Frame):
 
     def refresh(self):
         while True:
-            time.sleep(0.2)
+            time.sleep(1)
             self.init()
             if self.on_btn.Label == "开始(&F11)":
                 break
@@ -265,26 +279,41 @@ class MyFrame(wx.Frame):
         event.Skip()
 
     def on_on(self, event):
-        if not self.login_verify():
+        # if not self.login_verify():
+        #     dlg = wx.MessageDialog(self, "登录信息失效，请重新登录", "提示", wx.OK | wx.ICON_INFORMATION)
+        #     dlg.ShowModal()  # 显示对话框
+        #     dlg.Destroy()  # 销毁对话框，释放资源
+        #     self.on_login(self)
+        #     return
+        # 启动时尝试通过refresh token自动登录
+        def call(success, message):
+            if success:
+                with self.lock:
+                    from util import control_util
+                    utils.set_config("event_status", 1)
+                    utils.event.set()
+                    if utils.thread_is_alive("auto_thread" ):
+                        pass
+                    else:
+                        thread = threading.Thread(target=getattr(control_util, "start"),args=(self,),name="auto_thread")
+                        utils.set_config("thread_status", 1)
+                        thread.start()
+                    try:
+                        self.init()
+                    except Exception as e:
+                        pass
+            else:
+                call_dlg = wx.MessageDialog(self, message, "提示", wx.OK | wx.ICON_INFORMATION)
+                call_dlg.ShowModal()  # 显示对话框
+                call_dlg.Destroy()  # 销毁对话框，释放资源
+        if api_client.refresh_token:
+            api_client.refresh_access_token(call)
+        else:
             dlg = wx.MessageDialog(self, "登录信息失效，请重新登录", "提示", wx.OK | wx.ICON_INFORMATION)
             dlg.ShowModal()  # 显示对话框
             dlg.Destroy()  # 销毁对话框，释放资源
             self.on_login(self)
             return
-        with self.lock:
-            from util import control_util
-            utils.set_config("event_status", 1)
-            utils.event.set()
-            if utils.thread_is_alive("auto_thread" ):
-                pass
-            else:
-                thread = threading.Thread(target=getattr(control_util, "start"),args=(self,),name="auto_thread")
-                utils.set_config("thread_status", 1)
-                thread.start()
-            try:
-                self.init()
-            except Exception as e:
-                pass
 
     def on_off(self, event):
         with self.lock:
@@ -341,14 +370,14 @@ class MyFrame(wx.Frame):
         dlg.ShowModal()  # 显示模态对话框
         dlg.Destroy()  # 关闭后销毁对话框
 
-    def login_verify(self):
-        if not utils.login_verify():
-            keyring_util.delete_token_from_keyring(utils.get_config("username"))
-            utils.set_config("username", "")
-            utils.set_config("password", "")
-            self.init()
-            return False
-        return True
+    # def login_verify(self):
+    #     if not utils.login_verify():
+    #         keyring_util.delete_token_from_keyring(utils.get_config("username"))
+    #         utils.set_config("username", "")
+    #         utils.set_config("password", "")
+    #         self.init()
+    #         return False
+    #     return True
 
     def disable(self):
         self.on_btn.Enable(False)

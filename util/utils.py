@@ -10,14 +10,12 @@ import requests
 from pr_properties import pr_properties
 import wx
 from pathlib import Path
-
-from util import keyring_util
 from util.exception_util import ThreadException
 
 data_url = r'./data/data.json'
 config_url = r'./data/config.properties'
 log_dir_url = r'./log/'
-step_url = r'./step/step.json'
+step_url = r'./step/steptest.json'
 dictionary_url = r'./data/dictionary.json'
 temporary_url = r'./data/temporary.json'
 info_url = r'./data/info.json'
@@ -228,29 +226,29 @@ def pause():
     if get_config("thread_status", 1) != "1":
         raise ThreadException("线程关闭...")
 
-def login_verify():
-    try:
-        if get_config("username") == "":
-            return False
-        token = keyring_util.load_token_from_keyring(get_config("username"))
-        if not token:
-            return False
-        headers = {
-            "Authorization": f"Bearer {token}"
-        }
-        response = requests.post(url=get_config("server_url")+"/user/verify", headers=headers)
-
-        print("Status Code:", response.status_code)
-        print("Response JSON:", json.dumps(response.json(), indent=2, ensure_ascii=False))
-
-        # 检查响应状态码
-        response.raise_for_status()
-
-        print("Status Code:", response.status_code)
-        print("Response JSON:", json.dumps(response.json(), indent=2, ensure_ascii=False))
-
-        if response.status_code != 200:
-            return False
-    except Exception:
-        return False
-    return True
+# def login_verify():
+#     try:
+#         if get_config("username") == "":
+#             return False
+#         token = keyring_util.load_token_from_keyring(get_config("username"))
+#         if not token:
+#             return False
+#         headers = {
+#             "Authorization": f"Bearer {token}"
+#         }
+#         response = requests.post(url=get_config("server_url")+"/user/verify", headers=headers)
+#
+#         print("Status Code:", response.status_code)
+#         print("Response JSON:", json.dumps(response.json(), indent=2, ensure_ascii=False))
+#
+#         # 检查响应状态码
+#         response.raise_for_status()
+#
+#         print("Status Code:", response.status_code)
+#         print("Response JSON:", json.dumps(response.json(), indent=2, ensure_ascii=False))
+#
+#         if response.status_code != 200:
+#             return False
+#     except Exception:
+#         return False
+#     return True
