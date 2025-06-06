@@ -562,9 +562,9 @@ def ai_post(step, sleep_time=default_sleep_time, before_sleep_time=0):
                     }
                 response = api_client.make_api_request_sync(method="post", endpoint="ai_post/", data=data_payload, files=files_payload)
             # 检查响应
-            if response.status_code == 200:
+            if response["success"]:
                 result_dict = dict()
-                for item in response.json()["message"].split("\n"):
+                for item in response["data"].split("\n"):
                     kv = item.split(": ", 1)
                     result_dict.update({kv[0]: kv[1]})
                 if result_dict["Column_Temperature_C"] != "无":
@@ -597,18 +597,18 @@ def ai_post(step, sleep_time=default_sleep_time, before_sleep_time=0):
                         if len(gradient) > 3:
                             new_data.update({"%C row"+str(i): str(gradient[3])})
                     utils.set_data("泵", new_data)
-            elif response.status_code == 409:
-                if response.json()["detail"] == "请求重复":
+            elif response["code"] == 409:
+                if response["detail"] == "请求重复":
                     utils.set_index(1)
-                elif response.json()["detail"] == "请求无效":
+                elif response["detail"] == "请求无效":
                     utils.set_index(-1)
-                raise Exception(response.text)
+                raise Exception(response["detail"])
             else:
-                dlg = wx.MessageDialog(None, response.json()["detail"], "提示", wx.OK | wx.ICON_INFORMATION)
+                dlg = wx.MessageDialog(None, response["detail"], "提示", wx.OK | wx.ICON_INFORMATION)
                 dlg.ShowModal()  # 显示对话框
                 dlg.Destroy()  # 销毁对话框，释放资源
                 time.sleep(1)
-                raise Exception(response.text)
+                raise Exception(response["detail"])
         except Exception as e:
             logger.log(e)
             time.sleep(sleep_time+10)

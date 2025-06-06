@@ -243,7 +243,7 @@ class MyFrame(wx.Frame):
     def refresh(self):
         while True:
             time.sleep(1)
-            self.init()
+            self.init(token_flag=True if utils.get_config("username") else False)
             if self.on_btn.Label == "开始(&F11)":
                 break
 
@@ -299,7 +299,7 @@ class MyFrame(wx.Frame):
                         utils.set_config("thread_status", 1)
                         thread.start()
                     try:
-                        self.init()
+                        self.init(token_flag=True)
                     except Exception as e:
                         pass
             else:
@@ -353,7 +353,7 @@ class MyFrame(wx.Frame):
                 self.disable()
                 self.refresh()
         else:
-            self.init()
+            self.init(token_flag=True if utils.get_config("username") else False)
 
     def on_info(self, event):
         dlg = InfoDialog(self)
