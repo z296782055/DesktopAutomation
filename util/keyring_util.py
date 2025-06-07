@@ -40,9 +40,9 @@ class AuthManager:
         self.refresh_token = None
         self.access_token_expiry = 0  # Unix timestamp
 
-        self.auth_url = f"{AUTH_SERVER_URL}/user/token"
-        self.logout_url = f"{AUTH_SERVER_URL}/user/token/logout"
-        self.refresh_url = f"{AUTH_SERVER_URL}/user/token/refresh"
+        self.auth_url = f"{AUTH_SERVER_URL}/token"
+        self.logout_url = f"{AUTH_SERVER_URL}/token/logout"
+        self.refresh_url = f"{AUTH_SERVER_URL}/token/refresh"
         self.api_base_url = AUTH_SERVER_URL  # 假设API都在同一个根路径
 
         self._refresh_lock = threading.Lock()  # 用于防止并发刷新请求
