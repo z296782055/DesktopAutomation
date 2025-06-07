@@ -27,9 +27,9 @@ class PagePanel(wx.Panel):
         for i,(key,value) in enumerate(info_dict.items()):
             data = data_now.get(key)
             if not data:
-                print(123)
+                continue
             if value.get("info") is not None:
-                if " " not in key:
+                if " row" not in key:
                     exec(r'self.static_text_'+key+ ' = wx.StaticText(parent=form_panel, label="' + (value.get("info") if value.get("info") is not None else key) + '：")')
                     exec(r'ConfigDialog.draw_static_text(self.static_text_'+key+')')
                     exec(r'form_sizer.Add(window=self.static_text_'+key+', flag=wx.ALIGN_CENTER | wx.ALL, pos=('+str((2*i)//col_num)+', '+str((2*i)%col_num)+'), border=5)')
@@ -49,6 +49,70 @@ class PagePanel(wx.Panel):
                 exec(r'ConfigDialog.draw_text_ctrl(self.text_ctrl_' + key + ')')
                 exec(r'form_sizer.Add(window=self.text_ctrl_' + key + ', flag=wx.ALIGN_CENTER | wx.ALL, pos=(' + str(
                     (2 * i) // col_num) + ', ' + str((((2 * i) % col_num) + 1)) + '), border=5)')
+
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        self.table_dict = dict()
+        self.column_headers = []
+        for key, value in data_now.items():
+                if " row" in key:
+                    self.table_dict.update({key:value})
+                    if key.split(" row")[0] not in self.column_headers:
+                        self.column_headers.append(key.split(" row")[0])
+
+        table_panel = wx.Panel(self, size=wx.Size(-1, (50 if len(self.table_dict)>0 else 0)+(len(self.table_dict)*10)))
+        sizer.Add(table_panel, 0, wx.EXPAND)
+        max_row_index = -1
+        for key in self.table_dict.keys():
+            if "row" in key:
+                try:
+                    row_num_str = key.split("row")[-1]
+                    max_row_index = max(max_row_index, int(row_num_str))
+                except ValueError:
+                    # 如果键不符合 "key rowN" 格式，忽略
+                    continue
+        self.num_rows = max_row_index + 1 if max_row_index >= 0 else 0
+
+        # 2. 准备 ListCtrl
+        self.list_ctrl = wx.ListCtrl(table_panel, style=wx.LC_REPORT | wx.LC_HRULES | wx.LC_VRULES)
+
+        # 3. 插入列头
+        for i, header in enumerate(self.column_headers):
+            self.list_ctrl.InsertColumn(i, header)
+            # 设置列宽，这里使用自动调整宽度以适应列头
+            self.list_ctrl.SetColumnWidth(i, wx.LIST_AUTOSIZE_USEHEADER)
+
+        # 4. 填充数据
+        for row_idx in range(self.num_rows):
+            # 插入第一列的数据，并获取该行的索引
+            # list_ctrl.InsertItem(index, text)
+            # index 是插入行的位置，text 是第一列的文本
+            time_key = f"时间(min) row{row_idx}"
+            time_value = self.table_dict.get(time_key, "")  # 使用 .get() 避免 KeyError
+            item_index = self.list_ctrl.InsertItem(row_idx, time_value)
+
+            # 填充剩余列的数据
+            # list_ctrl.SetItem(item_index, col_idx, text)
+            # item_index 是行的索引，col_idx 是列的索引（从0开始），text 是要设置的文本
+            for col_idx, header in enumerate(self.column_headers):
+                if col_idx == 0:  # 第一列已经在 InsertItem 时设置了
+                    continue
+
+                data_key = f"{header} row{row_idx}"
+                data_value = self.table_dict.get(data_key, "")
+                self.list_ctrl.SetItem(item_index, col_idx, data_value)
+
+        MIN_COLUMN_WIDTH = 100  # 例如，所有列最小宽度为100像素
+        # 5. 再次调整列宽以适应内容（可选，但通常能让表格更好看）
+        for i in range(len(self.column_headers)):
+            self.list_ctrl.SetColumnWidth(i, wx.LIST_AUTOSIZE)
+            current_width = self.list_ctrl.GetColumnWidth(i)
+            # c. 比较当前宽度和最小宽度，取最大值
+            final_width = max(current_width, MIN_COLUMN_WIDTH)
+            # d. 设置最终的列宽
+            self.list_ctrl.SetColumnWidth(i, final_width)
+        vbox.Add(self.list_ctrl, 1, wx.EXPAND | wx.ALL, 10)  # 1 表示 ListCtrl 占据所有可用空间
+        table_panel.SetSizer(vbox)
+
 
         bottom_sizer = wx.BoxSizer(wx.HORIZONTAL)
         on_btn_panel = wx.Panel(bottom_panel)

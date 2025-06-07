@@ -5,8 +5,7 @@ import tempfile
 import threading
 import uuid
 import json
-
-import requests
+from . import sqllite_util
 from pr_properties import pr_properties
 import wx
 from pathlib import Path
@@ -15,7 +14,7 @@ from util.exception_util import ThreadException
 data_url = r'./data/data.json'
 config_url = r'./data/config.properties'
 log_dir_url = r'./log/'
-step_url = r'./step/steptest.json'
+step_url = r'./step/step.json'
 dictionary_url = r'./data/dictionary.json'
 temporary_url = r'./data/temporary.json'
 info_url = r'./data/info.json'
@@ -25,6 +24,8 @@ data_lock = threading.Lock()
 dictionary_lock = threading.Lock()
 temporary_lock = threading.Lock()
 info_lock = threading.Lock()
+step_lock = threading.Lock()
+index_lock = threading.Lock()
 window_dict = dict()
 
 def generate_random_string(length=36):
@@ -135,22 +136,24 @@ def refer_dictionary(step, key):
         set_temporary(step=step, key=key, value=value)
     return value
 
-def set_step(step_num = 0, step = 0):
-    with config_lock:
+def set_step(step_num = 0, step = -1):
+    with step_lock:
         config = pr_properties.read(config_url)
-        if len(config.properties) == 0:
-            os.replace(config_url + ".pr_bak", config_url)
-            config = pr_properties.read(config_url)
-        if step != 0:
-            get_step(config["software"], step + step_num)
-            config["step"] = step + step_num
+        value = sqllite_util.get("step")
+        if step != -1:
+            get_step_data(config["software"], step + step_num)
+            sqllite_util.update("step", step + step_num)
         else :
-            get_step(config["software"], int(config["step"]) + step_num)
-            config["step"] = int(config["step"]) + step_num
-        config.write()
+            get_step_data(config["software"], value + step_num)
+            sqllite_util.update("step", value + step_num)
 
-def get_step(key, step, default=""):
-    step = int(step)
+def get_step(default=1):
+    value = sqllite_util.get("step")
+    if not value:
+        value = default
+    return value
+
+def get_step_data(key, step, default=""):
     if  step <= 0 :
         raise IndexError("步数不能小于0")
     step-=1
@@ -158,29 +161,56 @@ def get_step(key, step, default=""):
         step_list = list(json.load(f).get(key, []))
         if len(step_list) == 0:
             return default
-        return step_list[int(step)]
+        return step_list[step]
 
-def get_step_all(key):
+def get_step_data_all(key):
     with open(step_url, 'r', encoding='utf-8') as f:
         step_list = list(json.load(f).get(key, []))
         return step_list
 
-def set_index(index_num = 0, index = 0):
-    with config_lock:
+def set_index(index_num = 0, index = -1):
+    with index_lock:
         config = pr_properties.read(config_url)
-        if len(config.properties) == 0:
-            os.replace(config_url + ".pr_bak", config_url)
-            config = pr_properties.read(config_url)
-        if index != 0:
-            config["index"] = index + index_num
+        value = sqllite_util.get("index")
+        if index != -1:
+            get_step_data(config["software"], index + index_num)
+            sqllite_util.update("index", index + index_num)
         else :
-            config["index"] = int(config["index"]) + index_num
-        config.write()
+            get_step_data(config["software"], value + index_num)
+            sqllite_util.update("index", value + index_num)
 
-# def set_step_name(key, value):
-#     with data_lock:
-#         with open(step_url, 'w', encoding='utf-8') as f:
-#             json.load(f).set(key, value)
+def get_index(default=0):
+    value = sqllite_util.get("index")
+    if not value:
+        value = default
+    return value
+
+def set_event_status(event_status):
+    sqllite_util.update("event_status", event_status)
+
+def get_event_status(default=0):
+    value = sqllite_util.get("event_status")
+    if not value:
+        value = default
+    return value
+
+def set_thread_status(thread_status):
+    sqllite_util.update("thread_status", thread_status)
+
+def get_thread_status(default=0):
+    value = sqllite_util.get("thread_status")
+    if not value:
+        value = default
+    return value
+
+def set_flag(flag):
+    sqllite_util.update("flag", flag)
+
+def get_flag(default=1):
+    value = sqllite_util.get("flag")
+    if not value:
+        value = default
+    return value
 
 def traverse_elements(self, element_type, element_list=None):
     if element_list is None:
@@ -219,36 +249,10 @@ def thread_is_alive(name):
         return False
 
 def pause():
-    if get_config("event_status", 1) != "1":
+    if get_event_status() != 1:
         global event
         event.clear()
         event.wait()
-    if get_config("thread_status", 1) != "1":
+    if get_thread_status() != 1:
         raise ThreadException("线程关闭...")
 
-# def login_verify():
-#     try:
-#         if get_config("username") == "":
-#             return False
-#         token = keyring_util.load_token_from_keyring(get_config("username"))
-#         if not token:
-#             return False
-#         headers = {
-#             "Authorization": f"Bearer {token}"
-#         }
-#         response = requests.post(url=get_config("server_url")+"/user/verify", headers=headers)
-#
-#         print("Status Code:", response.status_code)
-#         print("Response JSON:", json.dumps(response.json(), indent=2, ensure_ascii=False))
-#
-#         # 检查响应状态码
-#         response.raise_for_status()
-#
-#         print("Status Code:", response.status_code)
-#         print("Response JSON:", json.dumps(response.json(), indent=2, ensure_ascii=False))
-#
-#         if response.status_code != 200:
-#             return False
-#     except Exception:
-#         return False
-#     return True

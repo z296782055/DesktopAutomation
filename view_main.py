@@ -1,7 +1,7 @@
 import threading
 import time
 import wx
-from util import utils, keyring_util
+from util import utils
 from util.keyring_util import EVT_FORCE_RELOGIN_TYPE, api_client, EVT_FORCE_RELOGIN
 from util.validator_util import NumberValidator
 from view.config_dialog import ConfigDialog
@@ -161,11 +161,9 @@ class MyFrame(wx.Frame):
         else:
             self.init(token_flag=False)
 
-    # self.login_verify()
-
     def init(self,token_flag=False):
         auto_thread = utils.thread_is_alive("auto_thread")
-        if auto_thread and utils.get_config("event_status", 1) == "1":
+        if auto_thread and utils.get_event_status() == 1:
             self.on_btn.Bind(wx.EVT_BUTTON, self.on_off)
             self.on_btn.SetLabel("停止(&F12)")
             self.on_go_back_btn.Enable(False)
@@ -182,7 +180,7 @@ class MyFrame(wx.Frame):
             self.on_btn.Enable(True)
             self.menubar.EnableTop(0, True)
             self.menubar.EnableTop(1, True)
-        if token_flag:
+        if token_flag and self.on_login_btn.GetToolTip().GetTip() != utils.get_config("username", ""):
             image = wx.Bitmap("img/icon/logon.png", wx.BITMAP_TYPE_ANY).ConvertToImage()
             scaled_image = image.Rescale(24, 24, wx.IMAGE_QUALITY_HIGH)
             scaled_bitmap = scaled_image.ConvertToBitmap()
@@ -190,7 +188,7 @@ class MyFrame(wx.Frame):
             self.on_login_btn.Bind(wx.EVT_BUTTON, self.on_logon)
             self.on_login_btn.SetToolTip(utils.get_config("username", ""))
             self.on_login_btn.Refresh()
-        else:
+        elif token_flag == False and self.on_login_btn.GetToolTip().GetTip() != "登录":
             image = wx.Bitmap("img/icon/login.png", wx.BITMAP_TYPE_ANY).ConvertToImage()
             scaled_image = image.Rescale(20, 20, wx.IMAGE_QUALITY_HIGH)
             scaled_bitmap = scaled_image.ConvertToBitmap()
@@ -198,7 +196,7 @@ class MyFrame(wx.Frame):
             self.on_login_btn.Bind(wx.EVT_BUTTON, self.on_login)
             self.on_login_btn.SetToolTip("登录")
             self.on_login_btn.Refresh()
-        self.step_text.Label = next(iter(utils.get_step(utils.get_config("software"), utils.get_config("step"), default="")))
+        self.step_text.Label = next(iter(utils.get_step_data(utils.get_config("software"), utils.get_step(), default="")))
         self.SetTitle(utils.get_config("software"))
 
     def form_init(self, form_panel):
@@ -253,7 +251,7 @@ class MyFrame(wx.Frame):
         result = wx.MessageBox("确定要退出吗？", "确认", wx.YES_NO | wx.ICON_QUESTION)
         if result == wx.YES:
             keyboard.unhook_all()
-            utils.set_config("thread_status", 0)
+            utils.set_thread_status(0)
             utils.event.set()
             super().Close()
 
@@ -281,24 +279,17 @@ class MyFrame(wx.Frame):
         event.Skip()
 
     def on_on(self, event):
-        # if not self.login_verify():
-        #     dlg = wx.MessageDialog(self, "登录信息失效，请重新登录", "提示", wx.OK | wx.ICON_INFORMATION)
-        #     dlg.ShowModal()  # 显示对话框
-        #     dlg.Destroy()  # 销毁对话框，释放资源
-        #     self.on_login(self)
-        #     return
-        # 启动时尝试通过refresh token自动登录
         def call(success, message):
             if success:
                 with self.lock:
                     from util import control_util
-                    utils.set_config("event_status", 1)
+                    utils.set_event_status(1)
                     utils.event.set()
                     if utils.thread_is_alive("auto_thread" ):
                         pass
                     else:
                         thread = threading.Thread(target=getattr(control_util, "start"),args=(self,),name="auto_thread")
-                        utils.set_config("thread_status", 1)
+                        utils.set_thread_status(1)
                         thread.start()
                     try:
                         self.init(token_flag=True)
@@ -321,7 +312,7 @@ class MyFrame(wx.Frame):
         with self.lock:
             auto_thread = utils.thread_is_alive("auto_thread")
             if auto_thread:
-                utils.set_config("event_status", 0)
+                utils.set_event_status(0)
             try:
                 self.refresh()
             except Exception as e:
@@ -330,10 +321,10 @@ class MyFrame(wx.Frame):
     def on_restart(self, event):
         result = wx.MessageBox("初始化后将重新开始，您确定吗？", "确认", wx.YES_NO | wx.ICON_QUESTION)
         if result == wx.YES:
-            utils.set_config("index", 0)
-            utils.set_config("thread_status", 0)
-            utils.set_config("step", 1)
-            utils.set_config("event_status", 1)
+            utils.set_index(0, 0)
+            utils.set_thread_status(0)
+            utils.set_step(1, 0)
+            utils.set_event_status(1)
             utils.event.set()
             self.disable()
             self.refresh()
@@ -349,8 +340,8 @@ class MyFrame(wx.Frame):
         if utils.thread_is_alive("auto_thread"):
             result = wx.MessageBox("换页后将从选择步骤起始处开始，确认要换页吗？", "确认", wx.YES_NO | wx.ICON_QUESTION)
             if result == wx.YES:
-                utils.set_config("thread_status", 0)
-                utils.set_config("event_status", 1)
+                utils.set_thread_status(0)
+                utils.set_event_status(1)
                 utils.event.set()
                 self.disable()
                 self.refresh()
@@ -371,15 +362,6 @@ class MyFrame(wx.Frame):
         dlg = LogonDialog(self)
         dlg.ShowModal()  # 显示模态对话框
         dlg.Destroy()  # 关闭后销毁对话框
-
-    # def login_verify(self):
-    #     if not utils.login_verify():
-    #         keyring_util.delete_token_from_keyring(utils.get_config("username"))
-    #         utils.set_config("username", "")
-    #         utils.set_config("password", "")
-    #         self.init()
-    #         return False
-    #     return True
 
     def disable(self):
         self.on_btn.Enable(False)

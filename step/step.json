@@ -1,5 +1,8 @@
 {
   "SmartLab CDS": [
+    {"AI请求":[
+      {"auto_type" : "ai_post"}
+    ]},
     {"点击“实时采集”":[
       {"auto_type" : "connect_window", "title" : "导航"},
       {"auto_type" : "control_click", "window" : "导航", "kwargs": [{"child_window":{"title":"实时采集", "auto_id":"btRealTimeAnalysis", "control_type":"Text"}}]}
@@ -551,9 +554,6 @@
       ]},
       {"auto_type" : "window_close", "title" : "实时采集 ", "kwargs": []},
       {"auto_type" : "window_close", "title" : "数据处理", "kwargs": []}
-    ]},
-    {"AI请求":[
-      {"auto_type" : "ai_post"}
     ]}
   ]
 }

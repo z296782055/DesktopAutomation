@@ -11,7 +11,7 @@ from pywinauto import Application
 from pywinauto.controls.uiawrapper import UIAWrapper
 import wx
 
-from util import utils, keyring_util
+from util import utils
 from util.keyring_util import api_client
 from util.logger_util import logger
 from pywinauto.timings import TimeoutError
@@ -20,20 +20,21 @@ default_sleep_time = float(utils.get_config('default_sleep_time', 1))
 default_backend = "uia"
 
 def start(self):
-    step_list = utils.get_step_all(utils.get_config("software"))
-    now_step_list = step_list[int(utils.get_config("step"))-1:]
-    for step in now_step_list:
-        utils.set_config("step", step_list.index(step) + 1)
-        self.step_text.Label = next(iter(step))
-        utils.window_dict.clear()
-        for key, value in step.items():
-            for automation in list(value):
-                self.SetTitle(utils.get_config("software")+"-"+get_detail(automation))
-                do_automation(key, automation)
-    utils.set_config("step", 1)
-    utils.set_config("event_status", 0)
-    utils.set_config("thread_status", 0)
-    self.refresh()
+    while utils.get_flag():
+        step_list = utils.get_step_data_all(utils.get_config('software'))
+        now_step_list = step_list[int(utils.get_step())-1:]
+        for step in now_step_list:
+            utils.set_step(1, step_list.index(step))
+            self.step_text.Label = next(iter(step))
+            utils.window_dict.clear()
+            for key, value in step.items():
+                for automation in list(value):
+                    self.SetTitle(utils.get_config("software")+"-"+get_detail(automation))
+                    do_automation(key, automation)
+        utils.set_step(1, 0)
+        utils.set_event_status(0)
+        utils.set_thread_status(0)
+        self.refresh()
 
 def get_detail(automation):
     auto_type = automation.get("auto_type")
@@ -236,8 +237,10 @@ def list_select(window, kwargs, step, click_type=None, select_window_title = Non
             if len(select_window_kwargs) != 0:
                 connect_child_window(window = window, kwargs=select_window_kwargs, title=select_window_title, step=step, sleep_time=sleep_time)
                 target_select_window = utils.window_dict.get(select_window_title)
-
             item = utils.get_data(step).get(target_list.element_info.automation_id if target_list.element_info.automation_id else target_list.element_info.name)
+            if item is None:
+                loop = False
+                continue
             try:
                 if click_type == "double_click":
                     target_list.click_input()
@@ -543,10 +546,10 @@ def ai_post(step, sleep_time=default_sleep_time, before_sleep_time=0):
     while loop:
         utils.pause()
         try:
-            if int(utils.get_config("index")) == 0:
+            if int(utils.get_index()) == 0:
                 data_payload = {
                     "software": utils.get_config("software"),
-                    "index": int(utils.get_config("index"))
+                    "index": int(utils.get_index())
                 }
                 response = api_client.make_api_request_sync(method="post", endpoint="ai_post/", data=data_payload)
             else:
@@ -558,7 +561,7 @@ def ai_post(step, sleep_time=default_sleep_time, before_sleep_time=0):
                 with open("ai/"+utils.get_config("software")+"/text/index.txt", "rb") as text_file:
                     data_payload = {
                         "software":utils.get_config("software"),
-                        "index": utils.get_config("index"),
+                        "index": utils.get_index(),
                         "text": text_file.read()
                     }
                 response = api_client.make_api_request_sync(method="post", endpoint="ai_post/", data=data_payload, files=files_payload)
@@ -592,7 +595,7 @@ def ai_post(step, sleep_time=default_sleep_time, before_sleep_time=0):
                         new_data.update({"gcGradient": str(len(gradient_list))})
                         for i,gradient in enumerate(gradient_list):
                             new_data.update({"时间(min) row"+str(i): str(gradient[0])})
-                            new_data.update({"线性类型 row"+str(i): "线性"})
+                            # new_data.update({"线性类型 row"+str(i): "线性"})
                             new_data.update({"流速(mL/min) row"+str(i): result_dict["Flow_Rate_mL_min"]})
                             new_data.update({"%A row"+str(i): str(gradient[1])})
                             if len(gradient)>2:
