@@ -41,6 +41,7 @@ class AuthManager:
         self.access_token_expiry = 0  # Unix timestamp
 
         self.auth_url = f"{AUTH_SERVER_URL}/user/token"
+        self.logout_url = f"{AUTH_SERVER_URL}/user/token/logout"
         self.refresh_url = f"{AUTH_SERVER_URL}/user/token/refresh"
         self.api_base_url = AUTH_SERVER_URL  # 假设API都在同一个根路径
 
@@ -176,8 +177,8 @@ class AuthManager:
         url = f"{self.api_base_url}/{endpoint}"
 
         response = requests.request(method, url, json=json_data, headers=headers, data=data, files=files)
-        response.raise_for_status()  # Raises HTTPError for bad responses (4xx or 5xx)
-        return response.json()
+        # response.raise_for_status()  # Raises HTTPError for bad responses (4xx or 5xx)
+        return response
 
     def make_api_request(self, method, endpoint, json_data=None, callback=None):
         """
@@ -316,8 +317,15 @@ class AuthManager:
         raise Exception("Unexpected error during synchronous API request.")
 
     def logout(self):
+        def _do_logout():
+            try:
+                requests.post(self.logout_url, json={"refresh_token": self.refresh_token})
+            except requests.exceptions.RequestException as e:
+                pass
+            except Exception as e:
+                pass
+        threading.Thread(target=_do_logout).start()
         self._clear_tokens()
-        # 可以在这里向后端发送登出请求，使refresh token失效
         print("[AuthManager] Logged out.")
 
 

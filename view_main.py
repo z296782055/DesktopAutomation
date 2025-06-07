@@ -158,6 +158,8 @@ class MyFrame(wx.Frame):
                 self.init(token_flag=False)
         if api_client.refresh_token:
             api_client.refresh_access_token(callback)
+        else:
+            self.init(token_flag=False)
 
     # self.login_verify()
 

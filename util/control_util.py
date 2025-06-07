@@ -1,5 +1,6 @@
 import copy
 import json
+import logging
 import os
 import time
 import _ctypes
@@ -562,54 +563,59 @@ def ai_post(step, sleep_time=default_sleep_time, before_sleep_time=0):
                     }
                 response = api_client.make_api_request_sync(method="post", endpoint="ai_post/", data=data_payload, files=files_payload)
             # 检查响应
-            if response["success"]:
-                result_dict = dict()
-                for item in response["data"].split("\n"):
-                    kv = item.split(": ", 1)
-                    result_dict.update({kv[0]: kv[1]})
-                if result_dict["Column_Temperature_C"] != "无":
-                    new_data = utils.get_data("柱温箱")
-                    new_data.update({"txtAimTemperatureSet":result_dict["Column_Temperature_C"]})
-                    utils.set_data("柱温箱", new_data)
-                if result_dict["Estimated_Run_Time_min"] != "无":
-                    new_data = utils.get_data("方法概要")
-                    new_data.update({"txtRunTime":result_dict["Estimated_Run_Time_min"]})
-                    utils.set_data("方法概要", new_data)
-                if result_dict["Detection_Wavelength_nm"] != "无":
-                    new_data = utils.get_data("检测器")
-                    new_data.update({"txtLambda1":result_dict["Detection_Wavelength_nm"]})
-                    utils.set_data("检测器", new_data)
-                if result_dict["Flow_Rate_mL_min"] != "无":
-                    new_data = utils.get_data("泵")
-                    new_data.update({"txtFlowVelocity": result_dict["Flow_Rate_mL_min"]})
-                    utils.set_data("泵", new_data)
-                if result_dict["Gradient_Program"] != "无":
-                    gradient_list = json.loads(result_dict["Gradient_Program"])
-                    new_data = {key: value for key, value in utils.get_data("泵").items() if " row" not in key}
-                    new_data.update({"gcGradient": str(len(gradient_list))})
-                    for i,gradient in enumerate(gradient_list):
-                        new_data.update({"时间(min) row"+str(i): str(gradient[0])})
-                        new_data.update({"线性类型 row"+str(i): "线性"})
-                        new_data.update({"流速(mL/min) row"+str(i): result_dict["Flow_Rate_mL_min"]})
-                        new_data.update({"%A row"+str(i): str(gradient[1])})
-                        if len(gradient)>2:
-                            new_data.update({"%B row"+str(i): str(gradient[2])})
-                        if len(gradient) > 3:
-                            new_data.update({"%C row"+str(i): str(gradient[3])})
-                    utils.set_data("泵", new_data)
-            elif response["code"] == 409:
-                if response["detail"] == "请求重复":
+            if response.status_code == 200:
+                response = response.json()
+                if response["success"] is True:
+                    result_dict = dict()
+                    for item in response["data"].split("\n"):
+                        kv = item.split(": ", 1)
+                        result_dict.update({kv[0]: kv[1]})
+                    if result_dict["Column_Temperature_C"] != "无":
+                        new_data = utils.get_data("柱温箱")
+                        new_data.update({"txtAimTemperatureSet":result_dict["Column_Temperature_C"]})
+                        utils.set_data("柱温箱", new_data)
+                    if result_dict["Estimated_Run_Time_min"] != "无":
+                        new_data = utils.get_data("方法概要")
+                        new_data.update({"txtRunTime":result_dict["Estimated_Run_Time_min"]})
+                        utils.set_data("方法概要", new_data)
+                    if result_dict["Detection_Wavelength_nm"] != "无":
+                        new_data = utils.get_data("检测器")
+                        new_data.update({"txtLambda1":result_dict["Detection_Wavelength_nm"]})
+                        utils.set_data("检测器", new_data)
+                    if result_dict["Flow_Rate_mL_min"] != "无":
+                        new_data = utils.get_data("泵")
+                        new_data.update({"txtFlowVelocity": result_dict["Flow_Rate_mL_min"]})
+                        utils.set_data("泵", new_data)
+                    if result_dict["Gradient_Program"] != "无":
+                        gradient_list = json.loads(result_dict["Gradient_Program"])
+                        new_data = {key: value for key, value in utils.get_data("泵").items() if " row" not in key}
+                        new_data.update({"gcGradient": str(len(gradient_list))})
+                        for i,gradient in enumerate(gradient_list):
+                            new_data.update({"时间(min) row"+str(i): str(gradient[0])})
+                            new_data.update({"线性类型 row"+str(i): "线性"})
+                            new_data.update({"流速(mL/min) row"+str(i): result_dict["Flow_Rate_mL_min"]})
+                            new_data.update({"%A row"+str(i): str(gradient[1])})
+                            if len(gradient)>2:
+                                new_data.update({"%B row"+str(i): str(gradient[2])})
+                            if len(gradient) > 3:
+                                new_data.update({"%C row"+str(i): str(gradient[3])})
+                        utils.set_data("泵", new_data)
+            elif response.status_code == 409:
+                response = response.json()
+                if response["message"] == "请求重复":
                     utils.set_index(1)
-                elif response["detail"] == "请求无效":
+                elif response["message"] == "请求无效":
                     utils.set_index(-1)
-                raise Exception(response["detail"])
+                raise Exception(response["message"])
             else:
-                dlg = wx.MessageDialog(None, response["detail"], "提示", wx.OK | wx.ICON_INFORMATION)
+                response = response.json()
+                dlg = wx.MessageDialog(None, response["message"], "提示", wx.OK | wx.ICON_INFORMATION)
                 dlg.ShowModal()  # 显示对话框
                 dlg.Destroy()  # 销毁对话框，释放资源
                 time.sleep(1)
-                raise Exception(response["detail"])
+                raise Exception(response["message"])
         except Exception as e:
+            logging.exception(e)
             logger.log(e)
             time.sleep(sleep_time+10)
             continue
