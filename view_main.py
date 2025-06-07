@@ -11,7 +11,6 @@ from view.info_dialog import InfoDialog
 from view.login_dialog import LoginDialog
 from view.logon_dialog import LogonDialog
 
-
 class MyFrame(wx.Frame):
     def __init__(self):
         super().__init__(parent=None, title=utils.get_config("software"), size=wx.Size(500, 300), style=wx.DEFAULT_FRAME_STYLE & ~wx.RESIZE_BORDER)
@@ -145,23 +144,34 @@ class MyFrame(wx.Frame):
         self.Centre()
         self.Show()
         self.Layout()  # 调用Layout来应用sizer布局
-        self.init(token_flag=True if utils.get_config("username") else False)
+        self.init()
 
         # 4. 绑定自定义事件，使用你创建的事件绑定器常量
         self.Bind(EVT_FORCE_RELOGIN, self.on_login)  # <<< 直接使用 EVT_FORCE_RELOGIN
 
         # 启动时尝试通过refresh token自动登录
-        def callback(success, message):
-            if success:
-                self.init(token_flag=True)
-            else:
-                self.init(token_flag=False)
         if api_client.refresh_token:
-            api_client.refresh_access_token(callback)
-        else:
-            self.init(token_flag=False)
+            api_client.refresh_access_token(self.token_init)
 
-    def init(self,token_flag=False):
+    def token_init(self, success, message):
+        if success:
+            image = wx.Bitmap("img/icon/logon.png", wx.BITMAP_TYPE_ANY).ConvertToImage()
+            scaled_image = image.Rescale(24, 24, wx.IMAGE_QUALITY_HIGH)
+            scaled_bitmap = scaled_image.ConvertToBitmap()
+            self.on_login_btn.SetBitmapLabel(scaled_bitmap)  # 设置新的位图
+            self.on_login_btn.Bind(wx.EVT_BUTTON, self.on_logon)
+            self.on_login_btn.SetToolTip(utils.get_config("username", ""))
+            self.on_login_btn.Refresh()
+        else:
+            image = wx.Bitmap("img/icon/login.png", wx.BITMAP_TYPE_ANY).ConvertToImage()
+            scaled_image = image.Rescale(20, 20, wx.IMAGE_QUALITY_HIGH)
+            scaled_bitmap = scaled_image.ConvertToBitmap()
+            self.on_login_btn.SetBitmapLabel(scaled_bitmap)  # 设置新的位图
+            self.on_login_btn.Bind(wx.EVT_BUTTON, self.on_login)
+            self.on_login_btn.SetToolTip("登录")
+            self.on_login_btn.Refresh()
+
+    def init(self):
         auto_thread = utils.thread_is_alive("auto_thread")
         if auto_thread and utils.get_event_status() == 1:
             self.on_btn.Bind(wx.EVT_BUTTON, self.on_off)
@@ -180,22 +190,7 @@ class MyFrame(wx.Frame):
             self.on_btn.Enable(True)
             self.menubar.EnableTop(0, True)
             self.menubar.EnableTop(1, True)
-        if token_flag and self.on_login_btn.GetToolTip().GetTip() != utils.get_config("username", ""):
-            image = wx.Bitmap("img/icon/logon.png", wx.BITMAP_TYPE_ANY).ConvertToImage()
-            scaled_image = image.Rescale(24, 24, wx.IMAGE_QUALITY_HIGH)
-            scaled_bitmap = scaled_image.ConvertToBitmap()
-            self.on_login_btn.SetBitmapLabel(scaled_bitmap)  # 设置新的位图
-            self.on_login_btn.Bind(wx.EVT_BUTTON, self.on_logon)
-            self.on_login_btn.SetToolTip(utils.get_config("username", ""))
-            self.on_login_btn.Refresh()
-        elif token_flag == False and self.on_login_btn.GetToolTip().GetTip() != "登录":
-            image = wx.Bitmap("img/icon/login.png", wx.BITMAP_TYPE_ANY).ConvertToImage()
-            scaled_image = image.Rescale(20, 20, wx.IMAGE_QUALITY_HIGH)
-            scaled_bitmap = scaled_image.ConvertToBitmap()
-            self.on_login_btn.SetBitmapLabel(scaled_bitmap)  # 设置新的位图
-            self.on_login_btn.Bind(wx.EVT_BUTTON, self.on_login)
-            self.on_login_btn.SetToolTip("登录")
-            self.on_login_btn.Refresh()
+
         self.step_text.Label = next(iter(utils.get_step_data(utils.get_config("software"), utils.get_step(), default="")))
         self.SetTitle(utils.get_config("software"))
 
@@ -243,7 +238,7 @@ class MyFrame(wx.Frame):
     def refresh(self):
         while True:
             time.sleep(1)
-            self.init(token_flag=True if utils.get_config("username") else False)
+            self.init()
             if self.on_btn.Label == "开始(&F11)":
                 break
 
@@ -292,7 +287,7 @@ class MyFrame(wx.Frame):
                         utils.set_thread_status(1)
                         thread.start()
                     try:
-                        self.init(token_flag=True)
+                        self.init()
                     except Exception as e:
                         pass
             else:
@@ -346,7 +341,7 @@ class MyFrame(wx.Frame):
                 self.disable()
                 self.refresh()
         else:
-            self.init(token_flag=True if utils.get_config("username") else False)
+            self.init()
 
     def on_info(self, event):
         dlg = InfoDialog(self)

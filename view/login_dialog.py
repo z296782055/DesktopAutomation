@@ -102,7 +102,8 @@ class LoginDialog(wx.Dialog):
         if success:
             util.utils.set_config("username", self.username_text_ctrl.GetValue())
             # util.utils.set_config("password", self.password_text_ctrl.GetValue())
-            self.parent.init(token_flag=True)
+            self.parent.init()
+            self.parent.token_init(success, message)
             self.Close()
             dlg = wx.MessageDialog(self, "登录成功！", "提示", wx.OK | wx.ICON_INFORMATION)
             dlg.ShowModal()  # 显示对话框
@@ -111,6 +112,7 @@ class LoginDialog(wx.Dialog):
             dlg = wx.MessageDialog(self, message, "提示", wx.OK | wx.ICON_INFORMATION)
             dlg.ShowModal()  # 显示对话框
             dlg.Destroy()  # 销毁对话框，释放资源
+        self.parent.init()
 
     def on_cancel(self, event):
         # 关闭对话框

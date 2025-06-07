@@ -86,7 +86,6 @@ class AuthManager:
         处理用户登录。
         callback(success: bool, message: str)
         """
-
         def _do_login():
             try:
                 payload = {
@@ -104,7 +103,7 @@ class AuthManager:
                 self._save_tokens_to_secure_storage()
                 wx.CallAfter(callback, True, None)  # 登录成功
             except requests.exceptions.RequestException as e:
-                wx.CallAfter(callback, False, "1215")
+                wx.CallAfter(callback, False, "登录失败")
             except Exception as e:
                 wx.CallAfter(callback, False, f"An unexpected error occurred during login: {e}")
 

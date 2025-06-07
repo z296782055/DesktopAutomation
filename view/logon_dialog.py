@@ -73,6 +73,7 @@ class LogonDialog(wx.Dialog):
         api_client.logout()
         util.utils.set_config("username", "")
         self.parent.init()
+        self.parent.token_init(success=False, message="注销成功！")
         self.Close()
         dlg = wx.MessageDialog(self, "注销成功！", "提示", wx.OK | wx.ICON_INFORMATION)
         dlg.ShowModal()  # 显示对话框

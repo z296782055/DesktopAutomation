@@ -18,7 +18,7 @@ class PagePanel(wx.Panel):
         sizer.Add(bottom_panel, 0, wx.EXPAND)
         form_sizer = wx.GridBagSizer(vgap=5, hgap=0)
 
-        info_dict = utils.get_info(step, {})
+        info_dict = utils.get_info(step=step)
         data_now = dict()
         for key, value in data.items():
             if not isinstance(value, int):
@@ -116,7 +116,8 @@ class PagePanel(wx.Panel):
 
         bottom_sizer = wx.BoxSizer(wx.HORIZONTAL)
         on_btn_panel = wx.Panel(bottom_panel)
-        if step == "选择项目及色谱系统":
+        # if step == "选择项目及色谱系统":
+        if step == "":
             # 创建确定按钮控件
             self.submit_btn = wx.Button(on_btn_panel, label="保存")
             self.submit_btn.Bind(wx.EVT_BUTTON, self.on_submit)
@@ -135,7 +136,7 @@ class PagePanel(wx.Panel):
 
     def on_submit(self, event):
         data_dict = dict()
-        info_dict = utils.get_info(self.step, {})
+        info_dict = utils.get_info(step=self.step)
         for i, (key, value) in enumerate(info_dict.items()):
             if value.get("info") is not None:
                 if " " not in key:

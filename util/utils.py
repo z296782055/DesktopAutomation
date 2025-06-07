@@ -84,6 +84,18 @@ def get_temporary(step, key):
     with open(temporary_url, 'r', encoding='utf-8') as f:
         return json.load(f).get(get_config("software")).get(step,{}).get(key, "")
 
+def clean_temporary():
+    with temporary_lock:
+        with open(temporary_url, 'r', encoding='utf-8') as f:
+            temporary_data = json.load(f)
+        with open(temporary_url, 'w', encoding='utf-8') as f:
+            with tempfile.NamedTemporaryFile(mode='w', delete=False, encoding='utf-8',
+                                             dir=os.path.dirname(temporary_url)) as temp_f:
+                temporary_data.update({get_config("software"):{}})
+                json.dump(temporary_data, temp_f, indent=4, ensure_ascii=False)
+                temp_file_path = temp_f.name
+        os.replace(temp_file_path, temporary_url)
+
 def set_temporary(step, key, value):
     with temporary_lock:
         with open(temporary_url, 'r', encoding='utf-8') as f:
@@ -91,17 +103,19 @@ def set_temporary(step, key, value):
         with open(temporary_url, 'w', encoding='utf-8') as f:
             with tempfile.NamedTemporaryFile(mode='w', delete=False, encoding='utf-8',
                                              dir=os.path.dirname(temporary_url)) as temp_f:
+                if temporary_data.get(get_config("software")).get(step) is None:
+                    temporary_data.get(get_config("software")).update({temporary_data.get(get_config("software")).get(step): {}})
                 temporary_data.get(get_config("software")).get(step).update({str(key): value})
                 json.dump(temporary_data, temp_f, indent=4, ensure_ascii=False)
                 temp_file_path = temp_f.name
         os.replace(temp_file_path, temporary_url)
 
-def get_info(key=None, default=None):
+def get_info(step, key=None, default=None):
     with open(info_url, 'r', encoding='utf-8') as f:
         if key is None:
-            return json.load(f).get(get_config("software"))
+            return json.load(f).get(get_config("software")).get(step, {})
         else:
-            return json.load(f).get(get_config("software")).get(key, "")
+            return json.load(f).get(get_config("software")).get(step, {}).get(key, default)
 
 def refer_dictionary(step, key):
     dictionary = get_dictionary(str(key))
@@ -173,10 +187,8 @@ def set_index(index_num = 0, index = -1):
         config = pr_properties.read(config_url)
         value = sqllite_util.get("index")
         if index != -1:
-            get_step_data(config["software"], index + index_num)
             sqllite_util.update("index", index + index_num)
         else :
-            get_step_data(config["software"], value + index_num)
             sqllite_util.update("index", value + index_num)
 
 def get_index(default=0):
