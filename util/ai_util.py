@@ -4,7 +4,7 @@ import logging
 import openai
 from util import utils
 
-api_key = "MTcwZjMyOGItZGNmMi00YzJhLTgxZGItZDdjOWNkZGY4M2U4"
+api_key = ""
 api_base = "https://origin.nextway.top/v1/chat/completions"
 model = "gemini-2.5-flash-free"
 

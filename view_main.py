@@ -1,10 +1,13 @@
 import threading
 import time
 import wx
+from wx import Colour
+
 from util import utils
 from util.keyring_util import EVT_FORCE_RELOGIN_TYPE, api_client, EVT_FORCE_RELOGIN
 from util.validator_util import NumberValidator
 from view.config_dialog import ConfigDialog
+import wx.lib.scrolledpanel as scrolled
 import keyboard
 
 from view.info_dialog import InfoDialog
@@ -13,7 +16,7 @@ from view.logon_dialog import LogonDialog
 
 class MyFrame(wx.Frame):
     def __init__(self):
-        super().__init__(parent=None, title=utils.get_config("software"), size=wx.Size(500, 300), style=wx.DEFAULT_FRAME_STYLE & ~wx.RESIZE_BORDER)
+        super().__init__(parent=None, title=utils.get_config("software"), size=wx.Size(500, 300), style=wx.DEFAULT_FRAME_STYLE)
 
         self.lock = threading.Lock()
         self.Center()  # 窗口居中
@@ -108,13 +111,15 @@ class MyFrame(wx.Frame):
         top_sizer_3.AddStretchSpacer(1)  # 这将添加一个伸展的空间器，使得按钮在底部中间
         top_panel_3.SetSizer(top_sizer_3)
 
-        form_panel = wx.Panel(center_panel, size=wx.Size(-1, -1))
+        # view_panel = wx.Panel(center_panel, size=wx.Size(-1, -1))
+        self.view_panel = scrolled.ScrolledPanel(center_panel, -1, style=wx.VSCROLL | wx.HSCROLL)
+        self.view_sizer = wx.BoxSizer(wx.VERTICAL)
         center_right_panel = wx.Panel(center_panel, size=wx.Size(0, -1))
         center_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        center_sizer.Add(form_panel, 1, wx.ALIGN_CENTER_VERTICAL)
+        center_sizer.Add(self.view_panel, 1, wx.EXPAND)
         center_sizer.Add(center_right_panel, 0, wx.ALIGN_CENTER_VERTICAL)
         center_panel.SetSizer(center_sizer)
-        self.form_init(form_panel)
+        self.view_init()
 
         bottom_sizer = wx.BoxSizer(wx.HORIZONTAL)
         on_btn_panel = wx.Panel(bottom_panel)
@@ -193,47 +198,45 @@ class MyFrame(wx.Frame):
 
         self.step_text.Label = next(iter(utils.get_step_data(utils.get_config("software"), utils.get_step(), default="")))
         self.SetTitle(utils.get_config("software"))
+        self.view_init()
 
-    def form_init(self, form_panel):
-        form_sizer = wx.GridBagSizer(vgap=10, hgap=10)
+    def view_init(self):
+        self.view_sizer.Clear(delete_windows=True)
+        index = 0
+        for view_item in utils.get_view():
+            if view_item.get("index") != index:
+                index_static_text = wx.StaticText(parent=self.view_panel)
+                index_static_text.SetLabel("第"+str(view_item.get("index"))+"次循环")
+                index_text_font = wx.Font(10, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD)
+                index_static_text.SetFont(index_text_font)
+                if not view_item.get("is_active"):
+                    disabled_text_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT)
+                    index_static_text.SetForegroundColour(disabled_text_color)
+                else:
+                    index_static_text.SetForegroundColour(wx.RED)
+                self.view_sizer.Add(index_static_text, 0, wx.ALL | wx.EXPAND, 5)
+                index = view_item.get("index")
+            title_static_text = wx.StaticText(parent=self.view_panel)
+            title_static_text.SetLabel(view_item.get("title"))
+            title_text_font = wx.Font(10, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD)
+            title_static_text.SetFont(title_text_font)
+            if not view_item.get("is_active"):
+                disabled_text_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT)
+                title_static_text.SetForegroundColour(disabled_text_color)
+            else:
+                title_static_text.SetForegroundColour(wx.Colour(150, 50, 200))
+            self.view_sizer.Add(title_static_text, 0, wx.LEFT, 10)
 
-        self.a_static_text = wx.StaticText(parent=form_panel, label="数据a：")
-        ConfigDialog.draw_static_text(self.a_static_text)
-        form_sizer.Add(window=self.a_static_text, flag=wx.ALIGN_CENTER | wx.ALL,
-                       pos=wx.GBPosition(0, 0), border=5)
-        self.a_text_ctrl = wx.TextCtrl(form_panel, size=wx.Size(140, -1), validator=NumberValidator(),
-                                                    name="数据a")
-        ConfigDialog.draw_text_ctrl(self.a_text_ctrl)
-        form_sizer.Add(window=self.a_text_ctrl, flag=wx.ALIGN_CENTER | wx.ALL, pos=(0, 1), border=5)
-
-        self.b_static_text = wx.StaticText(parent=form_panel, label="数据b：")
-        ConfigDialog.draw_static_text(self.b_static_text)
-        form_sizer.Add(window=self.b_static_text, flag=wx.ALIGN_CENTER | wx.ALL,
-                       pos=wx.GBPosition(0, 2), border=5)
-        self.b_text_ctrl = wx.TextCtrl(form_panel, size=wx.Size(140, -1), validator=NumberValidator(),
-                                       name="数据b")
-        ConfigDialog.draw_text_ctrl(self.b_text_ctrl)
-        form_sizer.Add(window=self.b_text_ctrl, flag=wx.ALIGN_CENTER | wx.ALL, pos=(0, 3), border=5)
-
-        self.c_static_text = wx.StaticText(parent=form_panel, label="数据c：")
-        ConfigDialog.draw_static_text(self.c_static_text)
-        form_sizer.Add(window=self.c_static_text, flag=wx.ALIGN_CENTER | wx.ALL,
-                       pos=wx.GBPosition(1, 0), border=5)
-        self.c_text_ctrl = wx.TextCtrl(form_panel, size=wx.Size(140, -1), validator=NumberValidator(),
-                                       name="数据c")
-        ConfigDialog.draw_text_ctrl(self.c_text_ctrl)
-        form_sizer.Add(window=self.c_text_ctrl, flag=wx.ALIGN_CENTER | wx.ALL, pos=(1, 1), border=5)
-
-        self.d_static_text = wx.StaticText(parent=form_panel, label="数据d：")
-        ConfigDialog.draw_static_text(self.d_static_text)
-        form_sizer.Add(window=self.d_static_text, flag=wx.ALIGN_CENTER | wx.ALL,
-                       pos=wx.GBPosition(1, 2), border=5)
-        self.d_text_ctrl = wx.TextCtrl(form_panel, size=wx.Size(140, -1), validator=NumberValidator(),
-                                       name="数据d")
-        ConfigDialog.draw_text_ctrl(self.d_text_ctrl)
-        form_sizer.Add(window=self.d_text_ctrl, flag=wx.ALIGN_CENTER | wx.ALL, pos=(1, 3), border=5)
-
-        form_panel.SetSizer(form_sizer)
+            content_static_text = wx.StaticText(parent=self.view_panel)
+            content_static_text.SetLabel(view_item.get("content"))
+            ConfigDialog.draw_static_text(content_static_text)
+            if not view_item.get("is_active"):
+                disabled_text_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT)
+                content_static_text.SetForegroundColour(disabled_text_color)
+            self.view_sizer.Add(content_static_text, 0, wx.LEFT, 20)
+        self.view_panel.SetSizer(self.view_sizer)
+        self.view_panel.SetupScrolling()
+        self.view_panel.Layout()
 
     def refresh(self):
         while True:
@@ -321,6 +324,7 @@ class MyFrame(wx.Frame):
             utils.set_step(1, 0)
             utils.set_event_status(1)
             utils.event.set()
+            utils.set_view("clear")
             self.disable()
             self.refresh()
 

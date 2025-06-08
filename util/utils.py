@@ -14,16 +14,18 @@ from util.exception_util import ThreadException
 data_url = r'./data/data.json'
 config_url = r'./data/config.properties'
 log_dir_url = r'./log/'
-step_url = r'./step/step.json'
+step_url = r'./step/steptest.json'
 dictionary_url = r'./data/dictionary.json'
 temporary_url = r'./data/temporary.json'
 info_url = r'./data/info.json'
+view_url = r'./data/view.json'
 event = threading.Event()
 config_lock = threading.Lock()
 data_lock = threading.Lock()
 dictionary_lock = threading.Lock()
 temporary_lock = threading.Lock()
 info_lock = threading.Lock()
+view_lock = threading.Lock()
 step_lock = threading.Lock()
 index_lock = threading.Lock()
 window_dict = dict()
@@ -37,7 +39,7 @@ def get_data(key=None, default=None):
         if key is None:
             return json.load(f).get(get_config("software"))
         else:
-            return json.load(f).get(get_config("software")).get(key, "")
+            return json.load(f).get(get_config("software")).get(key, default)
 
 def set_data(key, value):
     with data_lock:
@@ -181,6 +183,30 @@ def get_step_data_all(key):
     with open(step_url, 'r', encoding='utf-8') as f:
         step_list = list(json.load(f).get(key, []))
         return step_list
+
+def get_view(default=[]):
+    with open(view_url, 'r', encoding='utf-8') as f:
+        return json.load(f).get(get_config("software"), default)
+
+def set_view(key, index=None, title=None, content=None):
+    with view_lock:
+        with open(view_url, 'r', encoding='utf-8') as f:
+            view_data = json.load(f)
+        with open(view_url, 'w', encoding='utf-8') as f:
+            with tempfile.NamedTemporaryFile(mode='w', delete=False, encoding='utf-8',
+                                             dir=os.path.dirname(view_url)) as temp_f:
+                match key:
+                    case "add":
+                        view_data.get(get_config("software")).append({"index":index, "is_active":True, "title":title, "content":content})
+                    case "delete":
+                        for view_item in view_data.get(get_config("software")):
+                            if view_item.get("index") == index:
+                                view_item.update({"is_active":False})
+                    case "clear":
+                        view_data.get(get_config("software")).clear()
+                json.dump(view_data, temp_f, indent=4, ensure_ascii=False)
+                temp_file_path = temp_f.name
+        os.replace(temp_file_path, view_url)
 
 def set_index(index_num = 0, index = -1):
     with index_lock:

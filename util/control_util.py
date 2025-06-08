@@ -13,6 +13,7 @@ from pywinauto.controls.uiawrapper import UIAWrapper
 import wx
 
 from util import utils
+from util.exception_util import ViewException
 from util.keyring_util import api_client
 from util.logger_util import logger
 from pywinauto.timings import TimeoutError
@@ -34,10 +35,9 @@ def start(self):
                     wx.CallAfter(self.SetTitle, utils.get_config("software")+"-"+get_detail(key, automation))
                     do_automation(main_ui=self, step=key, automation=automation)
         utils.set_step(1, 0)
-        utils.set_event_status(0)
-        utils.set_thread_status(0)
-        wx.CallAfter(self.refresh)
-
+    utils.set_event_status(0)
+    utils.set_thread_status(0)
+    wx.CallAfter(self.refresh)
 
 def get_detail(step, automation):
     auto_type = automation.get("auto_type")
@@ -554,6 +554,7 @@ def ai_post(main_ui, step, sleep_time=default_sleep_time, before_sleep_time=0):
     if before_sleep_time != 0:
         time.sleep(before_sleep_time)
     loop = True
+    chart = True
     while loop:
         utils.pause()
         try:
@@ -566,7 +567,12 @@ def ai_post(main_ui, step, sleep_time=default_sleep_time, before_sleep_time=0):
             else:
                 img_url = utils.get_dictionary("image_save_path")+"\\"+utils.get_temporary("数据处理", "1001")+".png"
                 if not Path(img_url).exists():
-                    raise Exception("没有找到新的图谱，请先完成实验")
+                    raise ViewException("没有找到新的图谱，请先完成实验")
+                else:
+                    if chart:
+                        utils.set_view("add", utils.get_index(0), title="图谱文件:", content=img_url)
+                        wx.CallAfter(main_ui.view_init)
+                        chart = False
                 with open(img_url, "rb") as img_file:  # 注意这里是 "rb" (read binary) 模式
                     files_payload = {
                         'img': (os.path.basename(img_url), img_file.read(), 'image/png')
@@ -611,29 +617,37 @@ def ai_post(main_ui, step, sleep_time=default_sleep_time, before_sleep_time=0):
                             new_data.update({"时间(min) row"+str(i): str(gradient[0])})
                             # new_data.update({"线性类型 row"+str(i): "线性"})
                             new_data.update({"流速(mL/min) row"+str(i): result_dict["Flow_Rate_mL_min"]})
-                            new_data.update({"%A row"+str(i): str(gradient[1])})
+                            new_data.update({"%A row" + str(i): str(100 - gradient[1] - (0 if len(gradient)<=2 else gradient[2]))})
+                            new_data.update({"%B row"+str(i): str(gradient[1])})
                             if len(gradient)>2:
-                                new_data.update({"%B row"+str(i): str(gradient[2])})
-                            if len(gradient) > 3:
-                                new_data.update({"%C row"+str(i): str(gradient[3])})
+                                new_data.update({"%C row"+str(i): str(gradient[2])})
                         utils.set_data("泵", new_data)
             elif response.status_code == 409:
                 response = response.json()
                 if response["message"] == "请求重复":
                     utils.set_index(1)
                 elif response["message"] == "请求无效":
+                    utils.set_view(key="delete", index=utils.get_index())
+                    wx.CallAfter(main_ui.view_init)
                     utils.set_index(-1)
                 raise Exception(response["message"])
             else:
                 response = response.json()
                 raise Exception(response["message"])
-        except Exception as e:
-            dlg = wx.MessageDialog(None, str(e), "提示", wx.OK | wx.ICON_INFORMATION)
+        except ViewException as ve:
+            dlg = wx.MessageDialog(None, str(ve), "提示", wx.OK | wx.ICON_INFORMATION)
             dlg.ShowModal()  # 显示对话框
             dlg.Destroy()  # 销毁对话框，释放资源
-            logger.log(e)
+            logger.log(ve)
+            logging.exception(ve)
             utils.set_thread_status(0)
             wx.CallAfter(main_ui.refresh)
             continue
+        except Exception as e:
+            logger.log(e)
+            logging.exception(e)
+            continue
         utils.set_index(1)
+        utils.set_view(key="add", index=utils.get_index(), title="AI返回:", content=response["data"])
+        wx.CallAfter(main_ui.view_init)
         loop = False
