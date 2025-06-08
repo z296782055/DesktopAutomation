@@ -44,3 +44,5 @@ tqdm==4.67.1
 urllib3==1.26.20
 watchdog==6.0.0
 wxPython==4.2.3
+pdf2image==1.17.0
+pillow==11.2.1

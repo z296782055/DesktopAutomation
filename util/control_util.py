@@ -8,6 +8,8 @@ from pathlib import Path
 import _ctypes
 import pyperclip
 import pywinauto
+from PIL import Image
+from pdf2image import convert_from_path
 from pywinauto import Application
 from pywinauto.controls.uiawrapper import UIAWrapper
 import wx
@@ -568,15 +570,44 @@ def ai_post(main_ui, step, sleep_time=default_sleep_time, before_sleep_time=0):
                 }
                 response = api_client.make_api_request_sync(method="post", endpoint="ai_post/", data=data_payload)
             else:
-                img_url = utils.get_dictionary("image_save_path")+"\\"+utils.get_temporary("数据处理", "1001")+".png"
-                if not Path(img_url).exists():
+                file_url = utils.get_dictionary("image_save_path")+"\\"+utils.get_temporary("数据处理", "1001")
+                pdf_url = file_url + ".pdf"
+                img_url = file_url + ".png"
+                if not Path(pdf_url).exists():
                     raise ViewException("没有找到新的图谱，请先完成实验")
                 else:
                     if chart:
-                        utils.set_view("clear")
-                        utils.set_view("add", utils.get_index(0), title="图谱文件:", content=img_url)
+                        utils.set_view("add", utils.get_index(0), title="图谱文件:", content=pdf_url)
                         wx.CallAfter(main_ui.view_init)
                         chart = False
+                pages = convert_from_path(
+                    Path(pdf_url),
+                    poppler_path=r'tools\poppler\Library\bin',  # 明确指定 Poppler 的 bin 路径
+                    fmt='png'
+                )
+                if not pages:
+                    raise ViewException("图谱文件内容为空")
+                else:
+                    max_width = 0
+                    for page in pages:
+                        max_width = max(max_width, page.width)
+                    # 计算所有页面的总高度
+                    total_height = 0
+                    for page in pages:
+                        total_height += page.height
+                    # 3. 创建一张新的空白图片，用于存放拼接后的内容
+                    # 使用 'RGB' 模式，背景色为白色 (255, 255, 255)
+                    stitched_image = Image.new('RGB', (max_width, total_height), (255, 255, 255))
+                    # 4. 逐页将图片粘贴到新的空白图片上
+                    current_height = 0
+                    for page in pages:
+                        # 将当前页面粘贴到拼接图片上，x 坐标为 0，y 坐标为当前累计高度
+                        stitched_image.paste(page, (0, current_height))
+                        # 更新累计高度，为下一页做准备
+                        current_height += page.height
+                    # 5. 保存拼接后的图片
+                    # 对于 JPEG 格式，可以设置 quality 参数来控制文件大小和质量 (0-100)
+                    stitched_image.save(img_url, 'png')
                 with open(img_url, "rb") as img_file:  # 注意这里是 "rb" (read binary) 模式
                     files_payload = {
                         'img': (os.path.basename(img_url), img_file.read(), 'image/png')
