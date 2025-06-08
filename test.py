@@ -1,3 +1,4 @@
-import wx
+from util import utils
 
-print(wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT))
+s = utils.refer_dictionary("保存", 10001)
+print(s)

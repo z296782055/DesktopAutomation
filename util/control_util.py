@@ -133,7 +133,7 @@ def do_automation(main_ui, step, automation, sleep_time=default_sleep_time, befo
     elif auto_type == "list_select":
         list_select(main_ui=main_ui, window = automation.get("window"), kwargs = automation.get("kwargs") , click_type = automation.get("click_type"), ready=automation.get("ready"), step = step, select_window_title = automation.get("select_window_title"), select_window_kwargs = automation.get("select_window_kwargs"), sleep_time=sleep_time, before_sleep_time=before_sleep_time)
     elif auto_type == "edit_write":
-        edit_write(main_ui=main_ui, window=automation.get("window"), kwargs = automation.get("kwargs"), ready=automation.get("ready"), step=step, sleep_time=sleep_time, before_sleep_time=before_sleep_time)
+        edit_write(main_ui=main_ui, window=automation.get("window"), kwargs = automation.get("kwargs"), edit_type=automation.get("edit_type"), ready=automation.get("ready"), step=step, sleep_time=sleep_time, before_sleep_time=before_sleep_time)
     elif auto_type == "table_fill":
         table_fill(main_ui=main_ui, window=automation.get("window"), table_kwargs = automation.get("table_kwargs"), table_head_kwargs = automation.get("table_head_kwargs"), table_body_kwargs = automation.get("table_body_kwargs"), title = automation.get("title"), step=step, add = automation.get("add"), clear = automation.get("clear"), table_column = automation.get("table_column"), sleep_time=sleep_time, before_sleep_time=before_sleep_time)
     elif auto_type == "check":
@@ -261,7 +261,7 @@ def list_select(main_ui, window, kwargs, step, click_type=None, select_window_ti
             if select_window_kwargs is None:
                 select_window_kwargs = []
             if len(select_window_kwargs) != 0:
-                connect_child_window(window = window, kwargs=select_window_kwargs, title=select_window_title, step=step, sleep_time=sleep_time)
+                connect_child_window(main_ui=main_ui, window = window, kwargs=select_window_kwargs, title=select_window_title, step=step, sleep_time=sleep_time)
                 target_select_window = utils.window_dict.get(select_window_title)
             item = utils.get_data(step).get(target_list.element_info.automation_id if target_list.element_info.automation_id else target_list.element_info.name)
             if item is None:
@@ -297,7 +297,7 @@ def list_select(main_ui, window, kwargs, step, click_type=None, select_window_ti
             time.sleep(sleep_time)
             continue
         loop = False
-def edit_write(main_ui, window, kwargs, step, ready=None, sleep_time=default_sleep_time, before_sleep_time=0):
+def edit_write(main_ui, window, kwargs, step, edit_type=None, ready=None, sleep_time=default_sleep_time, before_sleep_time=0):
     if before_sleep_time != 0:
         time.sleep(before_sleep_time)
     loop = True
@@ -319,12 +319,15 @@ def edit_write(main_ui, window, kwargs, step, ready=None, sleep_time=default_sle
             if isinstance(text, int):
                 text = utils.refer_dictionary(step=step, key=text)
             target_edit.type_keys("^a")
-
-            try:
-                target_edit.set_text(text)
-            except AttributeError:
+            if edit_type == "copy":
                 pyperclip.copy(text)
                 target_edit.type_keys("^v")
+            else:
+                try:
+                    target_edit.set_text(text)
+                except AttributeError:
+                    pyperclip.copy(text)
+                    target_edit.type_keys("^v")
         except (pywinauto.findwindows.ElementNotFoundError,IndexError,_ctypes.COMError):
             logger.log("找不到控件:\nwindow:" + window + "\nkwargs:" + str(kwargs))
             time.sleep(sleep_time)
@@ -570,6 +573,7 @@ def ai_post(main_ui, step, sleep_time=default_sleep_time, before_sleep_time=0):
                     raise ViewException("没有找到新的图谱，请先完成实验")
                 else:
                     if chart:
+                        utils.set_view("clear")
                         utils.set_view("add", utils.get_index(0), title="图谱文件:", content=img_url)
                         wx.CallAfter(main_ui.view_init)
                         chart = False

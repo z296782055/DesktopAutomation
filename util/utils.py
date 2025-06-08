@@ -14,7 +14,7 @@ from util.exception_util import ThreadException
 data_url = r'./data/data.json'
 config_url = r'./data/config.properties'
 log_dir_url = r'./log/'
-step_url = r'./step/steptest.json'
+step_url = r'./step/step.json'
 dictionary_url = r'./data/dictionary.json'
 temporary_url = r'./data/temporary.json'
 info_url = r'./data/info.json'
@@ -48,6 +48,8 @@ def set_data(key, value):
         with open(data_url, 'w', encoding='utf-8') as f:
             with tempfile.NamedTemporaryFile(mode='w', delete=False, encoding='utf-8',
                                              dir=os.path.dirname(data_url)) as temp_f:
+                if data.get(get_config("software")) is None:
+                    data.update({get_config("software"):{}})
                 data.get(get_config("software")).update({key: value})
                 json.dump(data, temp_f, indent=4, ensure_ascii=False)
                 temp_file_path = temp_f.name
@@ -55,7 +57,7 @@ def set_data(key, value):
 
 def get_config(key, default=None):
     config = pr_properties.read(config_url)
-    if len(config.properties) == 0:
+    if not config.data:
         os.replace(config_url+".pr_bak", config_url)
         config = pr_properties.read(config_url)
     return config.get(key, default)
@@ -77,6 +79,8 @@ def set_dictionary(key, value):
         with open(dictionary_url, 'w', encoding='utf-8') as f:
             with tempfile.NamedTemporaryFile(mode='w', delete=False, encoding='utf-8',
                                              dir=os.path.dirname(dictionary_url)) as temp_f:
+                if dictionary_data.get(get_config("software")) is None:
+                    dictionary_data.update({get_config("software"):{}})
                 dictionary_data.get(get_config("software")).update({key : value})
                 json.dump(dictionary_data, temp_f, indent=4, ensure_ascii=False)
                 temp_file_path = temp_f.name
@@ -105,8 +109,10 @@ def set_temporary(step, key, value):
         with open(temporary_url, 'w', encoding='utf-8') as f:
             with tempfile.NamedTemporaryFile(mode='w', delete=False, encoding='utf-8',
                                              dir=os.path.dirname(temporary_url)) as temp_f:
+                if temporary_data.get(get_config("software")) is None:
+                    temporary_data.update({get_config("software"): {}})
                 if temporary_data.get(get_config("software")).get(step) is None:
-                    temporary_data.get(get_config("software")).update({temporary_data.get(get_config("software")).get(step): {}})
+                    temporary_data.get(get_config("software")).update({step: {}})
                 temporary_data.get(get_config("software")).get(step).update({str(key): value})
                 json.dump(temporary_data, temp_f, indent=4, ensure_ascii=False)
                 temp_file_path = temp_f.name
@@ -131,7 +137,7 @@ def refer_dictionary(step, key):
                 case "text":
                     value += text_items[text_item_key]
                 case "data":
-                    data = get_data(key=get_config("software"))
+                    data = get_data()
                     for text_item in text_items[text_item_key].split(sep="."):
                         data = data[text_item]
                     if isinstance(data, int):
@@ -184,7 +190,9 @@ def get_step_data_all(key):
         step_list = list(json.load(f).get(key, []))
         return step_list
 
-def get_view(default=[]):
+def get_view(default=None):
+    if default is None:
+        default = []
     with open(view_url, 'r', encoding='utf-8') as f:
         return json.load(f).get(get_config("software"), default)
 
@@ -210,7 +218,6 @@ def set_view(key, index=None, title=None, content=None):
 
 def set_index(index_num = 0, index = -1):
     with index_lock:
-        config = pr_properties.read(config_url)
         value = sqllite_util.get("index")
         if index != -1:
             sqllite_util.update("index", index + index_num)

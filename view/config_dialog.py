@@ -57,7 +57,7 @@ class ConfigDialog(wx.Dialog):
         ConfigDialog.draw_static_text(self.default_file_name_static_text)
         form_sizer.Add(window=self.default_file_name_static_text, flag=wx.ALIGN_CENTER | wx.ALL,
                        pos=wx.GBPosition(0, 2), border=5)
-        self.default_file_name_combo_box = wx.ComboBox(form_panel,name="default_file_name", value="%Y%m%d%H%M%S",choices=["%Y%m%d%H%M%S","%Y%m%d"],size=wx.Size(140, -1),style=wx.CB_READONLY)
+        self.default_file_name_combo_box = wx.ComboBox(form_panel,name="default_file_name", value="%Y%m%d%H%M%S",choices=["%Y%m%d%H%M%S","%Y-%m-%d %H:%M:%S"],size=wx.Size(140, -1),style=wx.CB_READONLY)
         ConfigDialog.draw_combo_box(self.default_file_name_combo_box)
         form_sizer.Add(window=self.default_file_name_combo_box, flag=wx.ALIGN_CENTER | wx.ALL, pos=(0, 3), border=5)
 

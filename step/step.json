@@ -538,7 +538,7 @@
           {"child_window":{"title":"下载  row%d", "control_type":"DataItem"}}
         ]
       },
-      {"auto_type" : "edit_write", "window" : "数据处理", "kwargs": [
+      {"auto_type" : "edit_write", "window" : "数据处理", "edit_type":"copy", "kwargs": [
         {"child_window":{"title":"另存为", "control_type":"Window"}},
         {"child_window":{"title":"文件名:", "auto_id":"FileNameControlHost", "control_type":"ComboBox"}},
         {"child_window":{"title":"文件名:", "auto_id":"1001", "control_type":"Edit"}}
