@@ -268,8 +268,8 @@ class MyFrame(wx.Frame):
 
     def show_context_menu(self, event):
         context_menu = wx.Menu()
-        context_menu.Append(wx.ID_COPY, "复制(&C)\tCtrl+C")
-        context_menu.Append(wx.ID_PASTE, "粘贴(&V)\tCtrl+V")
+        # context_menu.Append(wx.ID_COPY, "复制(&C)\tCtrl+C")
+        # context_menu.Append(wx.ID_PASTE, "粘贴(&V)\tCtrl+V")
         self.PopupMenu(context_menu)  # 显示上下文菜单:ml-citation{ref="4" data="citationList"}
 
     def on_exit(self, event):
