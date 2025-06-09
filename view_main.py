@@ -1,15 +1,13 @@
 import threading
 import time
 import wx
-from wx import Colour
-
 from util import utils
 from util.keyring_util import EVT_FORCE_RELOGIN_TYPE, api_client, EVT_FORCE_RELOGIN
-from util.validator_util import NumberValidator
 from view.config_dialog import ConfigDialog
 import wx.lib.scrolledpanel as scrolled
 import keyboard
 
+from view.cue_word_dialog import CueWordDialog
 from view.info_dialog import InfoDialog
 from view.login_dialog import LoginDialog
 from view.logon_dialog import LogonDialog
@@ -39,6 +37,7 @@ class MyFrame(wx.Frame):
 
         operate_menu = wx.Menu()
         restart_item = operate_menu.Append(wx.ID_ANY, "初始化(&R)\tCtrl+R")
+        cu_word_item = operate_menu.Append(wx.ID_ANY, "AI提示词设置(&P)\tCtrl+P")
         self.menubar.Append(operate_menu, "&操作")
 
         view_menu = wx.Menu()
@@ -53,7 +52,7 @@ class MyFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.on_exit, exit_item)
         self.Bind(wx.EVT_MENU, self.on_info, info_item)
         self.Bind(wx.EVT_MENU, self.on_restart, restart_item)
-
+        self.Bind(wx.EVT_MENU, self.on_cu_word, cu_word_item)
 
         box = wx.BoxSizer(wx.VERTICAL)
         top_panel = wx.Panel(self, size=wx.Size(-1, 40), style=wx.BORDER_SUNKEN)
@@ -359,6 +358,11 @@ class MyFrame(wx.Frame):
 
     def on_logon(self, event):
         dlg = LogonDialog(self)
+        dlg.ShowModal()  # 显示模态对话框
+        dlg.Destroy()  # 关闭后销毁对话框
+
+    def on_cu_word(self, event):
+        dlg = CueWordDialog(self)
         dlg.ShowModal()  # 显示模态对话框
         dlg.Destroy()  # 关闭后销毁对话框
 

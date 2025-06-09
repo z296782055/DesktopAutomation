@@ -4,19 +4,7 @@
             "index": 1,
             "is_active": true,
             "title": "AI返回:",
-            "content": "Method_Type: Gradient\nMobile_Phase_A: 0.1% Formic acid in water\nMobile_Phase_B: Acetonitrile\nMobile_Phase_C: 无\nMobile_Phase_D: 无\nRatio_A_B: 无\nGradient_Program: [[0, 5], [3, 5], [25, 85], [27, 85], [28, 5], [33, 5]]\nFlow_Rate_mL_min: 1.0\nColumn_Temperature_C: 35\nDetection_Wavelength_nm: 254\nEstimated_RT_Ibuprofen_min: 无\nEstimated_RT_Ketoprofen_min: 无\nEstimated_Run_Time_min: 33"
-        },
-        {
-            "index": 1,
-            "is_active": true,
-            "title": "图谱文件:",
-            "content": "D:\\fk\\test\\20250608191408.pdf"
-        },
-        {
-            "index": 2,
-            "is_active": true,
-            "title": "AI返回:",
-            "content": "Method_Type: Gradient\nMobile_Phase_A: 0.1% Formic acid in water\nMobile_Phase_B: Acetonitrile\nMobile_Phase_C: 无\nMobile_Phase_D: 无\nRatio_A_B: 无\nGradient_Program: [[0, 2], [5, 2], [35, 85], [37, 85], [37.1, 2], [42, 2]]\nFlow_Rate_mL_min: 1.0\nColumn_Temperature_C: 35\nDetection_Wavelength_nm: 254\nEstimated_RT_Ibuprofen_min: 无\nEstimated_RT_Ketoprofen_min: 无\nEstimated_Run_Time_min: 42"
+            "content": "Mobile_Phase_A: 0.1% Formic Acid in Water\nMobile_Phase_B: Acetonitrile\nMobile_Phase_C: 无\nMobile_Phase_D: 无\nRatio_A_B: 50:50 (v/v)\nGradient_Program: 无\nFlow_Rate_mL_min: 1.0\nColumn_Temperature_C: 25\nDetection_Wavelength_nm: 254\nEstimated_RT_Ibuprofen_min: 6.7\nEstimated_RT_Ketoprofen_min: 9.2\nEstimated_Run_Time_min: 15"
         }
     ]
 }

@@ -564,11 +564,23 @@ def ai_post(main_ui, step, sleep_time=default_sleep_time, before_sleep_time=0):
         utils.pause()
         try:
             if int(utils.get_index()) == 0:
-                data_payload = {
-                    "software": utils.get_config("software"),
-                    "index": int(utils.get_index())
-                }
-                response = api_client.make_api_request_sync(method="post", endpoint="ai_post/", data=data_payload)
+                with open("ai/" + utils.get_config("software") + "/text/index.txt", "rb") as text_file:
+                    text = text_file.read()
+                    if not text:
+                        raise ViewException("AI提示词不能为空")
+                    data_payload = {
+                        "software": utils.get_config("software"),
+                        "index": int(utils.get_index()),
+                        "text": text
+                    }
+                if Path(utils.get_cue_img_url()).exists():
+                    with open(utils.get_cue_img_url(), "rb") as img_file:  # 注意这里是 "rb" (read binary) 模式
+                        files_payload = {
+                            'img': (os.path.basename(utils.get_cue_img_url()), img_file.read(), 'image/png')
+                        }
+                    response = api_client.make_api_request_sync(method="post", endpoint="ai_post/", data=data_payload, files=files_payload)
+                else:
+                    response = api_client.make_api_request_sync(method="post", endpoint="ai_post/", data=data_payload)
             else:
                 file_url = utils.get_dictionary("image_save_path")+"\\"+utils.get_temporary("数据处理", "1001")
                 pdf_url = file_url + ".pdf"
@@ -612,7 +624,7 @@ def ai_post(main_ui, step, sleep_time=default_sleep_time, before_sleep_time=0):
                     files_payload = {
                         'img': (os.path.basename(img_url), img_file.read(), 'image/png')
                     }
-                with open("ai/"+utils.get_config("software")+"/text/index.txt", "rb") as text_file:
+                with open("ai/"+utils.get_config("software")+"/text/after.txt", "rb") as text_file:
                     data_payload = {
                         "software":utils.get_config("software"),
                         "index": utils.get_index(),
@@ -621,42 +633,45 @@ def ai_post(main_ui, step, sleep_time=default_sleep_time, before_sleep_time=0):
                 response = api_client.make_api_request_sync(method="post", endpoint="ai_post/", data=data_payload, files=files_payload)
             # 检查响应
             if response.status_code == 200:
-                response = response.json()
-                if response["success"] is True:
-                    utils.clean_temporary()
-                    result_dict = dict()
-                    for item in response["data"].split("\n"):
-                        kv = item.split(": ", 1)
-                        result_dict.update({kv[0]: kv[1]})
-                    if result_dict["Column_Temperature_C"] != "无":
-                        new_data = utils.get_data("柱温箱")
-                        new_data.update({"txtAimTemperatureSet":result_dict["Column_Temperature_C"]})
-                        utils.set_data("柱温箱", new_data)
-                    if result_dict["Estimated_Run_Time_min"] != "无":
-                        new_data = utils.get_data("方法概要")
-                        new_data.update({"txtRunTime":result_dict["Estimated_Run_Time_min"]})
-                        utils.set_data("方法概要", new_data)
-                    if result_dict["Detection_Wavelength_nm"] != "无":
-                        new_data = utils.get_data("检测器")
-                        new_data.update({"txtLambda1":result_dict["Detection_Wavelength_nm"]})
-                        utils.set_data("检测器", new_data)
-                    if result_dict["Flow_Rate_mL_min"] != "无":
-                        new_data = utils.get_data("泵")
-                        new_data.update({"txtFlowVelocity": result_dict["Flow_Rate_mL_min"]})
-                        utils.set_data("泵", new_data)
-                    if result_dict["Gradient_Program"] != "无":
-                        gradient_list = json.loads(result_dict["Gradient_Program"])
-                        new_data = {key: value for key, value in utils.get_data("泵").items() if " row" not in key}
-                        new_data.update({"gcGradient": str(len(gradient_list))})
-                        for i,gradient in enumerate(gradient_list):
-                            new_data.update({"时间(min) row"+str(i): str(gradient[0])})
-                            # new_data.update({"线性类型 row"+str(i): "线性"})
-                            new_data.update({"流速(mL/min) row"+str(i): result_dict["Flow_Rate_mL_min"]})
-                            new_data.update({"%A row" + str(i): str(100 - gradient[1] - (0 if len(gradient)<=2 else gradient[2]))})
-                            new_data.update({"%B row"+str(i): str(gradient[1])})
-                            if len(gradient)>2:
-                                new_data.update({"%C row"+str(i): str(gradient[2])})
-                        utils.set_data("泵", new_data)
+                try:
+                    response = response.json()
+                    if response["success"] is True:
+                        utils.clean_temporary()
+                        result_dict = dict()
+                        for item in response["data"].split("\n"):
+                            kv = item.split(": ", 1)
+                            result_dict.update({kv[0]: kv[1]})
+                        if result_dict["Column_Temperature_C"] != "无":
+                            new_data = utils.get_data("柱温箱")
+                            new_data.update({"txtAimTemperatureSet":result_dict["Column_Temperature_C"]})
+                            utils.set_data("柱温箱", new_data)
+                        if result_dict["Estimated_Run_Time_min"] != "无":
+                            new_data = utils.get_data("方法概要")
+                            new_data.update({"txtRunTime":result_dict["Estimated_Run_Time_min"]})
+                            utils.set_data("方法概要", new_data)
+                        if result_dict["Detection_Wavelength_nm"] != "无":
+                            new_data = utils.get_data("检测器")
+                            new_data.update({"txtLambda1":result_dict["Detection_Wavelength_nm"]})
+                            utils.set_data("检测器", new_data)
+                        if result_dict["Flow_Rate_mL_min"] != "无":
+                            new_data = utils.get_data("泵")
+                            new_data.update({"txtFlowVelocity": result_dict["Flow_Rate_mL_min"]})
+                            utils.set_data("泵", new_data)
+                        if result_dict["Gradient_Program"] != "无":
+                            gradient_list = json.loads(result_dict["Gradient_Program"])
+                            new_data = {key: value for key, value in utils.get_data("泵").items() if " row" not in key}
+                            new_data.update({"gcGradient": str(len(gradient_list))})
+                            for i,gradient in enumerate(gradient_list):
+                                new_data.update({"时间(min) row"+str(i): str(gradient[0])})
+                                # new_data.update({"线性类型 row"+str(i): "线性"})
+                                new_data.update({"流速(mL/min) row"+str(i): result_dict["Flow_Rate_mL_min"]})
+                                new_data.update({"%A row" + str(i): str(100 - gradient[1] - (0 if len(gradient)<=2 else gradient[2]))})
+                                new_data.update({"%B row"+str(i): str(gradient[1])})
+                                if len(gradient)>2:
+                                    new_data.update({"%C row"+str(i): str(gradient[2])})
+                            utils.set_data("泵", new_data)
+                except Exception as e:
+                    raise ViewException("AI返回数据格式不对，请检查提示词")
             elif response.status_code == 409:
                 response = response.json()
                 if response["message"] == "请求重复":

@@ -28,6 +28,7 @@ info_lock = threading.Lock()
 view_lock = threading.Lock()
 step_lock = threading.Lock()
 index_lock = threading.Lock()
+cue_word_lock = threading.Lock()
 window_dict = dict()
 
 def generate_random_string(length=36):
@@ -57,7 +58,7 @@ def set_data(key, value):
 
 def get_config(key, default=None):
     config = pr_properties.read(config_url)
-    if not config.data:
+    if len(config.properties) == 0:
         os.replace(config_url+".pr_bak", config_url)
         config = pr_properties.read(config_url)
     return config.get(key, default)
@@ -301,3 +302,21 @@ def pause():
     if get_thread_status() != 1:
         raise ThreadException("线程关闭...")
 
+def get_cue_word():
+    cue_word_url = "ai/"+get_config("software")+"/text/index.txt"
+    with open(cue_word_url, 'r', encoding='utf-8') as f:
+        return f.read()
+
+def set_cue_word(value):
+    with cue_word_lock:
+        cue_word_url = "ai/" + get_config("software") + "/text/index.txt"
+        with open(cue_word_url, 'w', encoding='utf-8') as f:
+            with tempfile.NamedTemporaryFile(mode='w', delete=False, encoding='utf-8',
+                                             dir=os.path.dirname(cue_word_url)) as temp_f:
+                temp_f.write(value)
+                temp_file_path = temp_f.name
+        os.replace(temp_file_path, cue_word_url)
+
+def get_cue_img_url():
+    img_url = "ai/" + get_config("software") + "/img/index.png"
+    return img_url

@@ -65,7 +65,7 @@ class LogonDialog(wx.Dialog):
         self.init()
 
     def init(self):
-        self.username_text_ctrl.SetValue(utils.get_config("username"))
+        self.username_text_ctrl.SetValue(utils.get_config("username",""))
         self.username_text_ctrl.Enable(False)
 
     def on_logoff(self, event):

@@ -1,0 +1,86 @@
+化合物: 舒芬太尼
+SMILES: O=C(CC)N(C1(COC)CCN(CCC2=CC=CS2)CC1)C3=CC=CC=C3
+logP: 3.787, logD PH 7.4: 3.537
+pKa (酸): 9.882, pKa (碱): 7.994
+化合物: 杂质B
+SMILES: COC[C@]1(N(C2=CC=CC=C2)C(CC)=O)CCN@+([O-])CC1
+logP: 2.306, logD PH 7.4: 2.479
+pKa (酸): 9.288, pKa (碱): 6.483
+化合物: 杂质A
+SMILES: O=C(CC)N(C1(COC)CCNCC1)C2=CC=CC=C2
+logP: 2.166, logD PH 7.4: 2.104
+pKa (酸): 10.311, pKa (碱): 8.909
+化合物: 杂质C
+SMILES: OCC1(CCN(CCC2=CC=CS2)CC1)NC3=CC=CC=C3
+logP: 2.87, logD PH 7.4: 2.698
+pKa (酸): 10.499, pKa (碱): 8.349
+化合物:杂质D
+SMILES: CC(N(C1(COC)CCN(CCC2=CC=CS2)CC1)C3=CC=CC=C3)=O
+logP: 3.189, logD PH 7.4: 3.133
+pKa (酸): 8.911, pKa (碱): 8.03
+化合物: 杂质E
+SMILES: COCC1(CCN(CCC2=CC=CS2)CC1)NC3=CC=CC=C3
+logP: 3.51, logD PH 7.4: 3.124
+pKa (酸): 9.72, pKa (碱): 8.014
+化合物: 杂质F
+SMILES: COCC1(CCN(CCC2=CSC=C2)CC1)N(C(CC)=O)C3=CC=CC=C3
+logP: 3.643, logD PH 7.4: 3.453
+pKa (酸): 9.778, pKa (碱): 8.015
+化合物:杂质G
+SMILES: O=C(CC)OCC1(CCN(CCC2=CC=CS2)CC1)N(C(CC)=O)C3=CC=CC=C3
+logP: 3.906, logD PH 7.4: 3.621
+pKa (酸): 9.609, pKa (碱): 7.63
+化合物: 杂质H
+SMILES: O=C(CCC)N(C1(COC)CCN(CCC2=CC=CS2)CC1)C3=CC=CC=C3
+logP: 4.202, logD PH 7.4: 3.785
+pKa (酸): 10.34, pKa (碱): 7.778
+化合物: 杂质I
+SMILES: COC[C@]1(N(C2=CC=CC=C2)C(CC)=O)CCN@+([O-])CC1
+logP: 2.306, logD PH 7.4: 2.479
+pKa (酸): 9.288, pKa (碱): 6.483
+化合物: SM1
+SMILES: COCC1(CCN(CC2=CC=CC=C2)CC1)NC3=CC=CC=C3
+logP: 3.281, logD PH 7.4: 3.074
+pKa (酸): 8.818, pKa (碱): 8.206
+化合物: I1
+SMILES: COCC1(CCN(CC2=CC=CC=C2)CC1)N(C(CC)=O)C3=CC=CC=C3
+logP: 4.011, logD PH 7.4: 3.677
+pKa (酸): 9.969, pKa (碱): 8.094
+化合物: SM3
+SMILES: BrCCC1=CC=CS1
+logP: 3.081, logD PH 7.4: 2.757
+pKa (酸): 8.822, pKa (碱): 5.526
+化合物: S3-1
+SMILES: OCCC1=CC=CS1
+logP: 1.018, logD PH 7.4: 1.07
+pKa (酸): 10.475, pKa (碱): 4.834
+化合物: S3-2
+SMILES: C=CC1=CC=CS1
+logP: 2.472, logD PH 7.4: 2.376
+pKa (酸): 9.78, pKa (碱): 6.485
+化合物: S3-3
+SMILES: BrCCC1=CSC=C1
+logP: 3.304, logD PH 7.4: 2.901
+pKa (酸): 8.954, pKa (碱): 5.349
+以上是系列待分离物质的名称和SMILES描述符。图为log D随PH值变化图
+请为使用C18色谱柱 (250 x 4.6 mm, 5µm) 和 1 mL/min 流速分离检测以上物质提供 HPLC 条件。目标是所有物质均能得到基线分离。
+输出要求：
+仅输出结果： 严格禁止包含任何推理、解释、依据、建议、引言或结论性文字。只提供具体的条件参数。
+格式化输出： 使用清晰的结构，便于 Python 解析。
+输出方案要求： 仅输出一个你认为最有可能的方案。
+参数格式： 每个参数使用 "参数名: 值" 的格式，每行一个参数。
+参数命名： 使用统一且明确的英文或拼音参数名（便于编程处理），并包含最多四个流动相组分。例如：Method_Type: (Isocratic / Gradient)
+Mobile_Phase_A:
+Mobile_Phase_B:
+Mobile_Phase_C:
+Mobile_Phase_D:
+Ratio_A_B: (仅用于等度，如果涉及更多组分，请相应调整或说明)
+Gradient_Program: (仅用于梯度, 使用列表嵌套列表格式, e.g., [[time_min, percent_B], [time_min, percent_B]] 或包含更多组分百分比)
+Flow_Rate_mL_min:
+Column_Temperature_C:
+Detection_Wavelength_nm:
+Estimated_RT_Ibuprofen_min:
+Estimated_RT_Ketoprofen_min:
+Estimated_Run_Time_min:
+处理未使用的流动相： 如果流动相 C 或 D 未被使用，则其对应的参数值必须明确输出为 无。
+直接开始输出结果，不要包含任何这句话之前或之后的多余文字。
