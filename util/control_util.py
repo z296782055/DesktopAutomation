@@ -559,7 +559,6 @@ def ai_post(main_ui, step, sleep_time=default_sleep_time, before_sleep_time=0):
     if before_sleep_time != 0:
         time.sleep(before_sleep_time)
     loop = True
-    chart = True
     while loop:
         utils.pause()
         try:
@@ -588,10 +587,9 @@ def ai_post(main_ui, step, sleep_time=default_sleep_time, before_sleep_time=0):
                 if not Path(pdf_url).exists():
                     raise ViewException("没有找到新的图谱，请先完成实验")
                 else:
-                    if chart:
-                        utils.set_view("add", utils.get_index(0), title="图谱文件:", content=pdf_url)
-                        wx.CallAfter(main_ui.view_init)
-                        chart = False
+                    utils.set_view("add", utils.get_index(0), title="图谱文件:", content=pdf_url)
+                    wx.CallAfter(main_ui.view_init)
+                    chart = False
                 pages = convert_from_path(
                     Path(pdf_url),
                     poppler_path=r'tools\poppler\Library\bin',  # 明确指定 Poppler 的 bin 路径
@@ -640,26 +638,28 @@ def ai_post(main_ui, step, sleep_time=default_sleep_time, before_sleep_time=0):
                         result_dict = dict()
                         for item in response["data"].split("\n"):
                             kv = item.split(": ", 1)
-                            result_dict.update({kv[0]: kv[1]})
-                        if result_dict.get("Column_Temperature_C") is not None and result_dict["Column_Temperature_C"] != "无":
+                            if len(kv) == 2:
+                                result_dict.update({kv[0]: kv[1]})
+                        if result_dict.get("Column_Temperature_C") != "None" and result_dict["Column_Temperature_C"] != "无":
                             new_data = utils.get_data("柱温箱")
                             new_data.update({"txtAimTemperatureSet":result_dict["Column_Temperature_C"]})
                             utils.set_data("柱温箱", new_data)
-                        if result_dict.get("Estimated_Run_Time_min") is not None and result_dict["Estimated_Run_Time_min"] != "无":
+                        if result_dict.get("Estimated_Run_Time_min") != "None" and result_dict["Estimated_Run_Time_min"] != "无":
                             new_data = utils.get_data("方法概要")
                             new_data.update({"txtRunTime":result_dict["Estimated_Run_Time_min"]})
                             utils.set_data("方法概要", new_data)
-                        if result_dict.get("Detection_Wavelength_nm") is not None and result_dict["Detection_Wavelength_nm"] != "无":
+                        if result_dict.get("Detection_Wavelength_nm") != "None" and result_dict["Detection_Wavelength_nm"] != "无":
                             new_data = utils.get_data("检测器")
                             new_data.update({"txtLambda1":result_dict["Detection_Wavelength_nm"]})
                             utils.set_data("检测器", new_data)
-                        if result_dict.get("Flow_Rate_mL_min") is not None and result_dict["Flow_Rate_mL_min"] != "无":
+                        if result_dict.get("Flow_Rate_mL_min")  != "None" and result_dict["Flow_Rate_mL_min"] != "无":
                             new_data = utils.get_data("泵")
                             new_data.update({"txtFlowVelocity": result_dict["Flow_Rate_mL_min"]})
                             utils.set_data("泵", new_data)
-                        if result_dict.get("Gradient_Program") is not None and result_dict["Gradient_Program"] != "无":
+                        new_data = {key: value for key, value in utils.get_data("泵").items() if " row" not in key}
+                        utils.set_data("泵", new_data)
+                        if result_dict.get("Gradient_Program") != "None" and result_dict["Gradient_Program"] != "无":
                             gradient_list = json.loads(result_dict["Gradient_Program"])
-                            new_data = {key: value for key, value in utils.get_data("泵").items() if " row" not in key}
                             new_data.update({"gcGradient": str(len(gradient_list))})
                             for i,gradient in enumerate(gradient_list):
                                 new_data.update({"时间(min) row"+str(i): str(gradient[0])})

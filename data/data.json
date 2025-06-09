@@ -5,7 +5,7 @@
             "listBoxItemB": "新建色谱系统10"
         },
         "方法概要": {
-            "txtRunTime": "40"
+            "txtRunTime": "15"
         },
         "泵": {
             "txtFlowVelocity": "1.0",
@@ -23,36 +23,36 @@
             "gcGradient": "5",
             "时间(min) row0": "0",
             "流速(mL/min) row0": "1.0",
-            "%A row0": "60",
-            "%B row0": "40",
+            "%A row0": "95",
+            "%B row0": "5",
             "时间(min) row1": "10",
             "流速(mL/min) row1": "1.0",
-            "%A row1": "40",
-            "%B row1": "60",
-            "时间(min) row2": "20",
+            "%A row1": "5",
+            "%B row1": "95",
+            "时间(min) row2": "12",
             "流速(mL/min) row2": "1.0",
-            "%A row2": "10",
-            "%B row2": "90",
-            "时间(min) row3": "30",
+            "%A row2": "5",
+            "%B row2": "95",
+            "时间(min) row3": "12.1",
             "流速(mL/min) row3": "1.0",
-            "%A row3": "10",
-            "%B row3": "90",
-            "时间(min) row4": "35",
+            "%A row3": "95",
+            "%B row3": "5",
+            "时间(min) row4": "15",
             "流速(mL/min) row4": "1.0",
-            "%A row4": "60",
-            "%B row4": "40"
+            "%A row4": "95",
+            "%B row4": "5"
         },
         "柱温箱": {
             "txtWaitTime": "30",
             "txtTemperatureAccuracy": "0.1",
-            "txtAimTemperatureSet": "25",
+            "txtAimTemperatureSet": "30",
             "gcEvent": "1",
             "时间(min) row0": "1",
             "事件类型 row0": "停止控温",
             "事件值 row0": "30"
         },
         "检测器": {
-            "txtLambda1": "254",
+            "txtLambda1": "275",
             "txtLambda2": "700",
             "rbLightType": "氘灯",
             "rblAnalysisType": "双波长Vis",

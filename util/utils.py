@@ -161,13 +161,12 @@ def refer_dictionary(step, key):
 
 def set_step(step_num = 0, step = -1):
     with step_lock:
-        config = pr_properties.read(config_url)
         value = sqllite_util.get("step")
         if step != -1:
-            get_step_data(config["software"], step + step_num)
+            get_step_data(get_config("software"), step + step_num)
             sqllite_util.update("step", step + step_num)
         else :
-            get_step_data(config["software"], value + step_num)
+            get_step_data(get_config("software"), value + step_num)
             sqllite_util.update("step", value + step_num)
 
 def get_step(default=1):
@@ -206,7 +205,8 @@ def set_view(key, index=None, title=None, content=None):
                                              dir=os.path.dirname(view_url)) as temp_f:
                 match key:
                     case "add":
-                        view_data.get(get_config("software")).append({"index":index, "is_active":True, "title":title, "content":content})
+                        if len(view_data.get(get_config("software")))==0 or view_data.get(get_config("software"))[-1].get("title") != title:
+                            view_data.get(get_config("software")).append({"index":index, "is_active":True, "title":title, "content":content})
                     case "delete":
                         for view_item in view_data.get(get_config("software")):
                             if view_item.get("index") == index:

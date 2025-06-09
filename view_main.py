@@ -16,7 +16,8 @@ class MyFrame(wx.Frame):
     def __init__(self):
         super().__init__(parent=None, title=utils.get_config("software"), size=wx.Size(500, 300), style=wx.DEFAULT_FRAME_STYLE)
 
-        self.lock = threading.Lock()
+        self.on_lock = threading.Lock()
+        self.off_lock = threading.Lock()
         self.Center()  # 窗口居中
         # self.panel = wx.Panel(self)
         self.Bind(wx.EVT_CONTEXT_MENU, self.show_context_menu)  # 绑定右键事件:ml-citation{ref="4" data="citationList"}
@@ -280,7 +281,7 @@ class MyFrame(wx.Frame):
     def on_on(self, event):
         def call(success, message):
             if success:
-                with self.lock:
+                with self.on_lock:
                     from util import control_util
                     utils.set_event_status(1)
                     utils.event.set()
@@ -308,7 +309,7 @@ class MyFrame(wx.Frame):
             return
 
     def on_off(self, event):
-        with self.lock:
+        with self.off_lock:
             auto_thread = utils.thread_is_alive("auto_thread")
             if auto_thread:
                 utils.set_event_status(0)

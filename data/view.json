@@ -4,7 +4,13 @@
             "index": 1,
             "is_active": true,
             "title": "AI返回:",
-            "content": "Mobile_Phase_A: 0.1% Trifluoroacetic acid in water\nMobile_Phase_B: Acetonitrile\nMobile_Phase_C: 无\nMobile_Phase_D: 无\nRatio_A_B: Isocratic\nFlow_Rate_mL_min: 1.0\nColumn_Temperature_C: 25\nDetection_Wavelength_nm: 254\nEstimated_RT_Ibuprofen_min: 9.5\nEstimated_RT_Ketoprofen_min: 13.2\nEstimated_Run_Time_min: 25"
+            "content": "Method_Type: Gradient\nMobile_Phase_A: 0.1% Formic Acid in Water\nMobile_Phase_B: Acetonitrile\nMobile_Phase_C: 无\nMobile_Phase_D: 无\nGradient_Program: [[0, 5], [10, 95], [12, 95], [12.1, 5], [15, 5]]\nFlow_Rate_mL_min: 1.0\nColumn_Temperature_C: 30\nDetection_Wavelength_nm: 275\nEstimated_RT_Ibuprofen_min: 5.7\nEstimated_RT_Ketoprofen_min: 7.9\nEstimated_Run_Time_min: 15"
+        },
+        {
+            "index": 1,
+            "is_active": true,
+            "title": "图谱文件:",
+            "content": "D:\\fk\\test\\图片2.pdf"
         }
     ]
 }

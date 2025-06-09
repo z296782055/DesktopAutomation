@@ -39,7 +39,7 @@ def get(key):
             value_row = cursor.fetchone()
             if value_row:
                 actual_value = value_row['value']
-                print(f"获取到的'{key}': {actual_value}")
+                # print(f"获取到的'{key}': {actual_value}")
                 return actual_value  # 返回的是实际的值（例如整数、字符串等），而不是整个 row 对象
             else:
                 print(f"键 '{key}' 未找到。")
