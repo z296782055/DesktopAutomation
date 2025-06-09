@@ -102,7 +102,9 @@ class MyFrame(wx.Frame):
         scaled_image = image.Rescale(20, 20, wx.IMAGE_QUALITY_HIGH)
         scaled_bitmap = scaled_image.ConvertToBitmap()
         self.on_login_btn = wx.BitmapButton(parent=top_panel_3, style=wx.BORDER_NONE, bitmap=scaled_image)
+        self.on_login_btn.Bind(wx.EVT_BUTTON, self.on_login)
         self.on_login_btn.SetToolTip("登录")
+
 
         top_sizer_3 = wx.BoxSizer(wx.HORIZONTAL)
         top_sizer_3.AddStretchSpacer(1)  # 这将添加一个伸展的空间器，使得按钮在底部中间

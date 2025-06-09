@@ -83,4 +83,4 @@ Estimated_RT_Ibuprofen_min:
 Estimated_RT_Ketoprofen_min:
 Estimated_Run_Time_min:
 处理未使用的流动相： 如果流动相 C 或 D 未被使用，则其对应的参数值必须明确输出为 无。
-直接开始输出结果，不要包含任何这句话之前或之后的多余文字。
+直接开始输出结果，不要包含任何这句话之前或之后的多余文字，结果不要包含多余的空白符。
