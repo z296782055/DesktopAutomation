@@ -5,7 +5,7 @@
             "listBoxItemB": "新建色谱系统10"
         },
         "方法概要": {
-            "txtRunTime": "15"
+            "txtRunTime": "25"
         },
         "泵": {
             "txtFlowVelocity": "1.0",

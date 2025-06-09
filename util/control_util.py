@@ -641,23 +641,23 @@ def ai_post(main_ui, step, sleep_time=default_sleep_time, before_sleep_time=0):
                         for item in response["data"].split("\n"):
                             kv = item.split(": ", 1)
                             result_dict.update({kv[0]: kv[1]})
-                        if result_dict["Column_Temperature_C"] != "无":
+                        if result_dict.get("Column_Temperature_C") is not None and result_dict["Column_Temperature_C"] != "无":
                             new_data = utils.get_data("柱温箱")
                             new_data.update({"txtAimTemperatureSet":result_dict["Column_Temperature_C"]})
                             utils.set_data("柱温箱", new_data)
-                        if result_dict["Estimated_Run_Time_min"] != "无":
+                        if result_dict.get("Estimated_Run_Time_min") is not None and result_dict["Estimated_Run_Time_min"] != "无":
                             new_data = utils.get_data("方法概要")
                             new_data.update({"txtRunTime":result_dict["Estimated_Run_Time_min"]})
                             utils.set_data("方法概要", new_data)
-                        if result_dict["Detection_Wavelength_nm"] != "无":
+                        if result_dict.get("Detection_Wavelength_nm") is not None and result_dict["Detection_Wavelength_nm"] != "无":
                             new_data = utils.get_data("检测器")
                             new_data.update({"txtLambda1":result_dict["Detection_Wavelength_nm"]})
                             utils.set_data("检测器", new_data)
-                        if result_dict["Flow_Rate_mL_min"] != "无":
+                        if result_dict.get("Flow_Rate_mL_min") is not None and result_dict["Flow_Rate_mL_min"] != "无":
                             new_data = utils.get_data("泵")
                             new_data.update({"txtFlowVelocity": result_dict["Flow_Rate_mL_min"]})
                             utils.set_data("泵", new_data)
-                        if result_dict["Gradient_Program"] != "无":
+                        if result_dict.get("Gradient_Program") is not None and result_dict["Gradient_Program"] != "无":
                             gradient_list = json.loads(result_dict["Gradient_Program"])
                             new_data = {key: value for key, value in utils.get_data("泵").items() if " row" not in key}
                             new_data.update({"gcGradient": str(len(gradient_list))})
@@ -671,6 +671,7 @@ def ai_post(main_ui, step, sleep_time=default_sleep_time, before_sleep_time=0):
                                     new_data.update({"%C row"+str(i): str(gradient[2])})
                             utils.set_data("泵", new_data)
                 except Exception as e:
+                    logging.error(e)
                     raise ViewException("AI返回数据格式不对，请检查提示词")
             elif response.status_code == 409:
                 response = response.json()
