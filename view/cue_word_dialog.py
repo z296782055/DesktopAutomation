@@ -1,7 +1,7 @@
 import os
 import shutil
 from pathlib import Path
-
+import wx._xml
 import wx
 import wx.richtext
 
