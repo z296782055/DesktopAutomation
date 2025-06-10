@@ -717,6 +717,9 @@ def ai_post(main_ui, step, sleep_time=default_sleep_time, before_sleep_time=0):
                     wx.CallAfter(main_ui.view_init)
                     utils.set_index(-1)
                 raise Exception(response["message"])
+            elif response.status_code == 410 or response.status_code == 400:
+                response = response.json()
+                raise ViewException(response["message"])
             else:
                 response = response.json()
                 raise Exception(response["message"])
