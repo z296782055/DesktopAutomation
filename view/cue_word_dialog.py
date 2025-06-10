@@ -6,6 +6,7 @@ import wx
 import wx.richtext
 import wx.lib.scrolledpanel as scrolled
 import wx.adv
+import wx._xml
 
 import util.utils # Assuming this exists
 from util import utils
