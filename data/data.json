@@ -5,10 +5,10 @@
             "listBoxItemB": "新建色谱系统10"
         },
         "方法概要": {
-            "txtRunTime": "15"
+            "txtRunTime": "15.0"
         },
         "泵": {
-            "txtFlowVelocity": "1.0",
+            "txtFlowVelocity": "1",
             "txtMaxLimit": "40",
             "txtMinLimit": "0",
             "A": "10",
@@ -20,42 +20,31 @@
             "txtSolventC": "甲醇",
             "txtSolventD": "水",
             "txtSolventCompressibility": "0",
-            "gcGradient": "5",
+            "gcGradient": "2",
             "时间(min) row0": "0",
-            "流速(mL/min) row0": "1.0",
-            "%A row0": "95",
-            "%B row0": "5",
-            "时间(min) row1": "10",
-            "流速(mL/min) row1": "1.0",
-            "%A row1": "5",
-            "%B row1": "95",
-            "时间(min) row2": "12",
-            "流速(mL/min) row2": "1.0",
-            "%A row2": "5",
-            "%B row2": "95",
-            "时间(min) row3": "12.1",
-            "流速(mL/min) row3": "1.0",
-            "%A row3": "95",
-            "%B row3": "5",
-            "时间(min) row4": "15",
-            "流速(mL/min) row4": "1.0",
-            "%A row4": "95",
-            "%B row4": "5"
+            "流速(mL/min) row0": "1",
+            "%A row0": "70",
+            "%B row0": "30",
+            "时间(min) row1": "15.0",
+            "流速(mL/min) row1": "1",
+            "%A row1": "70",
+            "%B row1": "30"
         },
         "柱温箱": {
             "txtWaitTime": "30",
             "txtTemperatureAccuracy": "0.1",
-            "txtAimTemperatureSet": "30",
-            "gcEvent": "1",
-            "时间(min) row0": "1",
-            "事件类型 row0": "停止控温",
-            "事件值 row0": "30"
+            "txtAimTemperatureSet": "35",
+            "gcEvent": "2",
+            "时间(min) row0": "0",
+            "事件值 row0": "35",
+            "时间(min) row1": "15.0",
+            "事件值 row1": "35"
         },
         "检测器": {
-            "txtLambda1": "275",
+            "txtLambda1": "254",
             "txtLambda2": "700",
             "rbLightType": "氘灯",
-            "rblAnalysisType": "双波长Vis",
+            "rblAnalysisType": "单波长",
             "chkRefSmpChannel": "False"
         },
         "保存": {

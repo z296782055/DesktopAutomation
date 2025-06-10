@@ -320,3 +320,6 @@ def set_cue_word(value):
 def get_cue_img_url():
     img_url = "ai/" + get_config("software") + "/img/index.png"
     return img_url
+
+def ai_response_item_is_null(result_dict, key):
+    return result_dict.get(key) is not None and result_dict.get(key) != "None" and result_dict[key] != "无" and result_dict[key] != "N/A"

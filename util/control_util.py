@@ -563,7 +563,7 @@ def ai_post(main_ui, step, sleep_time=default_sleep_time, before_sleep_time=0):
         utils.pause()
         try:
             if int(utils.get_index()) == 0:
-                with open("ai/" + utils.get_config("software") + "/text/index.txt", "rb") as text_file:
+                with open("ai/" + utils.get_config("software") + "/text/index.txt", "r", encoding='utf-8') as text_file:
                     text = text_file.read()
                     if not text:
                         raise ViewException("AI提示词不能为空")
@@ -622,7 +622,7 @@ def ai_post(main_ui, step, sleep_time=default_sleep_time, before_sleep_time=0):
                     files_payload = {
                         'img': (os.path.basename(img_url), img_file.read(), 'image/png')
                     }
-                with open("ai/"+utils.get_config("software")+"/text/after.txt", "rb") as text_file:
+                with open("ai/"+utils.get_config("software")+"/text/after.txt", "r", encoding='utf-8') as text_file:
                     data_payload = {
                         "software":utils.get_config("software"),
                         "index": utils.get_index(),
@@ -640,36 +640,71 @@ def ai_post(main_ui, step, sleep_time=default_sleep_time, before_sleep_time=0):
                             kv = item.split(": ", 1)
                             if len(kv) == 2:
                                 result_dict.update({kv[0]: kv[1]})
-                        if result_dict.get("Column_Temperature_C") != "None" and result_dict["Column_Temperature_C"] != "无":
+                        if utils.ai_response_item_is_null(result_dict, "Column_Temperature_C"):
                             new_data = utils.get_data("柱温箱")
                             new_data.update({"txtAimTemperatureSet":result_dict["Column_Temperature_C"]})
                             utils.set_data("柱温箱", new_data)
-                        if result_dict.get("Estimated_Run_Time_min") != "None" and result_dict["Estimated_Run_Time_min"] != "无":
+                        if utils.ai_response_item_is_null(result_dict, "Estimated_Run_Time_min"):
                             new_data = utils.get_data("方法概要")
                             new_data.update({"txtRunTime":result_dict["Estimated_Run_Time_min"]})
                             utils.set_data("方法概要", new_data)
-                        if result_dict.get("Detection_Wavelength_nm") != "None" and result_dict["Detection_Wavelength_nm"] != "无":
+                        if utils.ai_response_item_is_null(result_dict, "Detection_Wavelength_nm"):
                             new_data = utils.get_data("检测器")
                             new_data.update({"txtLambda1":result_dict["Detection_Wavelength_nm"]})
                             utils.set_data("检测器", new_data)
-                        if result_dict.get("Flow_Rate_mL_min")  != "None" and result_dict["Flow_Rate_mL_min"] != "无":
+                        if utils.ai_response_item_is_null(result_dict, "Flow_Rate_mL_min"):
                             new_data = utils.get_data("泵")
                             new_data.update({"txtFlowVelocity": result_dict["Flow_Rate_mL_min"]})
                             utils.set_data("泵", new_data)
+                        new_data = utils.get_data("泵")
                         new_data = {key: value for key, value in utils.get_data("泵").items() if " row" not in key}
                         utils.set_data("泵", new_data)
-                        if result_dict.get("Gradient_Program") != "None" and result_dict["Gradient_Program"] != "无":
+                        new_data = utils.get_data("柱温箱")
+                        new_data = {key: value for key, value in utils.get_data("柱温箱").items() if " row" not in key}
+                        utils.set_data("柱温箱", new_data)
+                        if utils.ai_response_item_is_null(result_dict, "Ratio_A_B"):
+                            ratio_a = result_dict["Ratio_A_B"].split(":",1)[0]
+                            ratio_b = result_dict["Ratio_A_B"].split(":",1)[1]
+                            # 等度泵列表
+                            new_data = utils.get_data("泵")
+                            new_data.update({"gcGradient": str(2)})
+                            new_data.update({"时间(min) row0": str(0)})
+                            new_data.update({"流速(mL/min) row0": result_dict["Flow_Rate_mL_min"]})
+                            new_data.update({"%A row0": ratio_a})
+                            new_data.update({"%B row0": ratio_b})
+                            new_data.update({"时间(min) row1": result_dict["Estimated_Run_Time_min"]})
+                            new_data.update({"流速(mL/min) row1": result_dict["Flow_Rate_mL_min"]})
+                            new_data.update({"%A row1": ratio_a})
+                            new_data.update({"%B row1": ratio_b})
+                            utils.set_data("泵", new_data)
+                            # 等度柱温箱列表
+                            new_data = utils.get_data("柱温箱")
+                            new_data.update({"gcEvent": str(2)})
+                            new_data.update({"时间(min) row0": str(0)})
+                            new_data.update({"事件值 row0": result_dict["Column_Temperature_C"]})
+                            new_data.update({"时间(min) row1": result_dict["Estimated_Run_Time_min"]})
+                            new_data.update({"事件值 row1": result_dict["Column_Temperature_C"]})
+                            utils.set_data("柱温箱", new_data)
+                        elif utils.ai_response_item_is_null(result_dict, "Gradient_Program"):
                             gradient_list = json.loads(result_dict["Gradient_Program"])
+                            # 梯度泵列表
+                            new_data = utils.get_data("泵")
                             new_data.update({"gcGradient": str(len(gradient_list))})
                             for i,gradient in enumerate(gradient_list):
                                 new_data.update({"时间(min) row"+str(i): str(gradient[0])})
-                                # new_data.update({"线性类型 row"+str(i): "线性"})
                                 new_data.update({"流速(mL/min) row"+str(i): result_dict["Flow_Rate_mL_min"]})
                                 new_data.update({"%A row" + str(i): str(100 - gradient[1] - (0 if len(gradient)<=2 else gradient[2]))})
                                 new_data.update({"%B row"+str(i): str(gradient[1])})
                                 if len(gradient)>2:
                                     new_data.update({"%C row"+str(i): str(gradient[2])})
                             utils.set_data("泵", new_data)
+                            # 梯度柱温箱列表
+                            new_data = utils.get_data("柱温箱")
+                            new_data.update({"gcEvent": str(len(gradient_list))})
+                            for i,gradient in enumerate(gradient_list):
+                                new_data.update({"时间(min) row"+str(i): str(gradient[0])})
+                                new_data.update({"事件值 row"+str(i): result_dict["Column_Temperature_C"]})
+                            utils.set_data("柱温箱", new_data)
                 except Exception as e:
                     logging.error(e)
                     raise ViewException("AI返回数据格式不对，请检查提示词")

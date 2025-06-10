@@ -59,7 +59,7 @@ class PagePanel(wx.Panel):
                     if key.split(" row")[0] not in self.column_headers:
                         self.column_headers.append(key.split(" row")[0])
 
-        table_panel = wx.Panel(self, size=wx.Size(-1, (50 if len(self.table_dict)>0 else 0)+(len(self.table_dict)*6)))
+        table_panel = wx.Panel(self, size=wx.Size(-1, (80 if len(self.table_dict)>0 else 0)+(len(self.table_dict)*5)))
         sizer.Add(table_panel, 0, wx.EXPAND)
         max_row_index = -1
         for key in self.table_dict.keys():

@@ -200,7 +200,6 @@ class MyFrame(wx.Frame):
 
         self.step_text.Label = next(iter(utils.get_step_data(utils.get_config("software"), utils.get_step(), default="")))
         self.SetTitle(utils.get_config("software"))
-        self.view_init()
 
     def view_init(self):
         self.view_sizer.Clear(delete_windows=True)

@@ -4,13 +4,31 @@
             "index": 1,
             "is_active": true,
             "title": "AI返回:",
-            "content": "Method_Type: Gradient\nMobile_Phase_A: 0.1% Formic Acid in Water\nMobile_Phase_B: Acetonitrile\nMobile_Phase_C: 无\nMobile_Phase_D: 无\nGradient_Program: [[0, 5], [10, 95], [12, 95], [12.1, 5], [15, 5]]\nFlow_Rate_mL_min: 1.0\nColumn_Temperature_C: 30\nDetection_Wavelength_nm: 275\nEstimated_RT_Ibuprofen_min: 5.7\nEstimated_RT_Ketoprofen_min: 7.9\nEstimated_Run_Time_min: 15"
+            "content": "Mobile_Phase_A: Water\nMobile_Phase_B: Acetonitrile\nRatio_A_B: 50:50\nFlow_Rate_mL_min: 1\nColumn_Temperature_C: 30\nDetection_Wavelength_nm: 254\nEstimated_RT_Ibuprofen_min: 5.7\nEstimated_RT_Ketoprofen_min: 6.9\nEstimated_Run_Time_min: 10"
         },
         {
             "index": 1,
             "is_active": true,
             "title": "图谱文件:",
             "content": "D:\\fk\\test\\图片2.pdf"
+        },
+        {
+            "index": 2,
+            "is_active": true,
+            "title": "AI返回:",
+            "content": "Method_Type: Isocratic\nMobile_Phase_A: 20mM Phosphate Buffer pH 7.4\nMobile_Phase_B: Acetonitrile\nMobile_Phase_C: 无\nMobile_Phase_D: 无\nRatio_A_B: 70:30\nGradient_Program: 无\nFlow_Rate_mL_min: 1\nColumn_Temperature_C: 35\nDetection_Wavelength_nm: 254\nEstimated_RT_Ibuprofen_min: 6.0\nEstimated_RT_Ketoprofen_min: 8.0\nEstimated_Run_Time_min: 15.0"
+        },
+        {
+            "index": 2,
+            "is_active": true,
+            "title": "图谱文件:",
+            "content": "D:\\fk\\test\\20250608193615.pdf"
+        },
+        {
+            "index": 3,
+            "is_active": true,
+            "title": "AI返回:",
+            "content": "Method_Type: Isocratic\nMobile_Phase_A: 20mM Phosphate Buffer pH 7.4\nMobile_Phase_B: Acetonitrile\nMobile_Phase_C: 无\nMobile_Phase_D: 无\nRatio_A_B: 70:30\nGradient_Program: 无\nFlow_Rate_mL_min: 1\nColumn_Temperature_C: 35\nDetection_Wavelength_nm: 254\nEstimated_RT_Ibuprofen_min: 6.0\nEstimated_RT_Ketoprofen_min: 8.0\nEstimated_Run_Time_min: 15.0"
         }
     ]
 }
