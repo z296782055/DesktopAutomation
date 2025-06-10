@@ -1,26 +1,19 @@
 {
   "SmartLab CDS": [
-    {"方法概要":[
+    {"数据采集":[
       {"auto_type" : "connect_window", "title" : "实时采集 "},
-      {"auto_type" : "connect_child_window", "title" : "方法概要", "window" : "实时采集 ", "kwargs": [
+      {"auto_type" : "control_click", "window" : "实时采集 ", "click_type":"set_focus", "kwargs": [
         {"child_window":{"title":"sidePanel2", "auto_id":"sidePanel2", "control_type":"Pane"}},
-        {"child_window":{"auto_id":"_Container", "control_type":"Pane"}},
-        {"child_window":{"auto_id":"_ucInsMethodEditor", "control_type":"Pane"}},
-        {"child_window":{"title":"xtraScrollableControl1", "auto_id":"xtraScrollableControl1", "control_type":"Pane"}},
-        {"child_window":{"title":"panelControlMain", "auto_id":"panelControlMain", "control_type":"Pane"}},
-        {"child_window":{"auto_id":"InstrumentEditor", "control_type":"Window"}},
-        {"child_window":{"title":"xtraTabPage1", "auto_id":"xtraTabPage1", "control_type":"Pane"}},
-        {"child_window":{"auto_id":"NavBar", "control_type":"Pane"}}
+        {"child_window":{"title":"数据采集 ", "auto_id":"dPanelDataCollection", "control_type":"Pane"}}
       ]},
-      {"auto_type" : "control_click", "window" : "方法概要", "kwargs": [
-        {"child_window":{"title":"组件列表", "auto_id":"navBarControl1", "control_type":"Pane"}},
-        {"child_window":{"title":"方法信息", "control_type":"List"}},
-        {"child_window":{"title":"方法概要", "control_type":"Hyperlink"}}
-      ]},
-      {"auto_type" : "edit_write", "window" : "方法概要", "kwargs": [
-        {"child_window":{"title":"panelControl", "auto_id":"panelControl", "control_type":"Pane"}},
-        {"child_window":{"auto_id":"MethodGeneral", "control_type":"Pane"}},
-        {"child_window":{"auto_id":"txtRunTime", "control_type":"Edit"}}
+      {"auto_type" : "connect_child_window", "title" : "单次进样 ", "window" : "实时采集 ", "before_sleep_time":900, "kwargs": [
+        {"child_window":{"title":"sidePanel2", "auto_id":"sidePanel2", "control_type":"Pane"}},
+        {"child_window":{"title":"数据采集 ", "auto_id":"dPanelDataCollection", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"dockPanelDataCollection_Container", "control_type":"Pane"}},
+        {"child_window":{"title":"splitCCMain", "auto_id":"splitCCMain", "control_type":"Pane"}},
+        {"child_window":{"title":"splitContainerControl3", "auto_id":"splitContainerControl3", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"xtbMethods", "control_type":"Tab"}},
+        {"child_window":{"title":"单次进样 ", "auto_id":"tpSingleInject", "control_type":"Pane"}}
       ]}
     ]}
   ]

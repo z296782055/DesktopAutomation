@@ -14,7 +14,7 @@ from util.exception_util import ThreadException
 data_url = r'./data/data.json'
 config_url = r'./data/config.properties'
 log_dir_url = r'./log/'
-step_url = r'./step/step.json'
+step_url = r'./step/steptest.json'
 dictionary_url = r'./data/dictionary.json'
 temporary_url = r'./data/temporary.json'
 info_url = r'./data/info.json'
@@ -140,10 +140,11 @@ def refer_dictionary(step, key):
                 case "data":
                     data = get_data()
                     for text_item in text_items[text_item_key].split(sep="."):
-                        data = data[text_item]
+                        data = data.get(text_item)
                     if isinstance(data, int):
                         data = get_temporary(step=text_items[text_item_key].split(sep=".")[0], key=str(data))
-                    value += data
+                    if data:
+                        value += data
         match dictionary["type"]:
             case "nowtime":
                 now = datetime.datetime.now()
@@ -323,3 +324,49 @@ def get_cue_img_url():
 
 def ai_response_item_is_null(result_dict, key):
     return result_dict.get(key) is not None and result_dict.get(key) != "None" and result_dict[key] != "无" and result_dict[key] != "N/A"
+
+
+def seconds_to_verbose_time(total_seconds):
+    """
+    将秒数转换为更自然的语言描述，例如 "1 天 2 小时 30 分钟 5 秒"。
+    """
+    if not isinstance(total_seconds, (int, float)):
+        raise TypeError("输入必须是数字。")
+    if total_seconds < 0:
+        raise ValueError("输入不能是负数。")
+    if total_seconds == 0:
+        return "0 秒"
+
+    total_seconds = int(total_seconds)
+
+    parts = []
+
+    seconds_in_minute = 60
+    seconds_in_hour = 60 * seconds_in_minute
+    seconds_in_day = 24 * seconds_in_hour
+
+    # 天
+    days = total_seconds // seconds_in_day
+    if days > 0:
+        parts.append(f"{days} 天")
+    total_seconds %= seconds_in_day
+
+    # 小时
+    hours = total_seconds // seconds_in_hour
+    if hours > 0:
+        parts.append(f"{hours} 小时")
+    total_seconds %= seconds_in_hour
+
+    # 分钟
+    minutes = total_seconds // seconds_in_minute
+    if minutes > 0:
+        parts.append(f"{minutes} 分钟")
+    total_seconds %= seconds_in_minute
+
+    # 秒
+    seconds = total_seconds
+    if seconds > 0 or not parts:  # 如果没有其他单位，即使秒数为0也要显示，但这里我们已经处理了total_seconds=0的情况
+        parts.append(f"{seconds} 秒")
+
+    return " ".join(parts)
+

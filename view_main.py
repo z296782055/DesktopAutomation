@@ -15,7 +15,8 @@ from view.logon_dialog import LogonDialog
 class MyFrame(wx.Frame):
     def __init__(self):
         super().__init__(parent=None, title=utils.get_config("software"), size=wx.Size(500, 300), style=wx.DEFAULT_FRAME_STYLE)
-
+        icon = wx.Icon("img/icon/icon.ico", wx.BITMAP_TYPE_ICO)
+        self.SetIcon(icon)
         self.on_lock = threading.Lock()
         self.off_lock = threading.Lock()
         self.Center()  # 窗口居中
@@ -26,8 +27,8 @@ class MyFrame(wx.Frame):
         self.menubar = wx.MenuBar()
         menu_menu = wx.Menu()
 
-        new_item = menu_menu.Append(wx.ID_NEW, "新建(&N)\tCtrl+N")
-        open_item = menu_menu.Append(wx.ID_OPEN, "打开(&O)\tCtrl+O")
+        # new_item = menu_menu.Append(wx.ID_NEW, "新建(&N)\tCtrl+N")
+        # open_item = menu_menu.Append(wx.ID_OPEN, "打开(&O)\tCtrl+O")
 
         config_item = menu_menu.Append(wx.ID_ANY, "配置(&F)\tCtrl+F")
         log_itm = menu_menu.Append(wx.ID_ANY, "日志(&L)\tCtrl+L")
@@ -47,7 +48,7 @@ class MyFrame(wx.Frame):
 
         self.SetMenuBar(self.menubar)
 
-        self.Bind(wx.EVT_MENU, self.on_new, new_item)
+        # self.Bind(wx.EVT_MENU, self.on_new, new_item)
         self.Bind(wx.EVT_MENU, self.on_config, config_item)
         self.Bind(wx.EVT_MENU, self.on_log, log_itm)
         self.Bind(wx.EVT_MENU, self.on_exit, exit_item)
@@ -255,9 +256,10 @@ class MyFrame(wx.Frame):
             super().Close()
 
     def on_new(self, event):
-        dlg = ConfigDialog(self)
-        dlg.ShowModal()  # 显示模态对话框
-        dlg.Destroy()  # 关闭后销毁对话框
+        pass
+        # dlg = ConfigDialog(self)
+        # dlg.ShowModal()  # 显示模态对话框
+        # dlg.Destroy()  # 关闭后销毁对话框
 
     def on_config(self, event):
         dlg = ConfigDialog(self)

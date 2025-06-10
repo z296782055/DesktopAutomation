@@ -5,10 +5,10 @@
             "listBoxItemB": "新建色谱系统10"
         },
         "方法概要": {
-            "txtRunTime": "15.0"
+            "txtRunTime": "20"
         },
         "泵": {
-            "txtFlowVelocity": "1",
+            "txtFlowVelocity": "1.0",
             "txtMaxLimit": "40",
             "txtMinLimit": "0",
             "A": "10",
@@ -22,13 +22,13 @@
             "txtSolventCompressibility": "0",
             "gcGradient": "2",
             "时间(min) row0": "0",
-            "流速(mL/min) row0": "1",
-            "%A row0": "70",
-            "%B row0": "30",
-            "时间(min) row1": "15.0",
-            "流速(mL/min) row1": "1",
-            "%A row1": "70",
-            "%B row1": "30"
+            "流速(mL/min) row0": "1.0",
+            "%A row0": "75",
+            "%B row0": "25",
+            "时间(min) row1": "20",
+            "流速(mL/min) row1": "1.0",
+            "%A row1": "75",
+            "%B row1": "25"
         },
         "柱温箱": {
             "txtWaitTime": "30",
@@ -37,11 +37,11 @@
             "gcEvent": "2",
             "时间(min) row0": "0",
             "事件值 row0": "35",
-            "时间(min) row1": "15.0",
+            "时间(min) row1": "20",
             "事件值 row1": "35"
         },
         "检测器": {
-            "txtLambda1": "254",
+            "txtLambda1": "280",
             "txtLambda2": "700",
             "rbLightType": "氘灯",
             "rblAnalysisType": "单波长",
@@ -58,7 +58,10 @@
             "tbxSampleVia": "A1",
             "cbxMethod": 10003,
             "cbxInjectFunction": "进样",
-            "tlData": 10002
+            "tlData": 10002,
+            "spinA": 10004,
+            "spinB": 10005,
+            "spinC": 10006
         },
         "数据处理": {
             "lupReportMethod": "默认报告方法模板",

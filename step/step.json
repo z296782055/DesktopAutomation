@@ -342,7 +342,55 @@
         {"child_window":{"title":"sidePanel2", "auto_id":"sidePanel2", "control_type":"Pane"}},
         {"child_window":{"title":"数据采集 ", "auto_id":"dPanelDataCollection", "control_type":"Pane"}}
       ]},
-      {"auto_type" : "connect_child_window", "title" : "单次进样 ", "window" : "实时采集 ", "kwargs": [
+      {"auto_type" : "edit_write", "window" : "实时采集 ", "kwargs": [
+        {"child_window":{"title":"sidePanel2", "auto_id":"sidePanel2", "control_type":"Pane"}},
+        {"child_window":{"title":"数据采集 ", "auto_id":"dPanelDataCollection", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"dockPanelDataCollection_Container", "control_type":"Pane"}},
+        {"child_window":{"title":"splitCCMain", "auto_id":"splitCCMain", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"tbDeviceState", "control_type":"Tab"}},
+        {"child_window":{"title":"主页 ", "auto_id":"tpDeviceHome", "control_type":"Pane"}},
+        {"child_window":{"title":"xtraScrollableControl1", "auto_id":"xtraScrollableControl1", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"flowLayoutPanel1", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"LCQuatP0004STUI", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"spinA", "control_type":"Edit"}}
+      ]},
+      {"auto_type" : "edit_write", "window" : "实时采集 ", "kwargs": [
+        {"child_window":{"title":"sidePanel2", "auto_id":"sidePanel2", "control_type":"Pane"}},
+        {"child_window":{"title":"数据采集 ", "auto_id":"dPanelDataCollection", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"dockPanelDataCollection_Container", "control_type":"Pane"}},
+        {"child_window":{"title":"splitCCMain", "auto_id":"splitCCMain", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"tbDeviceState", "control_type":"Tab"}},
+        {"child_window":{"title":"主页 ", "auto_id":"tpDeviceHome", "control_type":"Pane"}},
+        {"child_window":{"title":"xtraScrollableControl1", "auto_id":"xtraScrollableControl1", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"flowLayoutPanel1", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"LCQuatP0004STUI", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"spinB", "control_type":"Edit"}}
+      ]},
+      {"auto_type" : "edit_write", "window" : "实时采集 ", "kwargs": [
+        {"child_window":{"title":"sidePanel2", "auto_id":"sidePanel2", "control_type":"Pane"}},
+        {"child_window":{"title":"数据采集 ", "auto_id":"dPanelDataCollection", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"dockPanelDataCollection_Container", "control_type":"Pane"}},
+        {"child_window":{"title":"splitCCMain", "auto_id":"splitCCMain", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"tbDeviceState", "control_type":"Tab"}},
+        {"child_window":{"title":"主页 ", "auto_id":"tpDeviceHome", "control_type":"Pane"}},
+        {"child_window":{"title":"xtraScrollableControl1", "auto_id":"xtraScrollableControl1", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"flowLayoutPanel1", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"LCQuatP0004STUI", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"spinC", "control_type":"Edit"}}
+      ]},
+      {"auto_type" : "control_click", "window" : "实时采集 ", "kwargs": [
+        {"child_window":{"title":"sidePanel2", "auto_id":"sidePanel2", "control_type":"Pane"}},
+        {"child_window":{"title":"数据采集 ", "auto_id":"dPanelDataCollection", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"dockPanelDataCollection_Container", "control_type":"Pane"}},
+        {"child_window":{"title":"splitCCMain", "auto_id":"splitCCMain", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"tbDeviceState", "control_type":"Tab"}},
+        {"child_window":{"title":"主页 ", "auto_id":"tpDeviceHome", "control_type":"Pane"}},
+        {"child_window":{"title":"xtraScrollableControl1", "auto_id":"xtraScrollableControl1", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"flowLayoutPanel1", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"LCQuatP0004STUI", "control_type":"Pane"}},
+        {"child_window":{"title":"设置比例", "auto_id":"btnSetValveRatio", "control_type":"Button"}}
+      ]},
+      {"auto_type" : "connect_child_window", "title" : "单次进样 ", "window" : "实时采集 ", "before_sleep_time":900, "kwargs": [
         {"child_window":{"title":"sidePanel2", "auto_id":"sidePanel2", "control_type":"Pane"}},
         {"child_window":{"title":"数据采集 ", "auto_id":"dPanelDataCollection", "control_type":"Pane"}},
         {"child_window":{"auto_id":"dockPanelDataCollection_Container", "control_type":"Pane"}},
