@@ -29,7 +29,6 @@ def start(self):
         now_step_list = step_list[int(utils.get_step())-1:]
         for step in now_step_list:
             utils.set_step(1, step_list.index(step))
-            # self.step_text.Label = next(iter(step))
             wx.CallAfter(self.init)
             utils.window_dict.clear()
             for key, value in step.items():
