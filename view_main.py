@@ -245,6 +245,7 @@ class MyFrame(wx.Frame):
             time.sleep(1)
             self.init()
             if self.on_btn.Label == "开始(&F11)":
+                self.view_init()
                 break
 
     def Close(self, force=False):
