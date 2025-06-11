@@ -234,7 +234,44 @@ class MyFrame(wx.Frame):
             self.view_sizer.Add(content_static_text, 0, wx.LEFT, 20)
         self.view_panel.SetSizer(self.view_sizer)
         self.view_panel.SetupScrolling()
+        self.scroll_view_to_bottom(self.view_panel)
         self.view_panel.Layout()
+
+    def scroll_view_to_bottom(self, scrolled_window):
+        if hasattr(scrolled_window, 'FitInside'):
+            scrolled_window.FitInside()  # 重新计算虚拟尺寸以适应内容
+        else:
+            # 对于普通的 wx.ScrolledWindow，确保其 Sizer 已更新
+            if scrolled_window.GetSizer():
+                scrolled_window.GetSizer().Layout()
+            # 可能需要手动调整虚拟尺寸，但这比较复杂，ScrolledPanel 更方便
+            # 或者确保之前的 Layout 调用已经更新了 Sizer
+        # 2. 获取所需信息
+        vs_x, vs_y = scrolled_window.GetVirtualSize()  # 总虚拟尺寸 (像素)
+        cs_x, cs_y = scrolled_window.GetClientSize()  # 可见区域尺寸 (像素)
+        ppu_x, ppu_y = scrolled_window.GetScrollPixelsPerUnit()  # 每滚动单元对应的像素数
+        # 3. 计算目标滚动位置 (滚动单元)
+        # 只有当虚拟高度大于可见高度，且滚动单元有效时才需要滚动
+        if ppu_y > 0 and vs_y > cs_y:
+            # 目标是让可见区域的底部与虚拟区域的底部对齐
+            # 此时，可见区域的顶部 y 坐标 (像素) 应该是 vs_y - cs_y
+            target_y_pixels = vs_y - cs_y
+            # 将像素转换为滚动单元
+            target_y_units = target_y_pixels // ppu_y  # 使用整数除法
+
+            # 获取当前的 x 滚动位置 (滚动单元)，保持水平位置不变
+            current_x_units, current_y_units = scrolled_window.GetViewStart()
+            # 4. 执行滚动
+            scrolled_window.Scroll(-1, target_y_units)  # x=-1 表示保持当前水平位置
+            scrolled_window.Layout()
+            # 或者 scrolled_window.Scroll(current_x_units, target_y_units)
+
+    def refresh(self):
+        while True:
+            time.sleep(1)
+            self.init()
+            if self.on_btn.Label == "开始(&F11)":
+                break
 
     def on_new(self, event):
         pass

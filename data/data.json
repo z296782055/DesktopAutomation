@@ -5,7 +5,7 @@
             "listBoxItemB": "新建色谱系统10"
         },
         "方法概要": {
-            "txtRunTime": "20"
+            "txtRunTime": "25"
         },
         "泵": {
             "txtFlowVelocity": "1.0",
@@ -23,12 +23,12 @@
             "gcGradient": "2",
             "时间(min) row0": "0",
             "流速(mL/min) row0": "1.0",
-            "%A row0": "70",
-            "%B row0": "30",
-            "时间(min) row1": "20",
+            "%A row0": "85",
+            "%B row0": "15",
+            "时间(min) row1": "25",
             "流速(mL/min) row1": "1.0",
-            "%A row1": "70",
-            "%B row1": "30"
+            "%A row1": "85",
+            "%B row1": "15"
         },
         "柱温箱": {
             "txtWaitTime": "30",
@@ -37,7 +37,7 @@
             "gcEvent": "2",
             "时间(min) row0": "0",
             "事件值 row0": "30",
-            "时间(min) row1": "20",
+            "时间(min) row1": "25",
             "事件值 row1": "30"
         },
         "检测器": {
