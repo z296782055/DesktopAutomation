@@ -23,12 +23,12 @@
             "gcGradient": "2",
             "时间(min) row0": "0",
             "流速(mL/min) row0": "1.0",
-            "%A row0": "70",
-            "%B row0": "30",
+            "%A row0": "75",
+            "%B row0": "25",
             "时间(min) row1": "20",
             "流速(mL/min) row1": "1.0",
-            "%A row1": "70",
-            "%B row1": "30"
+            "%A row1": "75",
+            "%B row1": "25"
         },
         "柱温箱": {
             "txtWaitTime": "30",
@@ -41,7 +41,7 @@
             "事件值 row1": "30"
         },
         "检测器": {
-            "txtLambda1": "280",
+            "txtLambda1": "278",
             "txtLambda2": "700",
             "rbLightType": "氘灯",
             "rblAnalysisType": "单波长",

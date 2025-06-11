@@ -38,7 +38,6 @@ def start(self):
         utils.set_step(1, 0)
     utils.set_event_status(0)
     utils.set_thread_status(0)
-    wx.CallAfter(self.refresh)
 
 def get_detail(step, automation):
     auto_type = automation.get("auto_type")
@@ -160,11 +159,11 @@ def connect_window(main_ui, title, backend = default_backend, sleep_time=default
         time.sleep(before_sleep_time)
     loop = True
     while loop:
-        utils.pause()
+        utils.pause(main_ui=main_ui)
         try:
             app = Application(backend).connect(title=title)
             window = app.window(title=title)
-            window.wait('ready',timeout=60)
+            window.wait('ready',timeout=1)
             utils.window_dict[title] = window
         except (pywinauto.findwindows.ElementNotFoundError,pywinauto.timings.TimeoutError):
             logger.log("找不到窗口:\ntitle:" + title)
@@ -181,7 +180,7 @@ def connect_child_window(main_ui, window, kwargs, title, step, sleep_time=defaul
         time.sleep(before_sleep_time)
     loop = True
     while loop:
-        utils.pause()
+        utils.pause(main_ui=main_ui)
         target_child_window = utils.window_dict.get(window)
         try:
             for kw in kwargs:
@@ -205,7 +204,7 @@ def control_click(main_ui, window, kwargs, step, click_type=None, index=None, re
         time.sleep(before_sleep_time)
     loop = True
     while loop:
-        utils.pause()
+        utils.pause(main_ui=main_ui)
         if click_type is None:
             click_type = "click"
         if index is None:
@@ -250,7 +249,7 @@ def list_select(main_ui, window, kwargs, step, click_type=None, select_window_ti
         time.sleep(before_sleep_time)
     loop = True
     while loop:
-        utils.pause()
+        utils.pause(main_ui=main_ui)
         try:
             target_list = utils.window_dict.get(window)
             for kw in kwargs:
@@ -308,7 +307,7 @@ def edit_write(main_ui, window, kwargs, step, edit_type=None, ready=None, sleep_
         time.sleep(before_sleep_time)
     loop = True
     while loop:
-        utils.pause()
+        utils.pause(main_ui=main_ui)
         target_edit = utils.window_dict.get(window)
         try:
             for kw in kwargs:
@@ -352,7 +351,7 @@ def check(main_ui, window, kwargs, step, ready=None, sleep_time=default_sleep_ti
         time.sleep(before_sleep_time)
     loop = True
     while loop:
-        utils.pause()
+        utils.pause(main_ui=main_ui)
         target_check_box = utils.window_dict.get(window)
         try:
             for kw in kwargs:
@@ -389,7 +388,7 @@ def table_fill(main_ui, window, step, table_kwargs, table_head_kwargs, table_bod
         time.sleep(before_sleep_time)
     loop = True
     while loop:
-        utils.pause()
+        utils.pause(main_ui=main_ui)
         connect_child_window(main_ui=main_ui, window=window, kwargs=table_kwargs, title=title, step=step, sleep_time=default_sleep_time)
         try:
             list_len = int(utils.get_data(step).get(title))
@@ -419,7 +418,7 @@ def tree_click(main_ui, window, kwargs, step, title, up, down, click_type=None, 
         time.sleep(before_sleep_time)
     loop = True
     while loop:
-        utils.pause()
+        utils.pause(main_ui=main_ui)
         if click_type is None:
             click_type = "click"
         connect_child_window(main_ui=main_ui, window=window, kwargs=kwargs, title=title, step=step, sleep_time=default_sleep_time)
@@ -476,7 +475,7 @@ def table_click(main_ui, window, table_kwargs, kwargs, replace, step, title, cli
         time.sleep(before_sleep_time)
     loop = True
     while loop:
-        utils.pause()
+        utils.pause(main_ui=main_ui)
         if click_type is None:
             click_type = "click"
         connect_child_window(main_ui=main_ui, window=window, kwargs=table_kwargs, title=title, step=step, sleep_time=default_sleep_time)
@@ -511,7 +510,7 @@ def wait(main_ui, window, kwargs, step, ready, condition, index=None, sleep_time
         time.sleep(before_sleep_time)
     loop = True
     while loop:
-        utils.pause()
+        utils.pause(main_ui=main_ui)
         if index is None:
             index = 0
         target_wait = utils.window_dict.get(window)
@@ -543,7 +542,7 @@ def window_close(main_ui, title, kwargs, step, index=None, before_sleep_time=0):
         time.sleep(before_sleep_time)
     loop = True
     while loop:
-        utils.pause()
+        utils.pause(main_ui=main_ui)
         if index is None:
             index = 0
         try:
@@ -567,7 +566,7 @@ def ai_post(main_ui, step, sleep_time=default_sleep_time, before_sleep_time=0):
         time.sleep(before_sleep_time)
     loop = True
     while loop:
-        utils.pause()
+        utils.pause(main_ui=main_ui)
         try:
             if int(utils.get_index()) == 0:
                 with open("ai/" + utils.get_config("software") + "/text/index.txt", "r", encoding='utf-8') as text_file:
@@ -737,7 +736,6 @@ def ai_post(main_ui, step, sleep_time=default_sleep_time, before_sleep_time=0):
             logger.log(ve)
             logging.exception(ve)
             utils.set_thread_status(0)
-            wx.CallAfter(main_ui.refresh)
             continue
         except Exception as e:
             logger.log(e)

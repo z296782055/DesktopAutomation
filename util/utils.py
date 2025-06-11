@@ -14,7 +14,7 @@ from util.exception_util import ThreadException
 data_url = r'./data/data.json'
 config_url = r'./data/config.properties'
 log_dir_url = r'./log/'
-step_url = r'./step/steptest.json'
+step_url = r'./step/step.json'
 dictionary_url = r'./data/dictionary.json'
 temporary_url = r'./data/temporary.json'
 info_url = r'./data/info.json'
@@ -295,12 +295,14 @@ def thread_is_alive(name):
     else:
         return False
 
-def pause():
+def pause(main_ui):
     if get_event_status() != 1:
+        wx.CallAfter(main_ui.init)
         global event
         event.clear()
         event.wait()
     if get_thread_status() != 1:
+        wx.CallAfter(main_ui.init)
         raise ThreadException("线程关闭...")
 
 def get_cue_word():

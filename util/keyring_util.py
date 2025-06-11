@@ -121,7 +121,7 @@ class AuthManager:
             # 对于同步调用，这里可以等待，但为了简化，我们假设调用方会处理
             print("[AuthManager] Another refresh in progress, skipping.")
             if callback:
-                wx.CallAfter(callback, False, "Another refresh in progress.")
+                wx.CallAfter(callback, False, "正在验证身份凭证，请稍等")
             if completion_event:
                 completion_event.set()  # 即使跳过，也要设置事件，避免调用方无限等待
             return

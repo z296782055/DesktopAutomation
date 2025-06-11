@@ -1,3 +1,10 @@
 {
-    "SmartLab CDS": []
+    "SmartLab CDS": [
+        {
+            "index": 1,
+            "is_active": true,
+            "title": "AI返回:",
+            "content": "Method_Type: Isocratic\nMobile_Phase_A: 20 mM Potassium Phosphate buffer (pH 3.0 adjusted with Phosphoric Acid)\nMobile_Phase_B: Acetonitrile\nMobile_Phase_C: 无\nMobile_Phase_D: 无\nRatio_A_B: 75:25\nFlow_Rate_mL_min: 1.0\nColumn_Temperature_C: 30\nDetection_Wavelength_nm: 278\nEstimated_Run_Time_min: 20"
+        }
+    ]
 }

@@ -17,12 +17,8 @@ class MyFrame(wx.Frame):
         super().__init__(parent=None, title=utils.get_config("software"), size=wx.Size(500, 300), style=wx.DEFAULT_FRAME_STYLE)
         icon = wx.Icon("img/icon/icon.ico", wx.BITMAP_TYPE_ICO)
         self.SetIcon(icon)
-        self.on_lock = threading.Lock()
-        self.off_lock = threading.Lock()
-        self.Center()  # 窗口居中
-        # self.panel = wx.Panel(self)
+        self.SetTitle(utils.get_config("software"))
         self.Bind(wx.EVT_CONTEXT_MENU, self.show_context_menu)  # 绑定右键事件:ml-citation{ref="4" data="citationList"}
-
         # 创建菜单栏
         self.menubar = wx.MenuBar()
         menu_menu = wx.Menu()
@@ -153,7 +149,6 @@ class MyFrame(wx.Frame):
         self.Show()
         self.Layout()  # 调用Layout来应用sizer布局
         self.init()
-
         # 4. 绑定自定义事件，使用你创建的事件绑定器常量
         self.Bind(EVT_FORCE_RELOGIN, self.on_login)  # <<< 直接使用 EVT_FORCE_RELOGIN
 
@@ -184,19 +179,19 @@ class MyFrame(wx.Frame):
         if auto_thread and utils.get_event_status() == 1:
             self.on_btn.Bind(wx.EVT_BUTTON, self.on_off)
             self.on_btn.SetLabel("停止(&F12)")
+            self.on_btn.Enable(True)
             self.on_go_back_btn.Enable(False)
             self.on_go_forward_btn.Enable(False)
             self.on_login_btn.Enable(False)
             self.menubar.EnableTop(0, False)
             self.menubar.EnableTop(1, False)
         else:
-            self.SetTitle(utils.get_config("software"))
             self.on_btn.Bind(wx.EVT_BUTTON, self.on_on)
             self.on_btn.SetLabel("开始(&F11)")
+            self.on_btn.Enable(True)
             self.on_go_back_btn.Enable(True)
             self.on_go_forward_btn.Enable(True)
             self.on_login_btn.Enable(True)
-            self.on_btn.Enable(True)
             self.menubar.EnableTop(0, True)
             self.menubar.EnableTop(1, True)
         self.step_text.Label = next(iter(utils.get_step_data(utils.get_config("software"), utils.get_step(), default="")))
@@ -239,14 +234,6 @@ class MyFrame(wx.Frame):
         self.view_panel.SetupScrolling()
         self.view_panel.Layout()
 
-    def refresh(self):
-        while True:
-            time.sleep(1)
-            self.init()
-            if self.on_btn.Label == "开始(&F11)":
-                self.view_init()
-                break
-
     def Close(self, force=False):
         result = wx.MessageBox("确定要退出吗？", "确认", wx.YES_NO | wx.ICON_QUESTION)
         if result == wx.YES:
@@ -282,25 +269,25 @@ class MyFrame(wx.Frame):
     def on_on(self, event):
         def call(success, message):
             if success:
-                with self.on_lock:
-                    from util import control_util
-                    utils.set_event_status(1)
-                    utils.event.set()
-                    if utils.thread_is_alive("auto_thread" ):
-                        pass
-                    else:
-                        thread = threading.Thread(target=getattr(control_util, "start"),args=(self,),name="auto_thread")
-                        utils.set_thread_status(1)
-                        thread.start()
-                    try:
-                        self.init()
-                    except Exception as e:
-                        pass
+                from util import control_util
+                utils.set_event_status(1)
+                utils.event.set()
+                if utils.thread_is_alive("auto_thread" ):
+                    pass
+                else:
+                    thread = threading.Thread(target=getattr(control_util, "start"),args=(self,),name="auto_thread")
+                    utils.set_thread_status(1)
+                    thread.start()
+                try:
+                    self.init()
+                except Exception as e:
+                    pass
             else:
                 call_dlg = wx.MessageDialog(self, message, "提示", wx.OK | wx.ICON_INFORMATION)
                 call_dlg.ShowModal()  # 显示对话框
                 call_dlg.Destroy()  # 销毁对话框，释放资源
         if api_client.refresh_token:
+            self.on_btn.Enable(False)
             api_client.refresh_access_token(call)
         else:
             dlg = wx.MessageDialog(self, "登录信息失效，请重新登录", "提示", wx.OK | wx.ICON_INFORMATION)
@@ -310,14 +297,10 @@ class MyFrame(wx.Frame):
             return
 
     def on_off(self, event):
-        with self.off_lock:
-            auto_thread = utils.thread_is_alive("auto_thread")
-            if auto_thread:
-                utils.set_event_status(0)
-            try:
-                self.refresh()
-            except Exception as e:
-                pass
+        self.on_btn.Enable(False)
+        auto_thread = utils.thread_is_alive("auto_thread")
+        if auto_thread:
+            utils.set_event_status(0)
 
     def on_restart(self, event):
         result = wx.MessageBox("初始化后将重新开始，您确定吗？", "确认", wx.YES_NO | wx.ICON_QUESTION)
@@ -329,7 +312,7 @@ class MyFrame(wx.Frame):
             utils.event.set()
             utils.set_view("clear")
             self.disable()
-            self.refresh()
+            self.init()
 
     def on_go_forward(self, event):
         self.on_go(step_num = 1)
@@ -346,7 +329,6 @@ class MyFrame(wx.Frame):
                 utils.set_event_status(1)
                 utils.event.set()
                 self.disable()
-                self.refresh()
         else:
             self.init()
 
