@@ -14,7 +14,7 @@ from view.logon_dialog import LogonDialog
 
 class MyFrame(wx.Frame):
     def __init__(self):
-        super().__init__(parent=None, title=utils.get_config("software"), size=wx.Size(500, 300), style=wx.DEFAULT_FRAME_STYLE)
+        super().__init__(parent=None, title=utils.get_config("software"), size=wx.Size(600, 400), style=wx.DEFAULT_FRAME_STYLE)
         icon = wx.Icon("img/icon/icon.ico", wx.BITMAP_TYPE_ICO)
         self.SetIcon(icon)
         self.SetTitle(utils.get_config("software"))

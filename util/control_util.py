@@ -232,11 +232,10 @@ def control_click(main_ui, window, kwargs, step, click_type=None, index=None, re
         except (pywinauto.findwindows.ElementNotFoundError,IndexError,_ctypes.COMError,base_wrapper.ElementNotEnabled) as e:
             logger.log("找不到控件:\nwindow:" + window + "\nkwargs:" + str(kwargs))
             time.sleep(sleep_time)
-            if ignore != None:
-                if ignore == 0:
-                    loop = False
-                    continue
-                ignore-=1
+            if ignore:
+                ignore -= 1
+            if ignore == 0:
+                loop = False
             continue
         except pywinauto.findwindows.ElementAmbiguousError:
             logger.log("找到了多个控件:\nwindow:" + window + "\nkwargs:" + str(kwargs))
