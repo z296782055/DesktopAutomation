@@ -329,6 +329,13 @@
         {"child_window":{"title":"Lower Ribbon", "control_type":"Pane"}},
         {"child_window":{"title":"主页 ", "control_type":"Pane"}},
         {"child_window":{"title":"设备控制 ", "control_type":"ToolBar"}},
+        {"child_window":{"title":"停止设备", "control_type":"Button"}}
+      ]},
+      {"auto_type" : "control_click", "window" : "实时采集 ", "ready":"enabled", "kwargs": [
+        {"child_window":{"title":"The Ribbon", "auto_id":"ribbonControl1", "control_type":"Pane"}},
+        {"child_window":{"title":"Lower Ribbon", "control_type":"Pane"}},
+        {"child_window":{"title":"主页 ", "control_type":"Pane"}},
+        {"child_window":{"title":"设备控制 ", "control_type":"ToolBar"}},
         {"child_window":{"title":"启动设备 ", "control_type":"Button"}}
       ]},
       {"auto_type" : "control_click", "window" : "实时采集 ", "ready":"enabled", "kwargs": [

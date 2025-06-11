@@ -190,6 +190,7 @@ class MyFrame(wx.Frame):
             self.menubar.EnableTop(0, False)
             self.menubar.EnableTop(1, False)
         else:
+            self.SetTitle(utils.get_config("software"))
             self.on_btn.Bind(wx.EVT_BUTTON, self.on_on)
             self.on_btn.SetLabel("开始(&F11)")
             self.on_go_back_btn.Enable(True)
@@ -198,9 +199,7 @@ class MyFrame(wx.Frame):
             self.on_btn.Enable(True)
             self.menubar.EnableTop(0, True)
             self.menubar.EnableTop(1, True)
-
         self.step_text.Label = next(iter(utils.get_step_data(utils.get_config("software"), utils.get_step(), default="")))
-        self.SetTitle(utils.get_config("software"))
 
     def view_init(self):
         self.view_sizer.Clear(delete_windows=True)
