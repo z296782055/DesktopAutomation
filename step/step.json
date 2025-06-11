@@ -453,7 +453,7 @@
       {"auto_type" : "control_click", "window" : "单次进样 ", "click_type":"click_input", "kwargs": [
         {"child_window":{"title":"进样", "auto_id":"btnInject", "control_type":"Button"}}
       ]},
-      {"auto_type" : "control_click", "window" : "实时采集 ", "kwargs": [
+      {"auto_type" : "control_click", "window" : "实时采集 ", "ignore":3, "kwargs": [
         {"child_window":{"title":"信息", "control_type":"Window"}},
         {"child_window":{"title":"确定(&O)", "control_type":"Button"}}
       ]},

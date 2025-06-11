@@ -132,7 +132,7 @@ def do_automation(main_ui, step, automation, sleep_time=default_sleep_time, befo
     elif auto_type == "connect_child_window":
         connect_child_window(main_ui=main_ui, window = automation.get("window"), kwargs = automation.get("kwargs"), title = automation.get("title"), step = step, sleep_time=automation.get("sleep_time") if automation.get("sleep_time") else default_sleep_time, before_sleep_time=automation.get("before_sleep_time") if automation.get("before_sleep_time") else 0)
     elif auto_type == "control_click":
-        control_click(main_ui=main_ui, window = automation.get("window"), kwargs = automation.get("kwargs"), click_type = automation.get("click_type"), index=automation.get("index"), ready=automation.get("ready"), step = step, sleep_time=automation.get("sleep_time") if automation.get("sleep_time") else default_sleep_time, before_sleep_time=automation.get("before_sleep_time") if automation.get("before_sleep_time") else 0)
+        control_click(main_ui=main_ui, window = automation.get("window"), kwargs = automation.get("kwargs"), click_type = automation.get("click_type"), index=automation.get("index"), ready=automation.get("ready"), ignore=automation.get("ignore"), step = step, sleep_time=automation.get("sleep_time") if automation.get("sleep_time") else default_sleep_time, before_sleep_time=automation.get("before_sleep_time") if automation.get("before_sleep_time") else 0)
     elif auto_type == "list_select":
         list_select(main_ui=main_ui, window = automation.get("window"), kwargs = automation.get("kwargs") , click_type = automation.get("click_type"), ready=automation.get("ready"), step = step, select_window_title = automation.get("select_window_title"), select_window_kwargs = automation.get("select_window_kwargs"), sleep_time=automation.get("sleep_time") if automation.get("sleep_time") else default_sleep_time, before_sleep_time=automation.get("before_sleep_time") if automation.get("before_sleep_time") else 0)
     elif auto_type == "edit_write":
@@ -200,7 +200,7 @@ def connect_child_window(main_ui, window, kwargs, title, step, sleep_time=defaul
             continue
         loop = False
 
-def control_click(main_ui, window, kwargs, step, click_type=None, index=None, ready=None, sleep_time=default_sleep_time, before_sleep_time=0):
+def control_click(main_ui, window, kwargs, step, click_type=None, index=None, ready=None, ignore=None, sleep_time=default_sleep_time, before_sleep_time=0):
     if before_sleep_time != 0:
         time.sleep(before_sleep_time)
     loop = True
@@ -233,6 +233,11 @@ def control_click(main_ui, window, kwargs, step, click_type=None, index=None, re
         except (pywinauto.findwindows.ElementNotFoundError,IndexError,_ctypes.COMError,base_wrapper.ElementNotEnabled) as e:
             logger.log("找不到控件:\nwindow:" + window + "\nkwargs:" + str(kwargs))
             time.sleep(sleep_time)
+            if ignore:
+                if ignore == 0:
+                    loop = False
+                    continue
+                ignore-=1
             continue
         except pywinauto.findwindows.ElementAmbiguousError:
             logger.log("找到了多个控件:\nwindow:" + window + "\nkwargs:" + str(kwargs))
