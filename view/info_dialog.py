@@ -26,16 +26,17 @@ class PagePanel(wx.Panel):
         team = None
         for i,(key,value) in enumerate(info_dict.items()):
             data = data_now.get(key)
-            if not data:
-                continue
             if value.get("info") is not None:
                 if " row" not in key:
                     exec(r'self.static_text_'+key+ ' = wx.StaticText(parent=form_panel, label="' + (value.get("info") if value.get("info") is not None else key) + '：")')
                     exec(r'ConfigDialog.draw_static_text(self.static_text_'+key+')')
                     exec(r'form_sizer.Add(window=self.static_text_'+key+', flag=wx.ALIGN_CENTER | wx.ALL, pos=('+str((2*i)//col_num)+', '+str((2*i)%col_num)+'), border=5)')
-
-                    exec(r'self.text_ctrl_'+key+' = wx.TextCtrl(form_panel, size=wx.Size(140, -1), name="'+key+'", value="'+data+'")')
-                    exec(r'ConfigDialog.draw_text_ctrl(self.text_ctrl_'+key+')')
+                    if data:
+                        exec(r'self.text_ctrl_'+key+' = wx.TextCtrl(form_panel, size=wx.Size(140, -1), name="'+key+'", value="'+data+'")')
+                    else:
+                        exec(r'self.text_ctrl_' + key + ' = wx.TextCtrl(form_panel, size=wx.Size(140, -1), name="' + key + '")')
+                        exec(r'self.text_ctrl_'+key+'.Enable(False)')
+                    exec(r'ConfigDialog.draw_text_ctrl(self.text_ctrl_' + key + ')')
                     exec(r'form_sizer.Add(window=self.text_ctrl_'+key+', flag=wx.ALIGN_CENTER | wx.ALL, pos=('+str((2*i)//col_num)+', '+str((((2*i)%col_num)+1))+'), border=5)')
                 else :
                     pass
@@ -45,7 +46,11 @@ class PagePanel(wx.Panel):
                     exec(r'ConfigDialog.draw_static_text(self.static_text_' + key + ')')
                     exec(r'form_sizer.Add(window=self.static_text_' + key + ', flag=wx.ALIGN_CENTER | wx.ALL, pos=(' + str((2 * i) // col_num) + ', ' + str((2 * i) % col_num) + '), border=5)')
                     team = value.get("team")
-                exec(r'self.text_ctrl_' + key + ' = wx.TextCtrl(form_panel, size=wx.Size(140, -1), name="' + key + '", value="' + data + '")')
+                if data:
+                    exec(r'self.text_ctrl_' + key + ' = wx.TextCtrl(form_panel, size=wx.Size(140, -1), name="' + key + '", value="' + data + '")')
+                else:
+                    exec(r'self.text_ctrl_' + key + ' = wx.TextCtrl(form_panel, size=wx.Size(140, -1), name="' + key + '")')
+                    exec(r'self.text_ctrl_' + key + '.Enable(False)')
                 exec(r'ConfigDialog.draw_text_ctrl(self.text_ctrl_' + key + ')')
                 exec(r'form_sizer.Add(window=self.text_ctrl_' + key + ', flag=wx.ALIGN_CENTER | wx.ALL, pos=(' + str(
                     (2 * i) // col_num) + ', ' + str((((2 * i) % col_num) + 1)) + '), border=5)')

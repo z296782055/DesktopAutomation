@@ -33,6 +33,19 @@
       "rblAnalysisType": {"info":"程序类型"},
       "chkRefSmpChannel": {"info":"诊断通道"}
     },
+    "自动进样器": {
+        "rgInjectType": {"info":"进样类型"},
+        "rgSamplingSpeed": {"info":"取样速度"},
+        "seTransfersVolume": {"info":"填充转移液体积"},
+        "seInjectNeedleHeight": {"info":"下针高度"},
+        "seAfterWashVolume": {"info":"清洗外针体积"},
+        "seRinseViscosityDelay": {"info":"润洗液粘度延时"},
+        "seRinseVolume": {"info":"润洗体积"},
+        "seSampleViscosityDelay": {"info":"样品粘度延时"},
+        "rgSamplingMethod": {"info":"进样方式"},
+        "rgSamplePressure": {"info":"采样加压"},
+        "seObjectTemperature": {"info":"目标温度"}
+    },
     "保存": {
       "txtAuditTrace": {"info":"添加或更新理由"}
     },

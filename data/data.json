@@ -47,6 +47,18 @@
             "rblAnalysisType": "单波长",
             "chkRefSmpChannel": "False"
         },
+        "自动进样器": {
+            "rgInjectType": "部分进样",
+            "rgSamplingSpeed": "低",
+            "seInjectNeedleHeight": "20",
+            "seAfterWashVolume": "500",
+            "seRinseViscosityDelay": "2",
+            "seRinseVolume": "45",
+            "seSampleViscosityDelay": "3",
+            "rgSamplingMethod": "直接进样",
+            "rgSamplePressure": "不加压",
+            "seObjectTemperature": "20"
+        },
         "保存": {
             "txtAuditTrace": "没有理由",
             "txtBoxSelected": 10001

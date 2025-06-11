@@ -6,7 +6,7 @@ from util.validator_util import NumberValidator, OsPathValidator
 
 class ConfigDialog(wx.Dialog):
     def __init__(self, parent):
-        super().__init__(parent, title="配置", size=wx.Size(540, 200))
+        super().__init__(parent, title="配置", size=wx.Size(540, 300))
 
         top_panel = wx.Panel(self, size=wx.Size(-1, 4))
         before_form_panel = wx.Panel(self)
@@ -52,6 +52,15 @@ class ConfigDialog(wx.Dialog):
         self.检测器_text_ctrl = wx.TextCtrl(form_panel, size=wx.Size(140, -1), name="检测器")
         ConfigDialog.draw_text_ctrl(self.检测器_text_ctrl)
         form_sizer.Add(window=self.检测器_text_ctrl, flag=wx.ALIGN_CENTER | wx.ALL, pos=(2, 1), border=5)
+
+        self.自动进样器_static_text = wx.StaticText(parent=form_panel, label="自动进样器：")
+        ConfigDialog.draw_static_text(self.自动进样器_static_text)
+        form_sizer.Add(window=self.自动进样器_static_text, flag=wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL,
+                       pos=wx.GBPosition(3, 0), border=5)
+
+        self.自动进样器_text_ctrl = wx.TextCtrl(form_panel, size=wx.Size(140, -1), name="自动进样器")
+        ConfigDialog.draw_text_ctrl(self.自动进样器_text_ctrl)
+        form_sizer.Add(window=self.自动进样器_text_ctrl, flag=wx.ALIGN_CENTER | wx.ALL, pos=(3, 1), border=5)
 
         self.default_file_name_static_text=wx.StaticText(form_panel, label="文件默认名称格式：")
         ConfigDialog.draw_static_text(self.default_file_name_static_text)
@@ -108,11 +117,13 @@ class ConfigDialog(wx.Dialog):
         泵 = self.泵_text_ctrl.GetValue()
         柱温箱 = self.柱温箱_text_ctrl.GetValue()
         检测器 = self.检测器_text_ctrl.GetValue()
+        自动进样器 = self.自动进样器_text_ctrl.GetValue()
         default_file_name = self.default_file_name_combo_box.GetValue()
         image_save_path = self.image_save_path_text_ctrl.GetValue()
         utils.set_dictionary("泵", 泵)
         utils.set_dictionary("柱温箱", 柱温箱)
         utils.set_dictionary("检测器", 检测器)
+        utils.set_dictionary("自动进样器", 自动进样器)
         utils.set_dictionary("default_file_name", default_file_name)
         utils.set_dictionary("image_save_path", image_save_path)
         # 关闭对话框

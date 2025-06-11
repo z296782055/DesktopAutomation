@@ -233,7 +233,7 @@ def control_click(main_ui, window, kwargs, step, click_type=None, index=None, re
         except (pywinauto.findwindows.ElementNotFoundError,IndexError,_ctypes.COMError,base_wrapper.ElementNotEnabled) as e:
             logger.log("找不到控件:\nwindow:" + window + "\nkwargs:" + str(kwargs))
             time.sleep(sleep_time)
-            if ignore:
+            if ignore != None:
                 if ignore == 0:
                     loop = False
                     continue
@@ -322,6 +322,9 @@ def edit_write(main_ui, window, kwargs, step, edit_type=None, ready=None, sleep_
                 else:
                     target_edit = target_edit.wait(ready, timeout=60)
             text = utils.get_data(step).get(target_edit.element_info.automation_id if target_edit.element_info.automation_id else target_edit.element_info.name)
+            if not text:
+                loop = False
+                continue
             if isinstance(text, int):
                 text = utils.refer_dictionary(step=step, key=text)
             target_edit.type_keys("^a")
