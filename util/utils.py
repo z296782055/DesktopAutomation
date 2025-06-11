@@ -69,9 +69,9 @@ def set_config(key, value):
         config[key] = value
         config.write()
 
-def get_dictionary(key):
+def get_dictionary(key, default=None):
     with open(dictionary_url, 'r', encoding='utf-8') as f:
-        return json.load(f).get(get_config("software")).get(key, "")
+        return json.load(f).get(get_config("software")).get(key, default)
 
 def set_dictionary(key, value):
     with dictionary_lock:

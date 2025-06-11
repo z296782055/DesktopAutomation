@@ -19,6 +19,8 @@ class MyFrame(wx.Frame):
         self.SetIcon(icon)
         self.SetTitle(utils.get_config("software"))
         self.Bind(wx.EVT_CONTEXT_MENU, self.show_context_menu)  # 绑定右键事件:ml-citation{ref="4" data="citationList"}
+        # 绑定关闭事件
+        self.Bind(wx.EVT_CLOSE, self.on_close)
         # 创建菜单栏
         self.menubar = wx.MenuBar()
         menu_menu = wx.Menu()
@@ -234,14 +236,6 @@ class MyFrame(wx.Frame):
         self.view_panel.SetupScrolling()
         self.view_panel.Layout()
 
-    def Close(self, force=False):
-        result = wx.MessageBox("确定要退出吗？", "确认", wx.YES_NO | wx.ICON_QUESTION)
-        if result == wx.YES:
-            keyboard.unhook_all()
-            utils.set_thread_status(0)
-            utils.event.set()
-            super().Close()
-
     def on_new(self, event):
         pass
         # dlg = ConfigDialog(self)
@@ -265,6 +259,18 @@ class MyFrame(wx.Frame):
     def on_exit(self, event):
         self.Close()
         event.Skip()
+
+    def on_close(self, event):
+        dlg = wx.MessageDialog(self, "确定要退出吗？", "确认", wx.YES_NO | wx.ICON_QUESTION)
+        result = dlg.ShowModal()
+        dlg.Destroy()
+        if result == wx.ID_YES:
+            keyboard.unhook_all()
+            utils.set_thread_status(0)
+            utils.event.set()
+            event.Skip()
+        else:
+            event.Veto()
 
     def on_on(self, event):
         def call(success, message):
@@ -311,6 +317,8 @@ class MyFrame(wx.Frame):
             utils.set_event_status(1)
             utils.event.set()
             utils.set_view("clear")
+            self.view_init()
+            self.SetTitle(utils.get_config("software"))
             self.disable()
             self.init()
 

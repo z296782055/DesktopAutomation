@@ -11,7 +11,7 @@ class NumberValidator(wx.Validator):
         return NumberValidator()
 
     def Validate(self, win):
-        text_ctrl = win.GetWindow()
+        text_ctrl = self.GetWindow()
         value = text_ctrl.GetValue()
         pattern = r'^\d+(\.\d+)?$'
         if value == "" or re.match(pattern, value):
@@ -54,7 +54,7 @@ class OsPathValidator(wx.Validator):
         return OsPathValidator()
 
     def Validate(self, win):
-        text_ctrl = win.GetWindow()
+        text_ctrl = self.GetWindow()
         value = text_ctrl.GetValue()
         pattern = r'^(?:(?:[a-zA-Z]:|\\.{1,2})?[\\/](?:[^\\?/*|<>:\"]+[\\/])*)(?:(?:[^\\?/*|<>:\"]+?)(?:\\.[^.\\?/*|<>:\"]+)?)?$'
         if value == "" or re.match(pattern, value):
