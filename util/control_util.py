@@ -592,7 +592,7 @@ def ai_post(main_ui, step, sleep_time=default_sleep_time, before_sleep_time=0):
                 if not Path(pdf_url).exists():
                     raise ViewException("没有找到新的图谱，请先完成实验")
                 else:
-                    utils.set_view("add", utils.get_index(0), title="图谱文件:", content=pdf_url)
+                    utils.set_view("add", utils.get_index(0), title="图谱文件:", type="url", content=pdf_url)
                     wx.CallAfter(main_ui.view_init)
                     chart = False
                 pages = convert_from_path(
@@ -742,6 +742,6 @@ def ai_post(main_ui, step, sleep_time=default_sleep_time, before_sleep_time=0):
             logging.exception(e)
             continue
         utils.set_index(1)
-        utils.set_view(key="add", index=utils.get_index(), title="AI返回:", content=response["data"])
+        utils.set_view(key="add", index=utils.get_index(), title="AI返回:", type="text", content=response["data"])
         wx.CallAfter(main_ui.view_init)
         loop = False

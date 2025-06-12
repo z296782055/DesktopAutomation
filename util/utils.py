@@ -197,7 +197,7 @@ def get_view(default=None):
     with open(view_url, 'r', encoding='utf-8') as f:
         return json.load(f).get(get_config("software"), default)
 
-def set_view(key, index=None, title=None, content=None):
+def set_view(key, index=None, title=None, type=None, content=None):
     with view_lock:
         with open(view_url, 'r', encoding='utf-8') as f:
             view_data = json.load(f)
@@ -207,7 +207,7 @@ def set_view(key, index=None, title=None, content=None):
                 match key:
                     case "add":
                         if len(view_data.get(get_config("software")))==0 or view_data.get(get_config("software"))[-1].get("title") != title:
-                            view_data.get(get_config("software")).append({"index":index, "is_active":True, "title":title, "content":content})
+                            view_data.get(get_config("software")).append({"index":index, "is_active":True, "title":title, "type":type, "content":content})
                     case "delete":
                         for view_item in view_data.get(get_config("software")):
                             if view_item.get("index") == index:

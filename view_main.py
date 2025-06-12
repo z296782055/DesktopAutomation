@@ -1,6 +1,9 @@
+import os
+import sys
 import threading
 import time
 import wx
+import wx.adv
 from util import utils
 from util.keyring_util import EVT_FORCE_RELOGIN_TYPE, api_client, EVT_FORCE_RELOGIN
 from view.config_dialog import ConfigDialog
@@ -229,46 +232,53 @@ class MyFrame(wx.Frame):
                 title_static_text.SetForegroundColour(wx.Colour(150, 50, 200))
             self.view_sizer.Add(title_static_text, 0, wx.LEFT, 10)
 
-            content_static_text = wx.StaticText(parent=self.view_panel)
-            content_static_text.SetLabel(view_item.get("content"))
-            ConfigDialog.draw_static_text(content_static_text)
+            if view_item.get("type") == "url":
+                content_static_text = wx.adv.HyperlinkCtrl(self.view_panel, wx.ID_ANY,
+                                                 label=f"{view_item.get("content")}",
+                                                 url=f"file://{view_item.get("content")}")
+                # 绑定 EVT_HYPERLINK 事件来自定义行为（例如，处理错误或执行额外操作）
+                content_static_text.Bind(wx.adv.EVT_HYPERLINK, self.OnOpenFileLink)
+            else:
+                content_static_text = wx.StaticText(parent=self.view_panel)
+                content_static_text.SetLabel(view_item.get("content"))
+                ConfigDialog.draw_static_text(content_static_text)
             if not view_item.get("is_active"):
                 disabled_text_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT)
                 content_static_text.SetForegroundColour(disabled_text_color)
             self.view_sizer.Add(content_static_text, 0, wx.LEFT, 20)
         self.view_panel.SetSizer(self.view_sizer)
         self.view_panel.SetupScrolling()
-        self.scroll_view_to_bottom(self.view_panel)
         self.view_panel.Layout()
+        wx.CallAfter(self.view_panel_scroll_bottom)
 
-    def scroll_view_to_bottom(self, scrolled_window):
-        if hasattr(scrolled_window, 'FitInside'):
-            scrolled_window.FitInside()  # 重新计算虚拟尺寸以适应内容
-        else:
-            # 对于普通的 wx.ScrolledWindow，确保其 Sizer 已更新
-            if scrolled_window.GetSizer():
-                scrolled_window.GetSizer().Layout()
-            # 可能需要手动调整虚拟尺寸，但这比较复杂，ScrolledPanel 更方便
-            # 或者确保之前的 Layout 调用已经更新了 Sizer
-        # 2. 获取所需信息
-        vs_x, vs_y = scrolled_window.GetVirtualSize()  # 总虚拟尺寸 (像素)
-        cs_x, cs_y = scrolled_window.GetClientSize()  # 可见区域尺寸 (像素)
-        ppu_x, ppu_y = scrolled_window.GetScrollPixelsPerUnit()  # 每滚动单元对应的像素数
-        # 3. 计算目标滚动位置 (滚动单元)
-        # 只有当虚拟高度大于可见高度，且滚动单元有效时才需要滚动
-        if ppu_y > 0 and vs_y > cs_y:
-            # 目标是让可见区域的底部与虚拟区域的底部对齐
-            # 此时，可见区域的顶部 y 坐标 (像素) 应该是 vs_y - cs_y
-            target_y_pixels = vs_y - cs_y
-            # 将像素转换为滚动单元
-            target_y_units = target_y_pixels // ppu_y  # 使用整数除法
+    def OnOpenFileLink(self, event):
+        """处理点击本地文件链接的事件"""
+        # event.GetURL() 可以获取到 HyperlinkCtrl 设置的 URL
+        url = event.GetURL()
+        # 移除 file:// 前缀，获取实际路径
+        file_path = url.replace("file://", "")
 
-            # 获取当前的 x 滚动位置 (滚动单元)，保持水平位置不变
-            current_x_units, current_y_units = scrolled_window.GetViewStart()
-            # 4. 执行滚动
-            scrolled_window.Scroll(-1, target_y_units)  # x=-1 表示保持当前水平位置
-            scrolled_window.Layout()
-            # 或者 scrolled_window.Scroll(current_x_units, target_y_units)
+        print(f"尝试打开文件: {file_path}")
+        if not os.path.exists(file_path):
+            wx.MessageBox(f"文件或目录不存在:\n{file_path}", "错误", wx.OK | wx.ICON_ERROR)
+            return
+        try:
+            # HyperlinkCtrl 默认会尝试打开 URL，所以这里可以不写打开逻辑
+            # 但如果你想做额外的检查或使用特定的打开方式，可以在这里实现
+            # 例如，如果你不想依赖默认行为，可以调用自己的函数：
+            # self._open_path_with_system_default(file_path)
+            pass # 默认行为已经足够
+        except Exception as e:
+            wx.MessageBox(f"无法打开文件或目录:\n{file_path}\n错误: {e}", "错误", wx.OK | wx.ICON_ERROR)
+        event.Skip()
+
+    def view_panel_scroll_bottom(self):
+        """将ScrolledPanel滚动到最底端"""
+        # 获取垂直滚动条的最大滚动单位
+        max_y_unit = self.view_panel.GetScrollRange(wx.VERTICAL)
+        # Scroll(x, y) 方法接受的是逻辑单位，而不是像素
+        # x 可以保持当前水平位置（0表示最左），y设置为最大单位
+        self.view_panel.Scroll(0, max_y_unit)
 
     def on_new(self, event):
         pass
