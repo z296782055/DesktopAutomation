@@ -634,6 +634,10 @@ def ai_post(main_ui, step, sleep_time=default_sleep_time, before_sleep_time=0):
                         "text": text_file.read()
                     }
                 response = api_client.make_api_request_sync(method="post", endpoint="ai_post/", data=data_payload, files=files_payload)
+                try:
+                    os.remove(img_url)
+                except:
+                    pass
             # 检查响应
             if response.status_code == 200:
                 try:
