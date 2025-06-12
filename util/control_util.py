@@ -229,7 +229,7 @@ def control_click(main_ui, window, kwargs, step, click_type=None, index=None, re
                 getattr(target_control, click_type)()
             except AttributeError:
                 getattr(target_control, click_type+"_input")()
-        except (pywinauto.findwindows.ElementNotFoundError,IndexError,_ctypes.COMError,base_wrapper.ElementNotEnabled) as e:
+        except (pywinauto.findwindows.ElementNotFoundError,IndexError,_ctypes.COMError,base_wrapper.ElementNotEnabled,TimeoutError) as e:
             logger.log("找不到控件:\nwindow:" + window + "\nkwargs:" + str(kwargs))
             time.sleep(sleep_time)
             if ignore:
@@ -292,7 +292,7 @@ def list_select(main_ui, window, kwargs, step, click_type=None, select_window_ti
                     target_list_item = utils.window_dict.get(window).descendants(title=item)
                 if len(target_list_item) != 0:
                     target_list_item[0].click_input()
-        except (pywinauto.findwindows.ElementNotFoundError,IndexError,_ctypes.COMError,base_wrapper.ElementNotEnabled) as e:
+        except (pywinauto.findwindows.ElementNotFoundError,IndexError,_ctypes.COMError,base_wrapper.ElementNotEnabled,TimeoutError) as e:
             logger.log("找不到列表:\nwindow:" + window + "\nkwargs:" + str(kwargs))
             time.sleep(sleep_time)
             continue
@@ -335,7 +335,7 @@ def edit_write(main_ui, window, kwargs, step, edit_type=None, ready=None, sleep_
                 except AttributeError:
                     pyperclip.copy(text)
                     target_edit.type_keys("^v")
-        except (pywinauto.findwindows.ElementNotFoundError,IndexError,_ctypes.COMError,base_wrapper.ElementNotEnabled):
+        except (pywinauto.findwindows.ElementNotFoundError,IndexError,_ctypes.COMError,base_wrapper.ElementNotEnabled,TimeoutError):
             logger.log("找不到控件:\nwindow:" + window + "\nkwargs:" + str(kwargs))
             time.sleep(sleep_time)
             continue
@@ -372,7 +372,7 @@ def check(main_ui, window, kwargs, step, ready=None, sleep_time=default_sleep_ti
             except AttributeError:
                 if check_status == "True":
                     target_check_box.click_input()
-        except (pywinauto.findwindows.ElementNotFoundError,IndexError,_ctypes.COMError,base_wrapper.ElementNotEnabled):
+        except (pywinauto.findwindows.ElementNotFoundError,IndexError,_ctypes.COMError,base_wrapper.ElementNotEnabled,TimeoutError):
             logger.log("找不到控件:\nwindow:" + window + "\nkwargs:" + str(kwargs))
             time.sleep(sleep_time)
             continue

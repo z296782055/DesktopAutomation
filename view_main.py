@@ -150,6 +150,11 @@ class MyFrame(wx.Frame):
         self.Centre()
         self.Show()
         self.Layout()  # 调用Layout来应用sizer布局
+        auto_thread = utils.thread_is_alive("auto_thread")
+        if auto_thread:
+            utils.set_thread_status(1)
+        else:
+            utils.set_thread_status(0)
         self.init()
         # 4. 绑定自定义事件，使用你创建的事件绑定器常量
         self.Bind(EVT_FORCE_RELOGIN, self.on_login)  # <<< 直接使用 EVT_FORCE_RELOGIN
@@ -313,14 +318,12 @@ class MyFrame(wx.Frame):
                     thread = threading.Thread(target=getattr(control_util, "start"),args=(self,),name="auto_thread")
                     utils.set_thread_status(1)
                     thread.start()
-                try:
-                    self.init()
-                except Exception as e:
-                    pass
             else:
                 call_dlg = wx.MessageDialog(self, message, "提示", wx.OK | wx.ICON_INFORMATION)
                 call_dlg.ShowModal()  # 显示对话框
                 call_dlg.Destroy()  # 销毁对话框，释放资源
+            self.init()
+            self.token_init(success, message)
         if api_client.refresh_token:
             self.on_btn.Enable(False)
             api_client.refresh_access_token(call)

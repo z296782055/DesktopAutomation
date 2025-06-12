@@ -148,7 +148,7 @@ class AuthManager:
                 print(f"[AuthManager] Token refresh failed: {e}")
                 self._clear_tokens()  # 刷新失败，清除所有token，强制重新登录
                 if callback:  # 只有当提供了回调函数时才调用 wx.CallAfter
-                    wx.CallAfter(callback, False, f"Token refresh failed: {e}. Please re-login.")
+                    wx.CallAfter(callback, False, f"身份凭证已失效，请重新登录")
                 # 发送自定义事件，通知主UI线程强制重新登录
                 if _app_instance:
                     evt = ForceReloginEvent(f"Session expired or invalid: {e}")
