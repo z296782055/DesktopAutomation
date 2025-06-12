@@ -92,18 +92,20 @@ class AuthManager:
                         "username" : username,
                         "password" : password
                     }
+                message = "登录失败"
                 response = requests.post(self.auth_url, data=payload)
-                response.raise_for_status()  # Raises HTTPError for bad responses (4xx or 5xx)
                 data = response.json()
+                if response.status_code == 401:
+                    message = data.get("message")
+                response.raise_for_status()  # Raises HTTPError for bad responses (4xx or 5xx)
                 self.access_token = data.get("access_token")
                 self.refresh_token = data.get("refresh_token")
                 # expires_in 是 Access Token 的秒数
                 self.access_token_expiry = time.time() + data.get("expires_in", 0)
-
                 self._save_tokens_to_secure_storage()
                 wx.CallAfter(callback, True, None)  # 登录成功
             except requests.exceptions.RequestException as e:
-                wx.CallAfter(callback, False, "登录失败")
+                wx.CallAfter(callback, False, message)
             except Exception as e:
                 wx.CallAfter(callback, False, f"An unexpected error occurred during login: {e}")
 
