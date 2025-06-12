@@ -177,8 +177,7 @@ class MyFrame(wx.Frame):
             self.on_login_btn.Refresh()
 
     def init(self):
-        auto_thread = utils.thread_is_alive("auto_thread")
-        if auto_thread and utils.get_event_status() == 1:
+        if utils.get_thread_status() == 1 and utils.get_event_status() == 1:
             self.on_btn.Bind(wx.EVT_BUTTON, self.on_off)
             self.on_btn.SetLabel("停止(&F12)")
             self.on_btn.Enable(True)
@@ -265,13 +264,6 @@ class MyFrame(wx.Frame):
             scrolled_window.Scroll(-1, target_y_units)  # x=-1 表示保持当前水平位置
             scrolled_window.Layout()
             # 或者 scrolled_window.Scroll(current_x_units, target_y_units)
-
-    def refresh(self):
-        while True:
-            time.sleep(1)
-            self.init()
-            if self.on_btn.Label == "开始(&F11)":
-                break
 
     def on_new(self, event):
         pass

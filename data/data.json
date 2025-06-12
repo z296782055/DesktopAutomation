@@ -42,7 +42,6 @@
         },
         "检测器": {
             "txtLambda1": "280",
-            "txtLambda2": "700",
             "rbLightType": "氘灯",
             "rblAnalysisType": "单波长",
             "chkRefSmpChannel": "False"

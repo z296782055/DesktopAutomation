@@ -735,7 +735,7 @@ def ai_post(main_ui, step, sleep_time=default_sleep_time, before_sleep_time=0):
             logger.log(ve)
             logging.exception(ve)
             utils.set_thread_status(0)
-            wx.CallAfter(main_ui.refresh)
+            wx.CallAfter(main_ui.init)
             continue
         except Exception as e:
             logger.log(e)

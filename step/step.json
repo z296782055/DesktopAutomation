@@ -384,7 +384,7 @@
     ]},
     {"数据采集":[
       {"auto_type" : "connect_window", "title" : "实时采集 "},
-      {"auto_type" : "control_click", "window" : "实时采集 ", "kwargs": [
+      {"auto_type" : "control_click", "window" : "实时采集 ", "ready":"enabled", "kwargs": [
         {"child_window":{"title":"sidePanel2", "auto_id":"sidePanel2", "control_type":"Pane"}},
         {"child_window":{"auto_id":"_Container", "control_type":"Pane"}},
         {"child_window":{"auto_id":"_ucInsMethodEditor", "control_type":"Pane"}},
