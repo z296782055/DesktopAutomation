@@ -674,8 +674,8 @@
         {"child_window":{"title":"打印记录 ", "auto_id":"ReportPrintList", "control_type":"Window"}},
         {"child_window":{"title":"关闭", "control_type":"Button"}}
       ]},
-      {"auto_type" : "window_close", "title" : "实时采集 ", "kwargs": []},
-      {"auto_type" : "window_close", "title" : "数据处理", "kwargs": []}
+      {"auto_type" : "window_close", "title" : "数据处理", "kwargs": []},
+      {"auto_type" : "window_close", "title" : "实时采集 ", "kwargs": []}
     ]}
   ]
 }
