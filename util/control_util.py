@@ -392,16 +392,16 @@ def table_fill(command_queue, result_queue, event, window, step, table_kwargs, t
         try:
             list_len = int(utils.get_data(step).get(title))
             for clear_item in clear:
-                do_automation(command_queue, result_queue, event, step, clear_item, sleep_time=sleep_time, before_sleep_time=before_sleep_time)
+                do_automation(command_queue, result_queue, event, step, clear_item)
             for i in range(list_len):
                 for add_item in add:
-                    do_automation(command_queue, result_queue, event, step, add_item, sleep_time=sleep_time, before_sleep_time=before_sleep_time)
+                    do_automation(command_queue, result_queue, event, step, add_item)
             for i in range(list_len):
                 for column_item in table_column.get("column"):
                     column_item = copy.copy(column_item)
                     column_item["window"] = title
                     column_item["kwargs"] = json.loads(json.dumps(column_item["kwargs"]) %i)
-                    do_automation(command_queue, result_queue, event, step, column_item, sleep_time=sleep_time, before_sleep_time=before_sleep_time)
+                    do_automation(command_queue, result_queue, event, step, column_item)
         except pywinauto.findwindows.ElementNotFoundError as e:
             logger.log("找不到表格:\nwindow:" + window + "\ntable_kwargs:" + str(table_kwargs))
             time.sleep(sleep_time)
@@ -456,7 +456,7 @@ def tree_click(command_queue, result_queue, event, window, kwargs, step, title, 
                             getattr(target_node, click_type + "_input")()
             if flag:
                 for down_item in down:
-                    do_automation(command_queue, result_queue, event, step, down_item, sleep_time=sleep_time, before_sleep_time=before_sleep_time)
+                    do_automation(command_queue, result_queue, event, step, down_item)
                 logger.log("找不到树状图:\nwindow:" + window + "\nkwargs:" + str(kwargs))
                 time.sleep(sleep_time)
                 continue
@@ -593,9 +593,7 @@ def ai_post(command_queue, result_queue, event, step, sleep_time=default_sleep_t
                     raise ViewException("没有找到新的图谱，请先完成实验")
                 else:
                     utils.set_view("add", utils.get_index(0), title="图谱文件:", type="url", content=pdf_url)
-                    # wx.CallAfter(result_queue.view_init)
                     result_queue.put({"method": "view_init"})
-                    chart = False
                 pages = convert_from_path(
                     Path(pdf_url),
                     poppler_path=r'tools\poppler\Library\bin',  # 明确指定 Poppler 的 bin 路径
@@ -724,7 +722,6 @@ def ai_post(command_queue, result_queue, event, step, sleep_time=default_sleep_t
                     utils.set_index(1)
                 elif response["message"] == "请求无效":
                     utils.set_view(key="delete", index=utils.get_index())
-                    # wx.CallAfter(result_queue.view_init)
                     result_queue.put({"method": "view_init"})
                     utils.set_index(-1)
                 raise Exception(response["message"])
@@ -741,7 +738,6 @@ def ai_post(command_queue, result_queue, event, step, sleep_time=default_sleep_t
             logger.log(ve)
             logging.exception(ve)
             utils.set_process_status(0)
-            # wx.CallAfter(result_queue.init)
             result_queue.put({"method": "init"})
             continue
         except Exception as e:
@@ -750,6 +746,5 @@ def ai_post(command_queue, result_queue, event, step, sleep_time=default_sleep_t
             continue
         utils.set_index(1)
         utils.set_view(key="add", index=utils.get_index(), title="AI返回:", type="text", content=response["data"])
-        # wx.CallAfter(result_queue.view_init)
         result_queue.put({"method": "view_init"})
         loop = False

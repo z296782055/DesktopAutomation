@@ -433,8 +433,7 @@ class MyFrame(wx.Frame):
                 self.disable()
                 self.result_timer.Stop()
                 utils.allow_sleep()
-        else:
-            self.init()
+        self.init()
 
     def on_info(self, event):
         dlg = InfoDialog(self)

@@ -320,12 +320,10 @@ def process_is_alive(name):
 
 def pause(command_queue, result_queue, event):
     if get_event_status() != 1:
-        # wx.CallAfter(main_ui.init)
         result_queue.put({"method": "init"})
         event.clear()
         event.wait()
     if get_process_status() != 1:
-        # wx.CallAfter(main_ui.init)
         result_queue.put({"method": "init"})
         raise ProcessException("进程关闭...")
 
