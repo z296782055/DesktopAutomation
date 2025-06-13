@@ -493,7 +493,7 @@ def table_click(command_queue, result_queue, event, window, table_kwargs, kwargs
                 case "len":
                     i = len(target_table_replace.children())
             target_table.set_focus()
-            control_click(command_queue=command_queue, result_queue =result_queue, window=title, kwargs=json.loads(json.dumps(kwargs) % i), step=step, click_type=click_type, sleep_time=sleep_time, before_sleep_time=before_sleep_time)
+            control_click(command_queue=command_queue, result_queue=result_queue, event=event, window=title, kwargs=json.loads(json.dumps(kwargs) % i), step=step, click_type=click_type, sleep_time=sleep_time, before_sleep_time=before_sleep_time)
         except (pywinauto.findwindows.ElementNotFoundError,IndexError,_ctypes.COMError,base_wrapper.ElementNotEnabled) as e:
             logger.log("找不到表格:\nwindow:" + window + "\nkwargs:" + str(kwargs))
             time.sleep(sleep_time)
