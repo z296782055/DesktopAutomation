@@ -23,21 +23,21 @@ from pywinauto.timings import TimeoutError
 default_sleep_time = float(utils.get_config('default_sleep_time', 1))
 default_backend = "uia"
 
-def start(self):
+def start(command_queue, result_queue, event):
     while utils.get_flag():
         step_list = utils.get_step_data_all(utils.get_config('software'))
         now_step_list = step_list[int(utils.get_step())-1:]
         for step in now_step_list:
             utils.set_step(1, step_list.index(step))
-            wx.CallAfter(self.init)
+            result_queue.put({"method":"init"})
             utils.window_dict.clear()
             for key, value in step.items():
                 for automation in list(value):
-                    wx.CallAfter(self.SetTitle, utils.get_config("software")+"-"+get_detail(key, automation))
-                    do_automation(main_ui=self, step=key, automation=automation)
+                    result_queue.put({"method": "SetTitle", "args": {"title" : utils.get_config("software")+"-"+get_detail(key, automation)}})
+                    do_automation(command_queue=command_queue, result_queue=result_queue, event=event, step=key, automation=automation)
         utils.set_step(1, 0)
     utils.set_event_status(0)
-    utils.set_thread_status(0)
+    utils.set_process_status(0)
 
 def get_detail(step, automation):
     auto_type = automation.get("auto_type")
@@ -124,42 +124,42 @@ def get_detail(step, automation):
         detail += "("+utils.seconds_to_verbose_time(automation.get("before_sleep_time"))+"后)"
     return detail
 
-def do_automation(main_ui, step, automation, sleep_time=default_sleep_time, before_sleep_time=0):
+def do_automation(command_queue, result_queue, event, step, automation):
     auto_type = automation.get("auto_type")
     if auto_type == "connect_window":
-        connect_window(main_ui=main_ui, title=automation.get("title"), sleep_time=automation.get("sleep_time") if automation.get("sleep_time") else default_sleep_time, before_sleep_time=automation.get("before_sleep_time") if automation.get("before_sleep_time") else 0)
+        connect_window(command_queue=command_queue, result_queue=result_queue, event=event, title=automation.get("title"), sleep_time=automation.get("sleep_time") if automation.get("sleep_time") else default_sleep_time, before_sleep_time=automation.get("before_sleep_time") if automation.get("before_sleep_time") else 0)
     elif auto_type == "connect_child_window":
-        connect_child_window(main_ui=main_ui, window = automation.get("window"), kwargs = automation.get("kwargs"), title = automation.get("title"), step = step, sleep_time=automation.get("sleep_time") if automation.get("sleep_time") else default_sleep_time, before_sleep_time=automation.get("before_sleep_time") if automation.get("before_sleep_time") else 0)
+        connect_child_window(command_queue=command_queue, result_queue=result_queue, event=event, window = automation.get("window"), kwargs = automation.get("kwargs"), title = automation.get("title"), step = step, sleep_time=automation.get("sleep_time") if automation.get("sleep_time") else default_sleep_time, before_sleep_time=automation.get("before_sleep_time") if automation.get("before_sleep_time") else 0)
     elif auto_type == "control_click":
-        control_click(main_ui=main_ui, window = automation.get("window"), kwargs = automation.get("kwargs"), click_type = automation.get("click_type"), index=automation.get("index"), ready=automation.get("ready"), ignore=automation.get("ignore"), step = step, sleep_time=automation.get("sleep_time") if automation.get("sleep_time") else default_sleep_time, before_sleep_time=automation.get("before_sleep_time") if automation.get("before_sleep_time") else 0)
+        control_click(command_queue=command_queue, result_queue=result_queue, event=event, window = automation.get("window"), kwargs = automation.get("kwargs"), click_type = automation.get("click_type"), index=automation.get("index"), ready=automation.get("ready"), ignore=automation.get("ignore"), step = step, sleep_time=automation.get("sleep_time") if automation.get("sleep_time") else default_sleep_time, before_sleep_time=automation.get("before_sleep_time") if automation.get("before_sleep_time") else 0)
     elif auto_type == "list_select":
-        list_select(main_ui=main_ui, window = automation.get("window"), kwargs = automation.get("kwargs") , click_type = automation.get("click_type"), ready=automation.get("ready"), step = step, select_window_title = automation.get("select_window_title"), select_window_kwargs = automation.get("select_window_kwargs"), sleep_time=automation.get("sleep_time") if automation.get("sleep_time") else default_sleep_time, before_sleep_time=automation.get("before_sleep_time") if automation.get("before_sleep_time") else 0)
+        list_select(command_queue=command_queue, result_queue=result_queue, event=event, window = automation.get("window"), kwargs = automation.get("kwargs") , click_type = automation.get("click_type"), ready=automation.get("ready"), step = step, select_window_title = automation.get("select_window_title"), select_window_kwargs = automation.get("select_window_kwargs"), sleep_time=automation.get("sleep_time") if automation.get("sleep_time") else default_sleep_time, before_sleep_time=automation.get("before_sleep_time") if automation.get("before_sleep_time") else 0)
     elif auto_type == "edit_write":
-        edit_write(main_ui=main_ui, window=automation.get("window"), kwargs = automation.get("kwargs"), edit_type=automation.get("edit_type"), ready=automation.get("ready"), step=step, sleep_time=automation.get("sleep_time") if automation.get("sleep_time") else default_sleep_time, before_sleep_time=automation.get("before_sleep_time") if automation.get("before_sleep_time") else 0)
+        edit_write(command_queue=command_queue, result_queue=result_queue, event=event, window=automation.get("window"), kwargs = automation.get("kwargs"), edit_type=automation.get("edit_type"), ready=automation.get("ready"), step=step, sleep_time=automation.get("sleep_time") if automation.get("sleep_time") else default_sleep_time, before_sleep_time=automation.get("before_sleep_time") if automation.get("before_sleep_time") else 0)
     elif auto_type == "table_fill":
-        table_fill(main_ui=main_ui, window=automation.get("window"), table_kwargs = automation.get("table_kwargs"), table_head_kwargs = automation.get("table_head_kwargs"), table_body_kwargs = automation.get("table_body_kwargs"), title = automation.get("title"), step=step, add = automation.get("add"), clear = automation.get("clear"), table_column = automation.get("table_column"), sleep_time=automation.get("sleep_time") if automation.get("sleep_time") else default_sleep_time, before_sleep_time=automation.get("before_sleep_time") if automation.get("before_sleep_time") else 0)
+        table_fill(command_queue=command_queue, result_queue=result_queue, event=event, window=automation.get("window"), table_kwargs = automation.get("table_kwargs"), table_head_kwargs = automation.get("table_head_kwargs"), table_body_kwargs = automation.get("table_body_kwargs"), title = automation.get("title"), step=step, add = automation.get("add"), clear = automation.get("clear"), table_column = automation.get("table_column"), sleep_time=automation.get("sleep_time") if automation.get("sleep_time") else default_sleep_time, before_sleep_time=automation.get("before_sleep_time") if automation.get("before_sleep_time") else 0)
     elif auto_type == "check":
-        check(main_ui=main_ui, window=automation.get("window"), kwargs = automation.get("kwargs"), ready=automation.get("ready"), step=step, sleep_time=automation.get("sleep_time") if automation.get("sleep_time") else default_sleep_time, before_sleep_time=automation.get("before_sleep_time") if automation.get("before_sleep_time") else 0)
+        check(command_queue=command_queue, result_queue=result_queue, event=event, window=automation.get("window"), kwargs = automation.get("kwargs"), ready=automation.get("ready"), step=step, sleep_time=automation.get("sleep_time") if automation.get("sleep_time") else default_sleep_time, before_sleep_time=automation.get("before_sleep_time") if automation.get("before_sleep_time") else 0)
     elif auto_type == "tree_click":
-        tree_click(main_ui=main_ui, window=automation.get("window"), kwargs=automation.get("kwargs"),
+        tree_click(command_queue=command_queue, result_queue=result_queue, event=event, window=automation.get("window"), kwargs=automation.get("kwargs"),
                       click_type=automation.get("click_type"),title=automation.get("title"), up=automation.get("up"), down=automation.get("down"), step=step, is_select=automation.get("is_select"), sleep_time=automation.get("sleep_time") if automation.get("sleep_time") else default_sleep_time,
                       before_sleep_time=automation.get("before_sleep_time") if automation.get("before_sleep_time") else 0)
     elif auto_type == "table_click":
-        table_click(main_ui=main_ui, window=automation.get("window"), table_kwargs=automation.get("table_kwargs"), kwargs=automation.get("kwargs"), replace=automation.get("replace"), step=step, title=automation.get("title"), click_type=automation.get("click_type"),
+        table_click(command_queue=command_queue, result_queue=result_queue, event=event, window=automation.get("window"), table_kwargs=automation.get("table_kwargs"), kwargs=automation.get("kwargs"), replace=automation.get("replace"), step=step, title=automation.get("title"), click_type=automation.get("click_type"),
                         sleep_time=automation.get("sleep_time") if automation.get("sleep_time") else default_sleep_time, before_sleep_time=automation.get("before_sleep_time") if automation.get("before_sleep_time") else 0)
     elif auto_type == "wait":
-        wait(main_ui=main_ui, window=automation.get("window"), kwargs=automation.get("kwargs"), step=step, ready=automation.get("ready"), index=automation.get("index"), condition=automation.get("condition"), sleep_time=automation.get("sleep_time") if automation.get("sleep_time") else default_sleep_time, before_sleep_time=automation.get("before_sleep_time") if automation.get("before_sleep_time") else 0)
+        wait(command_queue=command_queue, result_queue=result_queue, event=event, window=automation.get("window"), kwargs=automation.get("kwargs"), step=step, ready=automation.get("ready"), index=automation.get("index"), condition=automation.get("condition"), sleep_time=automation.get("sleep_time") if automation.get("sleep_time") else default_sleep_time, before_sleep_time=automation.get("before_sleep_time") if automation.get("before_sleep_time") else 0)
     elif auto_type == "window_close":
-        window_close(main_ui=main_ui, title=automation.get("title"), kwargs=automation.get("kwargs"), step=step, index=automation.get("index"), before_sleep_time=automation.get("before_sleep_time") if automation.get("before_sleep_time") else 0)
+        window_close(command_queue=command_queue, result_queue=result_queue, event=event, title=automation.get("title"), kwargs=automation.get("kwargs"), step=step, index=automation.get("index"), before_sleep_time=automation.get("before_sleep_time") if automation.get("before_sleep_time") else 0)
     elif auto_type == "ai_post":
-        ai_post(main_ui=main_ui, step=step, sleep_time=automation.get("sleep_time") if automation.get("sleep_time") else default_sleep_time, before_sleep_time=automation.get("before_sleep_time") if automation.get("before_sleep_time") else 0 if automation.get("before_sleep_time") else 0)
+        ai_post(command_queue=command_queue, result_queue=result_queue, event=event, step=step, sleep_time=automation.get("sleep_time") if automation.get("sleep_time") else default_sleep_time, before_sleep_time=automation.get("before_sleep_time") if automation.get("before_sleep_time") else 0 if automation.get("before_sleep_time") else 0)
 
-def connect_window(main_ui, title, backend = default_backend, sleep_time=default_sleep_time, before_sleep_time=0):
+def connect_window(command_queue, result_queue, event, title, backend = default_backend, sleep_time=default_sleep_time, before_sleep_time=0):
     if before_sleep_time != 0:
         time.sleep(before_sleep_time)
     loop = True
     while loop:
-        utils.pause(main_ui=main_ui)
+        utils.pause(command_queue=command_queue, result_queue=result_queue, event=event)
         try:
             app = Application(backend).connect(title=title)
             window = app.window(title=title)
@@ -175,12 +175,12 @@ def connect_window(main_ui, title, backend = default_backend, sleep_time=default
             continue
         loop = False
 
-def connect_child_window(main_ui, window, kwargs, title, step, sleep_time=default_sleep_time, before_sleep_time=0):
+def connect_child_window(command_queue, result_queue, event, window, kwargs, title, step, sleep_time=default_sleep_time, before_sleep_time=0):
     if before_sleep_time != 0:
         time.sleep(before_sleep_time)
     loop = True
     while loop:
-        utils.pause(main_ui=main_ui)
+        utils.pause(command_queue=command_queue, result_queue=result_queue, event=event)
         target_child_window = utils.window_dict.get(window)
         try:
             for kw in kwargs:
@@ -199,12 +199,12 @@ def connect_child_window(main_ui, window, kwargs, title, step, sleep_time=defaul
             continue
         loop = False
 
-def control_click(main_ui, window, kwargs, step, click_type=None, index=None, ready=None, ignore=None, sleep_time=default_sleep_time, before_sleep_time=0):
+def control_click(command_queue, result_queue, event, window, kwargs, step, click_type=None, index=None, ready=None, ignore=None, sleep_time=default_sleep_time, before_sleep_time=0):
     if before_sleep_time != 0:
         time.sleep(before_sleep_time)
     loop = True
     while loop:
-        utils.pause(main_ui=main_ui)
+        utils.pause(command_queue=command_queue, result_queue=result_queue, event=event)
         if click_type is None:
             click_type = "click"
         if index is None:
@@ -243,12 +243,12 @@ def control_click(main_ui, window, kwargs, step, click_type=None, index=None, re
             continue
         loop = False
 
-def list_select(main_ui, window, kwargs, step, click_type=None, select_window_title = None, select_window_kwargs=None, ready=None, sleep_time=default_sleep_time, before_sleep_time=0):
+def list_select(command_queue, result_queue, event, window, kwargs, step, click_type=None, select_window_title = None, select_window_kwargs=None, ready=None, sleep_time=default_sleep_time, before_sleep_time=0):
     if before_sleep_time != 0:
         time.sleep(before_sleep_time)
     loop = True
     while loop:
-        utils.pause(main_ui=main_ui)
+        utils.pause(command_queue=command_queue, result_queue=result_queue, event=event)
         try:
             target_list = utils.window_dict.get(window)
             for kw in kwargs:
@@ -265,7 +265,7 @@ def list_select(main_ui, window, kwargs, step, click_type=None, select_window_ti
             if select_window_kwargs is None:
                 select_window_kwargs = []
             if len(select_window_kwargs) != 0:
-                connect_child_window(main_ui=main_ui, window = window, kwargs=select_window_kwargs, title=select_window_title, step=step, sleep_time=sleep_time)
+                connect_child_window(command_queue=command_queue, result_queue=result_queue, event=event, window = window, kwargs=select_window_kwargs, title=select_window_title, step=step, sleep_time=sleep_time)
                 target_select_window = utils.window_dict.get(select_window_title)
             item = utils.get_data(step).get(target_list.element_info.automation_id if target_list.element_info.automation_id else target_list.element_info.name)
             if item is None:
@@ -301,12 +301,12 @@ def list_select(main_ui, window, kwargs, step, click_type=None, select_window_ti
             time.sleep(sleep_time)
             continue
         loop = False
-def edit_write(main_ui, window, kwargs, step, edit_type=None, ready=None, sleep_time=default_sleep_time, before_sleep_time=0):
+def edit_write(command_queue, result_queue, event, window, kwargs, step, edit_type=None, ready=None, sleep_time=default_sleep_time, before_sleep_time=0):
     if before_sleep_time != 0:
         time.sleep(before_sleep_time)
     loop = True
     while loop:
-        utils.pause(main_ui=main_ui)
+        utils.pause(command_queue=command_queue, result_queue=result_queue, event=event)
         target_edit = utils.window_dict.get(window)
         try:
             for kw in kwargs:
@@ -345,12 +345,12 @@ def edit_write(main_ui, window, kwargs, step, edit_type=None, ready=None, sleep_
             continue
         loop = False
 
-def check(main_ui, window, kwargs, step, ready=None, sleep_time=default_sleep_time, before_sleep_time=0):
+def check(command_queue, result_queue, event, window, kwargs, step, ready=None, sleep_time=default_sleep_time, before_sleep_time=0):
     if before_sleep_time != 0:
         time.sleep(before_sleep_time)
     loop = True
     while loop:
-        utils.pause(main_ui=main_ui)
+        utils.pause(command_queue=command_queue, result_queue=result_queue, event=event)
         target_check_box = utils.window_dict.get(window)
         try:
             for kw in kwargs:
@@ -382,26 +382,26 @@ def check(main_ui, window, kwargs, step, ready=None, sleep_time=default_sleep_ti
             continue
         loop = False
 
-def table_fill(main_ui, window, step, table_kwargs, table_head_kwargs, table_body_kwargs, title, add, clear, table_column, sleep_time=default_sleep_time, before_sleep_time=0):
+def table_fill(command_queue, result_queue, event, window, step, table_kwargs, table_head_kwargs, table_body_kwargs, title, add, clear, table_column, sleep_time=default_sleep_time, before_sleep_time=0):
     if before_sleep_time != 0:
         time.sleep(before_sleep_time)
     loop = True
     while loop:
-        utils.pause(main_ui=main_ui)
-        connect_child_window(main_ui=main_ui, window=window, kwargs=table_kwargs, title=title, step=step, sleep_time=default_sleep_time)
+        utils.pause(command_queue=command_queue, result_queue=result_queue, event=event)
+        connect_child_window(command_queue=command_queue, result_queue=result_queue, event=event, window=window, kwargs=table_kwargs, title=title, step=step, sleep_time=default_sleep_time)
         try:
             list_len = int(utils.get_data(step).get(title))
             for clear_item in clear:
-                do_automation(main_ui, step, clear_item, sleep_time=sleep_time, before_sleep_time=before_sleep_time)
+                do_automation(command_queue, result_queue, event, step, clear_item, sleep_time=sleep_time, before_sleep_time=before_sleep_time)
             for i in range(list_len):
                 for add_item in add:
-                    do_automation(main_ui, step, add_item, sleep_time=sleep_time, before_sleep_time=before_sleep_time)
+                    do_automation(command_queue, result_queue, event, step, add_item, sleep_time=sleep_time, before_sleep_time=before_sleep_time)
             for i in range(list_len):
                 for column_item in table_column.get("column"):
                     column_item = copy.copy(column_item)
                     column_item["window"] = title
                     column_item["kwargs"] = json.loads(json.dumps(column_item["kwargs"]) %i)
-                    do_automation(main_ui, step, column_item, sleep_time=sleep_time, before_sleep_time=before_sleep_time)
+                    do_automation(command_queue, result_queue, event, step, column_item, sleep_time=sleep_time, before_sleep_time=before_sleep_time)
         except pywinauto.findwindows.ElementNotFoundError as e:
             logger.log("找不到表格:\nwindow:" + window + "\ntable_kwargs:" + str(table_kwargs))
             time.sleep(sleep_time)
@@ -412,15 +412,15 @@ def table_fill(main_ui, window, step, table_kwargs, table_head_kwargs, table_bod
             continue
         loop = False
 
-def tree_click(main_ui, window, kwargs, step, title, up, down, click_type=None, is_select=None, sleep_time=default_sleep_time, before_sleep_time=0):
+def tree_click(command_queue, result_queue, event, window, kwargs, step, title, up, down, click_type=None, is_select=None, sleep_time=default_sleep_time, before_sleep_time=0):
     if before_sleep_time != 0:
         time.sleep(before_sleep_time)
     loop = True
     while loop:
-        utils.pause(main_ui=main_ui)
+        utils.pause(command_queue=command_queue, result_queue=result_queue, event=event)
         if click_type is None:
             click_type = "click"
-        connect_child_window(main_ui=main_ui, window=window, kwargs=kwargs, title=title, step=step, sleep_time=default_sleep_time)
+        connect_child_window(command_queue=command_queue, result_queue=result_queue, event=event, window=window, kwargs=kwargs, title=title, step=step, sleep_time=default_sleep_time)
         target_tree = utils.window_dict.get(title)
         try:
             if not isinstance (target_tree, UIAWrapper) :
@@ -456,7 +456,7 @@ def tree_click(main_ui, window, kwargs, step, title, up, down, click_type=None, 
                             getattr(target_node, click_type + "_input")()
             if flag:
                 for down_item in down:
-                    do_automation(main_ui, step, down_item, sleep_time=sleep_time, before_sleep_time=before_sleep_time)
+                    do_automation(command_queue, result_queue, event, step, down_item, sleep_time=sleep_time, before_sleep_time=before_sleep_time)
                 logger.log("找不到树状图:\nwindow:" + window + "\nkwargs:" + str(kwargs))
                 time.sleep(sleep_time)
                 continue
@@ -469,15 +469,15 @@ def tree_click(main_ui, window, kwargs, step, title, up, down, click_type=None, 
             time.sleep(sleep_time)
             continue
         loop = False
-def table_click(main_ui, window, table_kwargs, kwargs, replace, step, title, click_type=None, sleep_time=default_sleep_time, before_sleep_time=0):
+def table_click(command_queue, result_queue, event, window, table_kwargs, kwargs, replace, step, title, click_type=None, sleep_time=default_sleep_time, before_sleep_time=0):
     if before_sleep_time != 0:
         time.sleep(before_sleep_time)
     loop = True
     while loop:
-        utils.pause(main_ui=main_ui)
+        utils.pause(command_queue=command_queue, result_queue=result_queue, event=event)
         if click_type is None:
             click_type = "click"
-        connect_child_window(main_ui=main_ui, window=window, kwargs=table_kwargs, title=title, step=step, sleep_time=default_sleep_time)
+        connect_child_window(command_queue=command_queue, result_queue=result_queue, event=event, window=window, kwargs=table_kwargs, title=title, step=step, sleep_time=default_sleep_time)
         target_table = utils.window_dict.get(title)
         try:
             i = None
@@ -493,7 +493,7 @@ def table_click(main_ui, window, table_kwargs, kwargs, replace, step, title, cli
                 case "len":
                     i = len(target_table_replace.children())
             target_table.set_focus()
-            control_click(main_ui =main_ui, window=title, kwargs=json.loads(json.dumps(kwargs) % i), step=step, click_type=click_type, sleep_time=sleep_time, before_sleep_time=before_sleep_time)
+            control_click(command_queue=command_queue, result_queue =result_queue, window=title, kwargs=json.loads(json.dumps(kwargs) % i), step=step, click_type=click_type, sleep_time=sleep_time, before_sleep_time=before_sleep_time)
         except (pywinauto.findwindows.ElementNotFoundError,IndexError,_ctypes.COMError,base_wrapper.ElementNotEnabled) as e:
             logger.log("找不到表格:\nwindow:" + window + "\nkwargs:" + str(kwargs))
             time.sleep(sleep_time)
@@ -504,12 +504,12 @@ def table_click(main_ui, window, table_kwargs, kwargs, replace, step, title, cli
             continue
         loop = False
 
-def wait(main_ui, window, kwargs, step, ready, condition, index=None, sleep_time=default_sleep_time, before_sleep_time=0):
+def wait(command_queue, result_queue, event, window, kwargs, step, ready, condition, index=None, sleep_time=default_sleep_time, before_sleep_time=0):
     if before_sleep_time != 0:
         time.sleep(before_sleep_time)
     loop = True
     while loop:
-        utils.pause(main_ui=main_ui)
+        utils.pause(command_queue=command_queue, result_queue=result_queue, event=event)
         if index is None:
             index = 0
         target_wait = utils.window_dict.get(window)
@@ -536,12 +536,12 @@ def wait(main_ui, window, kwargs, step, ready, condition, index=None, sleep_time
             continue
         loop = False
 
-def window_close(main_ui, title, kwargs, step, index=None, before_sleep_time=0):
+def window_close(command_queue, result_queue, event, title, kwargs, step, index=None, before_sleep_time=0):
     if before_sleep_time != 0:
         time.sleep(before_sleep_time)
     loop = True
     while loop:
-        utils.pause(main_ui=main_ui)
+        utils.pause(command_queue=command_queue, result_queue=result_queue, event=event)
         if index is None:
             index = 0
         try:
@@ -560,12 +560,12 @@ def window_close(main_ui, title, kwargs, step, index=None, before_sleep_time=0):
             pass
         loop = False
 
-def ai_post(main_ui, step, sleep_time=default_sleep_time, before_sleep_time=0):
+def ai_post(command_queue, result_queue, event, step, sleep_time=default_sleep_time, before_sleep_time=0):
     if before_sleep_time != 0:
         time.sleep(before_sleep_time)
     loop = True
     while loop:
-        utils.pause(main_ui=main_ui)
+        utils.pause(command_queue=command_queue, result_queue=result_queue, event=event)
         try:
             if int(utils.get_index()) == 0:
                 with open("ai/" + utils.get_config("software") + "/text/index.txt", "r", encoding='utf-8') as text_file:
@@ -593,7 +593,8 @@ def ai_post(main_ui, step, sleep_time=default_sleep_time, before_sleep_time=0):
                     raise ViewException("没有找到新的图谱，请先完成实验")
                 else:
                     utils.set_view("add", utils.get_index(0), title="图谱文件:", type="url", content=pdf_url)
-                    wx.CallAfter(main_ui.view_init)
+                    # wx.CallAfter(result_queue.view_init)
+                    result_queue.put({"method": "view_init"})
                     chart = False
                 pages = convert_from_path(
                     Path(pdf_url),
@@ -723,7 +724,8 @@ def ai_post(main_ui, step, sleep_time=default_sleep_time, before_sleep_time=0):
                     utils.set_index(1)
                 elif response["message"] == "请求无效":
                     utils.set_view(key="delete", index=utils.get_index())
-                    wx.CallAfter(main_ui.view_init)
+                    # wx.CallAfter(result_queue.view_init)
+                    result_queue.put({"method": "view_init"})
                     utils.set_index(-1)
                 raise Exception(response["message"])
             elif response.status_code == 410 or response.status_code == 400:
@@ -738,8 +740,9 @@ def ai_post(main_ui, step, sleep_time=default_sleep_time, before_sleep_time=0):
             dlg.Destroy()  # 销毁对话框，释放资源
             logger.log(ve)
             logging.exception(ve)
-            utils.set_thread_status(0)
-            wx.CallAfter(main_ui.init)
+            utils.set_process_status(0)
+            # wx.CallAfter(result_queue.init)
+            result_queue.put({"method": "init"})
             continue
         except Exception as e:
             logger.log(e)
@@ -747,5 +750,6 @@ def ai_post(main_ui, step, sleep_time=default_sleep_time, before_sleep_time=0):
             continue
         utils.set_index(1)
         utils.set_view(key="add", index=utils.get_index(), title="AI返回:", type="text", content=response["data"])
-        wx.CallAfter(main_ui.view_init)
+        # wx.CallAfter(result_queue.view_init)
+        result_queue.put({"method": "view_init"})
         loop = False

@@ -1,5 +1,7 @@
+import ctypes
 import datetime
 import logging
+import multiprocessing
 import os
 import tempfile
 import threading
@@ -9,7 +11,7 @@ from . import sqllite_util
 from pr_properties import pr_properties
 import wx
 from pathlib import Path
-from util.exception_util import ThreadException
+from util.exception_util import ProcessException
 
 data_url = r'./data/data.json'
 config_url = r'./data/config.properties'
@@ -19,7 +21,6 @@ dictionary_url = r'./data/dictionary.json'
 temporary_url = r'./data/temporary.json'
 info_url = r'./data/info.json'
 view_url = r'./data/view.json'
-event = threading.Event()
 config_lock = threading.Lock()
 data_lock = threading.Lock()
 dictionary_lock = threading.Lock()
@@ -30,6 +31,28 @@ step_lock = threading.Lock()
 index_lock = threading.Lock()
 cue_word_lock = threading.Lock()
 window_dict = dict()
+
+# 定义 Windows API 常量
+ES_CONTINUOUS = 0x80000000
+ES_SYSTEM_REQUIRED = 0x00000001
+ES_DISPLAY_REQUIRED = 0x00000002 # 可选，如果需要保持屏幕亮起
+
+# 设置线程执行状态函数原型
+SetThreadExecutionState = ctypes.windll.kernel32.SetThreadExecutionState
+
+def prevent_sleep():
+    """
+    调用 Windows API 阻止系统睡眠和屏幕保护程序。
+    返回 True 表示成功设置，False 表示失败。
+    """
+    print("[Power Manager] Preventing sleep/screensaver...")
+    result = SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED)
+    return result != 0
+
+def allow_sleep():
+    """恢复系统的正常电源管理行为。"""
+    print("[Power Manager] Allowing normal sleep/screensaver behavior...")
+    SetThreadExecutionState(ES_CONTINUOUS)
 
 def generate_random_string(length=36):
     random_string = str(uuid.uuid4())[:length]
@@ -241,11 +264,11 @@ def get_event_status(default=0):
         value = default
     return value
 
-def set_thread_status(thread_status):
-    sqllite_util.update("thread_status", thread_status)
+def set_process_status(process_status):
+    sqllite_util.update("process_status", process_status)
 
-def get_thread_status(default=0):
-    value = sqllite_util.get("thread_status")
+def get_process_status(default=0):
+    value = sqllite_util.get("process_status")
     if not value:
         value = default
     return value
@@ -284,26 +307,27 @@ def get_log(self):
         dlg.ShowModal()  # 显示对话框
         dlg.Destroy()  # 销毁对话框，释放资源
 
-def thread_is_alive(name):
-    threads = threading.enumerate()
-    target_thread = [t for t in threads if t.name == name]
-    if len(target_thread)>1:
-        print("线程数量："+str(len(target_thread)))
-    print("线程数量：" + str(len(target_thread)))
-    if target_thread:
-        return target_thread[0]
+def process_is_alive(name):
+    processlist = multiprocessing.active_children()
+    target_process = [t for t in processlist if t.name == name]
+    if len(target_process)>1:
+        print("进程数量："+str(len(target_process)))
+    print("进程数量：" + str(len(target_process)))
+    if target_process:
+        return target_process[0]
     else:
         return False
 
-def pause(main_ui):
+def pause(command_queue, result_queue, event):
     if get_event_status() != 1:
-        wx.CallAfter(main_ui.init)
-        global event
+        # wx.CallAfter(main_ui.init)
+        result_queue.put({"method": "init"})
         event.clear()
         event.wait()
-    if get_thread_status() != 1:
-        wx.CallAfter(main_ui.init)
-        raise ThreadException("线程关闭...")
+    if get_process_status() != 1:
+        # wx.CallAfter(main_ui.init)
+        result_queue.put({"method": "init"})
+        raise ProcessException("进程关闭...")
 
 def get_cue_word():
     cue_word_url = "ai/"+get_config("software")+"/text/index.txt"

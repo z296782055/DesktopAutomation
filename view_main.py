@@ -1,4 +1,6 @@
+import multiprocessing
 import os
+import queue
 import sys
 import threading
 import time
@@ -18,6 +20,9 @@ from view.logon_dialog import LogonDialog
 class MyFrame(wx.Frame):
     def __init__(self):
         super().__init__(parent=None, title=utils.get_config("software"), size=wx.Size(600, 400), style=wx.DEFAULT_FRAME_STYLE)
+
+        self.event = multiprocessing.Event()
+
         icon = wx.Icon("img/icon/icon.ico", wx.BITMAP_TYPE_ICO)
         self.SetIcon(icon)
         self.SetTitle(utils.get_config("software"))
@@ -153,11 +158,11 @@ class MyFrame(wx.Frame):
         self.Centre()
         self.Show()
         self.Layout()  # 调用Layout来应用sizer布局
-        auto_thread = utils.thread_is_alive("auto_thread")
-        if auto_thread:
-            utils.set_thread_status(1)
+        auto_process = utils.process_is_alive("auto_process")
+        if auto_process:
+            utils.set_process_status(1)
         else:
-            utils.set_thread_status(0)
+            utils.set_process_status(0)
         self.init()
         # 4. 绑定自定义事件，使用你创建的事件绑定器常量
         self.Bind(EVT_FORCE_RELOGIN, self.on_login)  # <<< 直接使用 EVT_FORCE_RELOGIN
@@ -165,6 +170,9 @@ class MyFrame(wx.Frame):
         # 启动时尝试通过refresh token自动登录
         if api_client.refresh_token:
             api_client.refresh_access_token(self.token_init)
+
+        self.result_timer = wx.Timer(self)
+        self.Bind(wx.EVT_TIMER, self.on_check_result, self.result_timer)  #
 
     def token_init(self, success, message):
         if success:
@@ -185,7 +193,7 @@ class MyFrame(wx.Frame):
             self.on_login_btn.Refresh()
 
     def init(self):
-        if utils.get_thread_status() == 1 and utils.get_event_status() == 1:
+        if utils.get_process_status() == 1 and utils.get_event_status() == 1:
             self.on_btn.Bind(wx.EVT_BUTTON, self.on_off)
             self.on_btn.SetLabel("停止(&F12)")
             self.on_btn.Enable(True)
@@ -310,8 +318,8 @@ class MyFrame(wx.Frame):
         dlg.Destroy()
         if result == wx.ID_YES:
             keyboard.unhook_all()
-            utils.set_thread_status(0)
-            utils.event.set()
+            utils.set_process_status(0)
+            self.event.set()
             event.Skip()
         else:
             event.Veto()
@@ -321,13 +329,23 @@ class MyFrame(wx.Frame):
             if success:
                 from util import control_util
                 utils.set_event_status(1)
-                utils.event.set()
-                if utils.thread_is_alive("auto_thread" ):
+                self.event.set()
+                if utils.process_is_alive("auto_process"):
                     pass
                 else:
-                    thread = threading.Thread(target=getattr(control_util, "start"),args=(self,),name="auto_thread")
-                    utils.set_thread_status(1)
-                    thread.start()
+                    multiprocessing.freeze_support()  # 推荐，尤其在 Windows 或打包应用时
+                    self.command_queue = multiprocessing.Queue()
+                    self.result_queue = multiprocessing.Queue()
+                    process = multiprocessing.Process(
+                        target=getattr(control_util, "start"),
+                        args=(self.command_queue,self.result_queue,self.event),
+                        daemon=True,
+                        name="auto_process"
+                    )
+                    utils.set_process_status(1)
+                    process.start()
+                    self.result_timer.Start(100)
+                    print(utils.prevent_sleep())
             else:
                 call_dlg = wx.MessageDialog(self, message, "提示", wx.OK | wx.ICON_INFORMATION)
                 call_dlg.ShowModal()  # 显示对话框
@@ -344,25 +362,60 @@ class MyFrame(wx.Frame):
             self.on_login(self)
             return
 
+    def on_check_result(self, event):
+        """定时器触发，检查结果队列"""
+        if not self.result_queue:
+            # 如果队列不存在（可能启动失败或已完成），停止定时器
+            print("[Main UI] 定时器触发，但结果队列不存在，停止定时器。")
+            self.result_timer.Stop()
+            return
+
+        keep_checking = True
+        try:
+            # 循环获取，一次性处理完当前队列中的所有结果
+            while True:
+                # 4. 非阻塞地获取结果
+                result = self.result_queue.get_nowait()  # 或者 get(block=False)
+                # --- 5. 处理收到的结果 ---
+                print(f"[Main UI] 从队列收到: {result}")
+                method = result.get('method', None)
+                args = result.get('args', {})
+                getattr(self, method)(**args)
+        except queue.Empty:
+            # 队列为空是正常情况，表示这次检查没有新的结果
+            # print("[Main UI] 结果队列暂时为空")
+            pass  # 什么都不做，等待下次定时器触发
+
+        except Exception as e:
+            error_msg = f"处理结果时发生意外错误: {e}"
+            print(f"[Main UI] {error_msg}")
+            keep_checking = False  # 发生错误，停止检查
+        finally:
+            if not keep_checking:
+                pass
+
     def on_off(self, event):
         self.on_btn.Enable(False)
-        auto_thread = utils.thread_is_alive("auto_thread")
-        if auto_thread:
+        auto_process = utils.process_is_alive("auto_process")
+        if auto_process:
             utils.set_event_status(0)
+        utils.allow_sleep()
 
     def on_restart(self, event):
         result = wx.MessageBox("初始化后将重新开始，您确定吗？", "确认", wx.YES_NO | wx.ICON_QUESTION)
         if result == wx.YES:
             utils.set_index(0, 0)
-            utils.set_thread_status(0)
+            utils.set_process_status(0)
             utils.set_step(1, 0)
             utils.set_event_status(1)
-            utils.event.set()
+            self.event.set()
             utils.set_view("clear")
             self.view_init()
             self.SetTitle(utils.get_config("software"))
             self.disable()
             self.init()
+            self.result_timer.Stop()
+            utils.allow_sleep()
 
     def on_go_forward(self, event):
         self.on_go(step_num = 1)
@@ -372,12 +425,12 @@ class MyFrame(wx.Frame):
 
     def on_go(self, step_num = 0):
         utils.set_step(step_num)
-        if utils.thread_is_alive("auto_thread"):
+        if utils.process_is_alive("auto_process"):
             result = wx.MessageBox("换页后将从选择步骤起始处开始，确认要换页吗？", "确认", wx.YES_NO | wx.ICON_QUESTION)
             if result == wx.YES:
-                utils.set_thread_status(0)
+                utils.set_process_status(0)
                 utils.set_event_status(1)
-                utils.event.set()
+                self.event.set()
                 self.disable()
         else:
             self.init()

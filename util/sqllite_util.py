@@ -13,7 +13,7 @@ def setup_database():
             cursor.execute("INSERT OR IGNORE INTO keyvaluepairs (key, value) VALUES (?, ?)", ('step', 1))
             cursor.execute("INSERT OR IGNORE INTO keyvaluepairs (key, value) VALUES (?, ?)", ('flag', 1))
             cursor.execute("INSERT OR IGNORE INTO keyvaluepairs (key, value) VALUES (?, ?)", ('event_status', 0))
-            cursor.execute("INSERT OR IGNORE INTO keyvaluepairs (key, value) VALUES (?, ?)", ('thread_status', 0))
+            cursor.execute("INSERT OR IGNORE INTO keyvaluepairs (key, value) VALUES (?, ?)", ('process_status', 0))
 
     except sqlite3.Error as e:
         print(f"数据库操作发生错误: {e}")
