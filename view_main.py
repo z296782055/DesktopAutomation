@@ -333,7 +333,6 @@ class MyFrame(wx.Frame):
                 if utils.process_is_alive("auto_process"):
                     pass
                 else:
-                    multiprocessing.freeze_support()  # 推荐，尤其在 Windows 或打包应用时
                     self.command_queue = multiprocessing.Queue()
                     self.result_queue = multiprocessing.Queue()
                     process = multiprocessing.Process(
@@ -432,6 +431,8 @@ class MyFrame(wx.Frame):
                 utils.set_event_status(1)
                 self.event.set()
                 self.disable()
+                self.result_timer.Stop()
+                utils.allow_sleep()
         else:
             self.init()
 
@@ -471,6 +472,7 @@ class MyFrame(wx.Frame):
         #     combo_box.SetValue(utils.get_config(combo_box.GetName()))
 
 if __name__ == '__main__':
+    multiprocessing.freeze_support()  # 推荐，尤其在 Windows 或打包应用时
     app = wx.App()
     frame = MyFrame()
     frame.Show()
