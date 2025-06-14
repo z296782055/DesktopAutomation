@@ -153,7 +153,7 @@ def do_automation(command_queue, result_queue, event, step, automation):
     elif auto_type == "wait":
         wait(command_queue=command_queue, result_queue=result_queue, event=event, window=automation.get("window"), kwargs=automation.get("kwargs"), step=step, ready=automation.get("ready"), index=automation.get("index"), condition=automation.get("condition"), sleep_time=automation.get("sleep_time") if automation.get("sleep_time") else default_sleep_time, before_sleep_time=automation.get("before_sleep_time") if automation.get("before_sleep_time") else 0)
     elif auto_type == "window_close":
-        window_close(command_queue=command_queue, result_queue=result_queue, event=event, title=automation.get("title"), kwargs=automation.get("kwargs"), step=step, index=automation.get("index"), before_sleep_time=automation.get("before_sleep_time") if automation.get("before_sleep_time") else 0)
+        window_close(command_queue=command_queue, result_queue=result_queue, event=event, title=automation.get("title"), kwargs=automation.get("kwargs"), step=step, index=automation.get("index"), sleep_time=automation.get("sleep_time") if automation.get("sleep_time") else default_sleep_time, before_sleep_time=automation.get("before_sleep_time") if automation.get("before_sleep_time") else 0)
     elif auto_type == "ai_post":
         ai_post(command_queue=command_queue, result_queue=result_queue, event=event, step=step, sleep_time=automation.get("sleep_time") if automation.get("sleep_time") else default_sleep_time, before_sleep_time=automation.get("before_sleep_time") if automation.get("before_sleep_time") else 0 if automation.get("before_sleep_time") else 0)
 
@@ -527,6 +527,7 @@ def wait(command_queue, result_queue, event, window, kwargs, step, ready, condit
             if not isinstance (target_wait, UIAWrapper) :
                 if ready == "text":
                     if target_wait.legacy_properties()["Value"] != condition:
+                        target_wait.click_input()
                         logger.log("等待:\nwindow:" + window + "\nkwargs:" + str(kwargs))
                         time.sleep(30)
                         continue
@@ -539,7 +540,7 @@ def wait(command_queue, result_queue, event, window, kwargs, step, ready, condit
             continue
         loop = False
 
-def window_close(command_queue, result_queue, event, title, kwargs, step, index=None, before_sleep_time=0):
+def window_close(command_queue, result_queue, event, title, kwargs, step, index=None, ignore=None, sleep_time=default_sleep_time, before_sleep_time=0):
     if before_sleep_time != 0:
         time.sleep(before_sleep_time)
     loop = True
@@ -550,7 +551,7 @@ def window_close(command_queue, result_queue, event, title, kwargs, step, index=
         try:
             app = Application(default_backend).connect(title=title)
             target_window = app.window(title=title)
-            target_window.wait('ready', timeout=60)
+            # target_window.wait('ready', timeout=60)
             for kw in kwargs:
                 for key, value in kw.items():
                     target_window = getattr(target_window, key)(**value)
@@ -560,7 +561,13 @@ def window_close(command_queue, result_queue, event, title, kwargs, step, index=
                         target_window = target_window[index]
             target_window.close()
         except (pywinauto.findwindows.ElementNotFoundError,TimeoutError) as e:
-            pass
+            logger.log("关闭窗口:\nwindow:" + title + "\nkwargs:" + str(kwargs))
+            time.sleep(sleep_time)
+            if ignore:
+                ignore -= 1
+            if ignore == 0:
+                loop = False
+            continue
         loop = False
 
 def ai_post(command_queue, result_queue, event, step, sleep_time=default_sleep_time, before_sleep_time=0):

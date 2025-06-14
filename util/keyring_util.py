@@ -1,3 +1,5 @@
+import logging
+
 import keyring
 import requests
 import time
@@ -75,6 +77,7 @@ class AuthManager:
             keyring.delete_password(SERVICE_ID, "refresh_token")
             print("[AuthManager] Tokens cleared from memory and secure storage.")
         except Exception as e:
+            logging.exception(e)
             print(f"[AuthManager] Could not clear refresh token from secure storage: {e}")
 
     def is_access_token_expired(self):
