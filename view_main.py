@@ -423,16 +423,18 @@ class MyFrame(wx.Frame):
         self.on_go(step_num = -1)
 
     def on_go(self, step_num = 0):
-        utils.set_step(step_num)
         if utils.process_is_alive("auto_process"):
             result = wx.MessageBox("换页后将从选择步骤起始处开始，确认要换页吗？", "确认", wx.YES_NO | wx.ICON_QUESTION)
             if result == wx.YES:
+                utils.set_step(step_num)
                 utils.set_process_status(0)
                 utils.set_event_status(1)
                 self.event.set()
                 self.disable()
                 self.result_timer.Stop()
                 utils.allow_sleep()
+        else:
+            utils.set_step(step_num)
         self.init()
 
     def on_info(self, event):
