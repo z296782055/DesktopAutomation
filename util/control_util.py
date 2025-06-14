@@ -533,7 +533,7 @@ def wait(command_queue, result_queue, event, window, kwargs, step, ready, condit
                 else:
                     logger.log("等待:\nwindow:" + window + "\nkwargs:" + str(kwargs))
                     target_wait.wait(ready, timeout=30)
-        except TimeoutError as e:
+        except (pywinauto.findwindows.ElementNotFoundError,TimeoutError) as e:
             logger.log("等待:\nwindow:" + window + "\nkwargs:" + str(kwargs))
             time.sleep(sleep_time)
             continue
