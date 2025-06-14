@@ -6,6 +6,7 @@ import time
 import threading
 import wx
 from util import utils
+from util.exception_util import ViewException
 
 # --- 配置 ---
 AUTH_SERVER_URL = utils.get_config("server_url")  # FastAPI 后端地址
@@ -299,7 +300,7 @@ class AuthManager:
                 # 检查刷新是否成功
                 if self.access_token is None:
                     # 如果刷新失败（例如 refresh token 过期或被吊销），access_token 会被清空
-                    raise Exception("Failed to refresh token. Please re-login.")
+                    raise ViewException("刷新refresh_token失败. 请重新登录")
                 print("[AuthManager Sync] Token refreshed successfully.")
 
             # 2. 执行实际的 HTTP 请求
