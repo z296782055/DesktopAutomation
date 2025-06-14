@@ -600,7 +600,7 @@
         {"child_window":{"title":"数据处理", "control_type":"ToolBar"}},
         {"child_window":{"title":"保存结果", "control_type":"Button"}}
       ]},
-      {"auto_type" : "control_click", "window" : "数据处理", "kwargs": [
+      {"auto_type" : "control_click", "window" : "数据处理", "ignore":10, "kwargs": [
         {"child_window":{"title":"提示", "control_type":"Window"}},
         {"child_window":{"title":"是(&Y)", "control_type":"Button"}}
       ]},
