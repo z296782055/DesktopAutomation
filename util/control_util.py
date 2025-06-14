@@ -742,9 +742,7 @@ def ai_post(command_queue, result_queue, event, step, sleep_time=default_sleep_t
                 response = response.json()
                 raise Exception(response["message"])
         except ViewException as ve:
-            dlg = wx.MessageDialog(None, str(ve), "提示", wx.OK | wx.ICON_INFORMATION)
-            dlg.ShowModal()  # 显示对话框
-            dlg.Destroy()  # 销毁对话框，释放资源
+            result_queue.put({"method": "show_message", "args":{"message":str(ve)}})
             logger.log(ve)
             logging.exception(ve)
             utils.set_process_status(0)

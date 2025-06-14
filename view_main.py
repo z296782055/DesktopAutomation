@@ -475,6 +475,11 @@ class MyFrame(wx.Frame):
         # for combo_box in combo_box_list:
         #     combo_box.SetValue(utils.get_config(combo_box.GetName()))
 
+    def show_message(self, message):
+        dlg = wx.MessageDialog(self, message, "提示", wx.OK | wx.ICON_INFORMATION)
+        dlg.ShowModal()  # 显示对话框
+        dlg.Destroy()  # 销毁对话框，释放资源
+
 if __name__ == '__main__':
     multiprocessing.freeze_support()  # 推荐，尤其在 Windows 或打包应用时
     app = wx.App()
