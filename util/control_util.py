@@ -15,7 +15,7 @@ from pywinauto.controls.uiawrapper import UIAWrapper
 import wx
 
 from util import utils
-from util.exception_util import ViewException
+from util.exception_util import ViewException, ProcessException
 from util.keyring_util import api_client
 from util.logger_util import logger
 from pywinauto.timings import TimeoutError
@@ -24,20 +24,23 @@ default_sleep_time = float(utils.get_config('default_sleep_time', 1))
 default_backend = "uia"
 
 def start(command_queue, result_queue, event):
-    while utils.get_flag():
-        step_list = utils.get_step_data_all(utils.get_config('software'))
-        now_step_list = step_list[int(utils.get_step())-1:]
-        for step in now_step_list:
-            utils.set_step(1, step_list.index(step))
-            result_queue.put({"method":"init"})
-            utils.window_dict.clear()
-            for key, value in step.items():
-                for automation in list(value):
-                    result_queue.put({"method": "SetTitle", "args": {"title" : utils.get_config("software")+"-"+get_detail(key, automation)}})
-                    do_automation(command_queue=command_queue, result_queue=result_queue, event=event, step=key, automation=automation)
-        utils.set_step(1, 0)
-    utils.set_event_status(0)
-    utils.set_process_status(0)
+    try:
+        while utils.get_flag():
+            step_list = utils.get_step_data_all(utils.get_config('software'))
+            now_step_list = step_list[int(utils.get_step())-1:]
+            for step in now_step_list:
+                utils.set_step(1, step_list.index(step))
+                result_queue.put({"method":"init"})
+                utils.window_dict.clear()
+                for key, value in step.items():
+                    for automation in list(value):
+                        result_queue.put({"method": "SetTitle", "args": {"title" : utils.get_config("software")+"-"+get_detail(key, automation)}})
+                        do_automation(command_queue=command_queue, result_queue=result_queue, event=event, step=key, automation=automation)
+            utils.set_step(1, 0)
+        utils.set_event_status(0)
+        utils.set_process_status(0)
+    except ProcessException:
+        logger.log("进程关闭")
 
 def get_detail(step, automation):
     auto_type = automation.get("auto_type")
