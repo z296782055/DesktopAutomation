@@ -344,7 +344,7 @@ class MyFrame(wx.Frame):
                     utils.set_process_status(1)
                     process.start()
                     self.result_timer.Start(100)
-                    print(utils.prevent_sleep())
+                print(utils.prevent_sleep())
             else:
                 call_dlg = wx.MessageDialog(self, message, "提示", wx.OK | wx.ICON_INFORMATION)
                 call_dlg.ShowModal()  # 显示对话框
