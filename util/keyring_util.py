@@ -152,7 +152,8 @@ class AuthManager:
                     wx.CallAfter(callback, True, None)
             except (requests.exceptions.RequestException, ValueError) as e:
                 print(f"[AuthManager] Token refresh failed: {e}")
-                self._clear_tokens()  # 刷新失败，清除所有token，强制重新登录
+                if isinstance(e, requests.exceptions.HTTPError) and e.response.status_code in [401, 403]:
+                    self._clear_tokens()  # 刷新失败，清除所有token，强制重新登录
                 if callback:  # 只有当提供了回调函数时才调用 wx.CallAfter
                     wx.CallAfter(callback, False, f"身份凭证已失效，请重新登录")
                 # 发送自定义事件，通知主UI线程强制重新登录
@@ -161,7 +162,7 @@ class AuthManager:
                     wx.PostEvent(_app_instance.GetTopWindow(), evt)  # 发送到主窗口
             except Exception as e:
                 print(f"[AuthManager] An unexpected error occurred during refresh: {e}")
-                self._clear_tokens()
+                # self._clear_tokens()
                 if callback:  # 只有当提供了回调函数时才调用 wx.CallAfter
                     wx.CallAfter(callback, False, f"An unexpected error occurred during refresh: {e}. Please re-login.")
                 if _app_instance:
