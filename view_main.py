@@ -344,7 +344,10 @@ class MyFrame(wx.Frame):
                     utils.set_process_status(1)
                     process.start()
                     self.result_timer.Start(100)
-                print(utils.prevent_sleep())
+                if not utils.prevent_sleep():
+                    screen_close_dlg = wx.MessageDialog(self, "屏幕保护未关闭成功，请重试启动或者手动关闭屏幕保护", "提示", wx.OK | wx.ICON_INFORMATION)
+                    screen_close_dlg.ShowModal()  # 显示对话框
+                    screen_close_dlg.Destroy()  # 销毁对话框，释放资源
             else:
                 call_dlg = wx.MessageDialog(self, message, "提示", wx.OK | wx.ICON_INFORMATION)
                 call_dlg.ShowModal()  # 显示对话框
