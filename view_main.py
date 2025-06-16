@@ -238,7 +238,6 @@ class MyFrame(wx.Frame):
                 response = response.json()
                 if response["success"] is True:
                     for i,ai_post in enumerate(response["data"]):
-                        print(ai_post)
                         if ai_post.get("request_img") is not None:
                             content_static_text = wx.adv.HyperlinkCtrl(self.view_panel, wx.ID_ANY,
                                                                        name=f"{ai_post.get("id")}request_file_url",

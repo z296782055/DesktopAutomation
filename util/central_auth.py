@@ -301,8 +301,6 @@ class CentralAuthClient:
         while True:
             try:
                 request_id, result = self.response_queue.get(timeout=36000)
-                print(request_id)
-                print(result)
                 with self.lock:
                     if request_id in self.pending_requests:
                         event, result_container = self.pending_requests.pop(request_id)
