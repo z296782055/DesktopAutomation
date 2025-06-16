@@ -12,11 +12,10 @@ from PIL import Image
 from pdf2image import convert_from_path
 from pywinauto import Application,base_wrapper,uia_defines
 from pywinauto.controls.uiawrapper import UIAWrapper
-import wx
 
 from util import utils
 from util.exception_util import ViewException, ProcessException
-from util.keyring_util import api_client
+import util.central_auth as central_auth
 from util.logger_util import logger
 from pywinauto.timings import TimeoutError
 
@@ -592,9 +591,27 @@ def ai_post(command_queue, result_queue, event, step, sleep_time=default_sleep_t
                         files_payload = {
                             'img': (os.path.basename(utils.get_cue_img_url()), img_file.read(), 'image/png')
                         }
-                    response = api_client.make_api_request_sync(method="post", endpoint="ai_post/", data=data_payload, files=files_payload)
+
+                    result_queue.put({
+                        "method": "proxy_api_request",
+                        "args": {
+                            "method": "post",
+                            "endpoint": "ai_post/",
+                            "data": data_payload,
+                            "files": files_payload  # files_payload 包含二进制数据，可以被pickle序列化
+                        }
+                    })
+                    response = command_queue.get()
                 else:
-                    response = api_client.make_api_request_sync(method="post", endpoint="ai_post/", data=data_payload)
+                    result_queue.put({
+                        "method": "proxy_api_request",
+                        "args": {
+                            "method": "post",
+                            "endpoint": "ai_post/",
+                            "data": data_payload
+                        }
+                    })
+                    response = command_queue.get()
             else:
                 file_url = utils.get_dictionary("image_save_path")+"\\"+utils.get_temporary("数据处理", "1001")
                 pdf_url = file_url + ".pdf"
@@ -634,7 +651,7 @@ def ai_post(command_queue, result_queue, event, step, sleep_time=default_sleep_t
                     stitched_image.save(img_url, 'png')
                 with open(img_url, "rb") as img_file:  # 注意这里是 "rb" (read binary) 模式
                     files_payload = {
-                        'img': (os.path.basename(img_url), img_file.read(), 'image/png')
+                        'img': (file_url, img_file.read(), 'image/png')
                     }
                 with open("ai/"+utils.get_config("software")+"/text/after.txt", "r", encoding='utf-8') as text_file:
                     data_payload = {
@@ -642,7 +659,16 @@ def ai_post(command_queue, result_queue, event, step, sleep_time=default_sleep_t
                         "index": utils.get_index(),
                         "text": text_file.read()
                     }
-                response = api_client.make_api_request_sync(method="post", endpoint="ai_post/", data=data_payload, files=files_payload)
+                result_queue.put({
+                    "method": "proxy_api_request",
+                    "args": {
+                        "method": "post",
+                        "endpoint": "ai_post/",
+                        "data": data_payload,
+                        "files": files_payload  # files_payload 包含二进制数据，可以被pickle序列化
+                    }
+                })
+                response = command_queue.get()
                 try:
                     os.remove(img_url)
                 except:

@@ -2,8 +2,7 @@ import requests
 import wx
 
 import util.utils
-from util import utils, keyring_util
-from util.keyring_util import api_client
+from util import utils, central_auth
 from view.config_dialog import ConfigDialog
 
 class LogonDialog(wx.Dialog):
@@ -70,7 +69,7 @@ class LogonDialog(wx.Dialog):
 
     def on_logoff(self, event):
         # keyring_util.delete_token_from_keyring(self.username_text_ctrl.GetValue())
-        api_client.logout()
+        central_auth.get_api_client().logout()
         util.utils.set_config("username", "")
         self.parent.init()
         self.parent.token_init(success=False, message="注销成功！")

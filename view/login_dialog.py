@@ -2,8 +2,7 @@ import requests
 import wx
 
 import util.utils
-from util import utils, keyring_util
-from util.keyring_util import api_client
+from util import utils, central_auth
 from view.config_dialog import ConfigDialog
 
 class LoginDialog(wx.Dialog):
@@ -74,7 +73,7 @@ class LoginDialog(wx.Dialog):
             dlg.ShowModal()  # 显示对话框
             dlg.Destroy()  # 销毁对话框，释放资源
             return
-        api_client.login(self.username_text_ctrl.GetValue(), self.password_text_ctrl.GetValue(), self._on_login_complete)
+        central_auth.get_api_client().login(self.username_text_ctrl.GetValue(), self.password_text_ctrl.GetValue(), self._on_login_complete)
 
     def _on_login_complete(self, success, message):
         if success:

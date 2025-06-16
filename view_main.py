@@ -1,13 +1,18 @@
+import logging
 import multiprocessing
 import os
 import queue
-import sys
 import threading
-import time
+import webbrowser
+from pathlib import Path
+
 import wx
 import wx.adv
 from util import utils
-from util.keyring_util import EVT_FORCE_RELOGIN_TYPE, api_client, EVT_FORCE_RELOGIN
+from util.central_auth import EVT_FORCE_RELOGIN_TYPE, EVT_FORCE_RELOGIN
+from util import central_auth
+from util.exception_util import ViewException
+
 from view.config_dialog import ConfigDialog
 import wx.lib.scrolledpanel as scrolled
 import keyboard
@@ -27,6 +32,8 @@ class MyFrame(wx.Frame):
         self.SetIcon(icon)
         self.SetTitle(utils.get_config("software"))
         self.Bind(wx.EVT_CONTEXT_MENU, self.show_context_menu)  # 绑定右键事件:ml-citation{ref="4" data="citationList"}
+        # self.Bind(wx.EVT_MENU, self.on_copy, id=wx.ID_COPY)
+        self.Bind(wx.EVT_MENU, self.on_refresh, id=wx.ID_REFRESH)
         # 绑定关闭事件
         self.Bind(wx.EVT_CLOSE, self.on_close)
         # 创建菜单栏
@@ -128,7 +135,7 @@ class MyFrame(wx.Frame):
         center_sizer.Add(self.view_panel, 1, wx.EXPAND)
         center_sizer.Add(center_right_panel, 0, wx.ALIGN_CENTER_VERTICAL)
         center_panel.SetSizer(center_sizer)
-        self.view_init()
+        # self.view_init()
 
         bottom_sizer = wx.BoxSizer(wx.HORIZONTAL)
         on_btn_panel = wx.Panel(bottom_panel)
@@ -168,8 +175,10 @@ class MyFrame(wx.Frame):
         self.Bind(EVT_FORCE_RELOGIN, self.on_login)  # <<< 直接使用 EVT_FORCE_RELOGIN
 
         # 启动时尝试通过refresh token自动登录
-        if api_client.refresh_token:
-            api_client.refresh_access_token(self.token_init)
+        is_logged_in = central_auth.get_api_client().is_logged_in_sync()
+        if is_logged_in:
+            central_auth.get_api_client().refresh_tokens(self.token_init)
+            self.view_init()
 
         self.result_timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.on_check_result, self.result_timer)  #
@@ -214,52 +223,68 @@ class MyFrame(wx.Frame):
         self.step_text.Label = next(iter(utils.get_step_data(utils.get_config("software"), utils.get_step(), default="")))
 
     def view_init(self):
-        self.view_sizer.Clear(delete_windows=True)
-        index = 0
-        for view_item in utils.get_view():
-            if view_item.get("index") != index:
-                index_static_text = wx.StaticText(parent=self.view_panel)
-                index_static_text.SetLabel("第"+str(view_item.get("index"))+"次循环")
-                index_text_font = wx.Font(10, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD)
-                index_static_text.SetFont(index_text_font)
-                if not view_item.get("is_active"):
-                    disabled_text_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT)
-                    index_static_text.SetForegroundColour(disabled_text_color)
-                else:
-                    index_static_text.SetForegroundColour(wx.RED)
-                self.view_sizer.Add(index_static_text, 0, wx.ALL | wx.EXPAND, 5)
-                index = view_item.get("index")
-            title_static_text = wx.StaticText(parent=self.view_panel)
-            title_static_text.SetLabel(view_item.get("title"))
-            title_text_font = wx.Font(10, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD)
-            title_static_text.SetFont(title_text_font)
-            if not view_item.get("is_active"):
-                disabled_text_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT)
-                title_static_text.SetForegroundColour(disabled_text_color)
-            else:
-                title_static_text.SetForegroundColour(wx.Colour(150, 50, 200))
-            self.view_sizer.Add(title_static_text, 0, wx.LEFT, 10)
+        try:
+            self.view_sizer.Clear(delete_windows=True)
+            request_args = {
+                "method": "get",
+                "endpoint": "ai_post/getlist",
+                "params": {
+                    "software": utils.get_config("software")
+                }
+            }
+            response = central_auth.get_api_client().make_api_request_sync(**request_args)
+            if response.status_code == 200:
+                response = response.json()
+                if response["success"] is True:
+                    for i,ai_post in enumerate(response["data"]):
+                        print(ai_post)
+                        if ai_post.get("request_img") is not None:
+                            content_static_text = wx.adv.HyperlinkCtrl(self.view_panel, wx.ID_ANY,
+                                                                       name=f"{ai_post.get("id")}request_file_url",
+                                                                       label=str(Path(f"{ai_post.get("request_file_url")}")),
+                                                                       url=f"file://"+str(Path(f"{ai_post.get("request_file_url")}")))
+                            # 绑定 EVT_HYPERLINK 事件来自定义行为（例如，处理错误或执行额外操作）
+                            content_static_text.Bind(wx.adv.EVT_HYPERLINK, lambda evt: self.OnOpenFileLink(evt,
+                                                            request_file_url=ai_post.get("request_file_url"),
+                                                            software=utils.get_config("software"),
+                                                            group=ai_post.get("group"),
+                                                            file_name=ai_post.get("request_img")))
 
-            if view_item.get("type") == "url":
-                content_static_text = wx.adv.HyperlinkCtrl(self.view_panel, wx.ID_ANY,
-                                                 label=f"{view_item.get("content")}",
-                                                 url=f"file://{view_item.get("content")}")
-                # 绑定 EVT_HYPERLINK 事件来自定义行为（例如，处理错误或执行额外操作）
-                content_static_text.Bind(wx.adv.EVT_HYPERLINK, self.OnOpenFileLink)
-            else:
-                content_static_text = wx.StaticText(parent=self.view_panel)
-                content_static_text.SetLabel(view_item.get("content"))
-                ConfigDialog.draw_static_text(content_static_text)
-            if not view_item.get("is_active"):
-                disabled_text_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT)
-                content_static_text.SetForegroundColour(disabled_text_color)
-            self.view_sizer.Add(content_static_text, 0, wx.LEFT, 20)
-        self.view_panel.SetSizer(self.view_sizer)
-        self.view_panel.SetupScrolling()
-        self.view_panel.Layout()
-        wx.CallAfter(self.view_panel_scroll_bottom)
+                            self.view_sizer.Add(content_static_text, 0, wx.LEFT, 20)
+                        index_static_text = wx.StaticText(parent=self.view_panel)
+                        index_static_text.SetLabel("第"+str(i+1)+"次循环")
+                        index_text_font = wx.Font(10, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD)
+                        index_static_text.SetFont(index_text_font)
+                        index_static_text.SetForegroundColour(wx.RED)
+                        self.view_sizer.Add(index_static_text, 0, wx.ALL | wx.EXPAND, 5)
 
-    def OnOpenFileLink(self, event):
+                        title_static_text = wx.StaticText(parent=self.view_panel)
+                        title_static_text.SetLabel("AI返回")
+                        title_text_font = wx.Font(10, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD)
+                        title_static_text.SetFont(title_text_font)
+                        title_static_text.SetForegroundColour(wx.Colour(150, 50, 200))
+                        self.view_sizer.Add(title_static_text, 0, wx.LEFT, 10)
+
+                        content_static_text = wx.StaticText(parent=self.view_panel)
+                        content_static_text.SetLabel(ai_post.get("response_text"))
+                        ConfigDialog.draw_static_text(content_static_text)
+                        self.view_sizer.Add(content_static_text, 0, wx.LEFT, 20)
+
+                        title_static_text = wx.StaticText(parent=self.view_panel)
+                        title_static_text.SetLabel("图谱文件")
+                        title_text_font = wx.Font(10, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD)
+                        title_static_text.SetFont(title_text_font)
+                        title_static_text.SetForegroundColour(wx.Colour(150, 50, 200))
+                        self.view_sizer.Add(title_static_text, 0, wx.LEFT, 10)
+
+                    self.view_panel.SetSizer(self.view_sizer)
+                    self.view_panel.SetupScrolling()
+                    self.view_panel.Layout()
+                    wx.CallAfter(self.view_panel_scroll_bottom)
+        except ViewException as ve:
+            self.show_message(str(ve))
+
+    def OnOpenFileLink(self, event, software, group, file_name, request_file_url):
         """处理点击本地文件链接的事件"""
         # event.GetURL() 可以获取到 HyperlinkCtrl 设置的 URL
         url = event.GetURL()
@@ -267,18 +292,59 @@ class MyFrame(wx.Frame):
         file_path = url.replace("file://", "")
 
         print(f"尝试打开文件: {file_path}")
-        if not os.path.exists(file_path):
-            wx.MessageBox(f"文件或目录不存在:\n{file_path}", "错误", wx.OK | wx.ICON_ERROR)
-            return
+        if os.path.exists(file_path+".pdf"):
+            self._open_path_with_system_default(file_path+".pdf")
+            # event.SetURL(file_path+".pdf")
+            # event.Skip()
+            # wx.MessageBox(f"文件或目录不存在:\n{file_path}", "错误", wx.OK | wx.ICON_ERROR)
+            # return
+        elif os.path.exists(file_path+".png"):
+            self._open_path_with_system_default(file_path + ".png")
+            # event.SetURL(file_path + ".png")
+            # event.Skip()
+            # wx.MessageBox(f"无法打开文件或目录:\n{file_path}\n错误: {e}", "错误", wx.OK | wx.ICON_ERROR)
+        else:
+            download_thread = threading.Thread(target=self.download_worker, args=(software, group, file_name, request_file_url))
+            download_thread.start()
+
+    def download_worker(self, software, group, file_name, request_file_url):
+        def open_img(success, message, response):
+            if success:
+                response.raise_for_status()
+                with open(request_file_url+".png", 'wb') as f:
+                    for chunk in response.iter_content(chunk_size=8192):
+                        f.write(chunk)
+                self._open_path_with_system_default(request_file_url+".png")
+            else:
+                self.show_message(message)
+        request_args = {
+            "method": "get",
+            "endpoint": "ai_post/download/"+software+"/"+group+"/"+file_name+".png",
+            "is_file_download": True,  # <--- 放在 kwargs 内部
+            "callback": open_img
+        }
+        central_auth.get_api_client().make_api_request(**request_args)
+
+    def _open_path_with_system_default(self, path: str):
+        """
+        使用操作系统的默认应用程序打开给定的文件路径或 URL。
+        这是一个内部辅助方法。
+
+        Args:
+            path (str): 要打开的文件路径或 URL。
+        """
         try:
-            # HyperlinkCtrl 默认会尝试打开 URL，所以这里可以不写打开逻辑
-            # 但如果你想做额外的检查或使用特定的打开方式，可以在这里实现
-            # 例如，如果你不想依赖默认行为，可以调用自己的函数：
-            # self._open_path_with_system_default(file_path)
-            pass # 默认行为已经足够
+            # webbrowser.open() 是一个强大的跨平台函数。
+            # 它可以打开 'http://', 'https://' 链接，也可以打开本地文件路径。
+            # 对于本地文件，它会自动处理成 'file://...' URL 的形式。
+            webbrowser.open(path)
+            print(f"成功请求系统打开: {path}")
+            return True
         except Exception as e:
-            wx.MessageBox(f"无法打开文件或目录:\n{file_path}\n错误: {e}", "错误", wx.OK | wx.ICON_ERROR)
-        event.Skip()
+            # 如果出现任何问题（例如，webbrowser模块内部错误）
+            wx.MessageBox(f"无法打开路径：\n{path}\n\n错误: {e}", "打开失败", wx.OK | wx.ICON_ERROR)
+            print(f"错误：无法打开路径 '{path}'. 原因: {e}")
+            return False
 
     def view_panel_scroll_bottom(self):
         """将ScrolledPanel滚动到最底端"""
@@ -304,8 +370,8 @@ class MyFrame(wx.Frame):
 
     def show_context_menu(self, event):
         context_menu = wx.Menu()
-        # context_menu.Append(wx.ID_COPY, "复制(&C)\tCtrl+C")
-        # context_menu.Append(wx.ID_PASTE, "粘贴(&V)\tCtrl+V")
+        # context_menu.Append(wx.ID_COPY, "复制")
+        context_menu.Append(wx.ID_REFRESH, "刷新")
         self.PopupMenu(context_menu)  # 显示上下文菜单:ml-citation{ref="4" data="citationList"}
 
     def on_exit(self, event):
@@ -337,7 +403,7 @@ class MyFrame(wx.Frame):
                     self.result_queue = multiprocessing.Queue()
                     process = multiprocessing.Process(
                         target=getattr(control_util, "start"),
-                        args=(self.command_queue,self.result_queue,self.event),
+                        args=(self.command_queue, self.result_queue, self.event),
                         daemon=True,
                         name="auto_process"
                     )
@@ -345,7 +411,8 @@ class MyFrame(wx.Frame):
                     process.start()
                     self.result_timer.Start(100)
                 if not utils.prevent_sleep():
-                    screen_close_dlg = wx.MessageDialog(self, "屏幕保护未关闭成功，请重试启动或者手动关闭屏幕保护", "提示", wx.OK | wx.ICON_INFORMATION)
+                    screen_close_dlg = wx.MessageDialog(self, "屏幕保护未关闭成功，请重试启动或者手动关闭屏幕保护",
+                                                        "提示", wx.OK | wx.ICON_INFORMATION)
                     screen_close_dlg.ShowModal()  # 显示对话框
                     screen_close_dlg.Destroy()  # 销毁对话框，释放资源
             else:
@@ -354,9 +421,11 @@ class MyFrame(wx.Frame):
                 call_dlg.Destroy()  # 销毁对话框，释放资源
             self.init()
             self.token_init(success, message)
-        if api_client.refresh_token:
+
+        is_logged_in = central_auth.get_api_client().is_logged_in_sync()
+        if is_logged_in:
             self.on_btn.Enable(False)
-            api_client.refresh_access_token(call)
+            central_auth.get_api_client().refresh_tokens(call)
         else:
             dlg = wx.MessageDialog(self, "登录信息失效，请重新登录", "提示", wx.OK | wx.ICON_INFORMATION)
             dlg.ShowModal()  # 显示对话框
@@ -379,10 +448,17 @@ class MyFrame(wx.Frame):
                 # 4. 非阻塞地获取结果
                 result = self.result_queue.get_nowait()  # 或者 get(block=False)
                 # --- 5. 处理收到的结果 ---
-                print(f"[Main UI] 从队列收到: {result}")
                 method = result.get('method', None)
                 args = result.get('args', {})
-                getattr(self, method)(**args)
+                if method == "proxy_api_request":
+                    thread = threading.Thread(
+                        target=self.handle_proxy_request,
+                        args=(args,)
+                    )
+                    thread.daemon = True
+                    thread.start()
+                else:
+                    getattr(self, method)(**args)
         except queue.Empty:
             # 队列为空是正常情况，表示这次检查没有新的结果
             # print("[Main UI] 结果队列暂时为空")
@@ -396,6 +472,18 @@ class MyFrame(wx.Frame):
             if not keep_checking:
                 pass
 
+    def handle_proxy_request(self, request_args):
+        """这个函数在主进程的一个新线程中运行"""
+        api_client = central_auth.get_api_client()  # 获取主进程唯一的客户端
+        response_to_child = {}
+        try:
+            response = api_client.make_api_request_sync(**request_args)
+            self.command_queue.put(response)
+        except Exception as e:
+            logging.error(f"[Main UI] {e}")
+            error_payload = {"status": "error", "message": str(e)}
+            self.command_queue.put(error_payload)
+
     def on_off(self, event):
         self.on_btn.Enable(False)
         auto_process = utils.process_is_alive("auto_process")
@@ -406,18 +494,31 @@ class MyFrame(wx.Frame):
     def on_restart(self, event):
         result = wx.MessageBox("初始化后将重新开始，您确定吗？", "确认", wx.YES_NO | wx.ICON_QUESTION)
         if result == wx.YES:
-            utils.set_index(0, 0)
-            utils.set_process_status(0)
-            utils.set_step(1, 0)
-            utils.set_event_status(1)
-            self.event.set()
-            utils.set_view("clear")
-            self.view_init()
-            self.SetTitle(utils.get_config("software"))
-            self.disable()
-            self.init()
-            self.result_timer.Stop()
-            utils.allow_sleep()
+            try:
+                request_args = {
+                    "method": "post",
+                    "endpoint": "ai_post/reset",
+                    "data": {
+                        "software": utils.get_config("software")
+                    }
+                }
+                response = central_auth.get_api_client().make_api_request_sync(**request_args)
+                if response.status_code == 200:
+                    utils.set_index(0, 0)
+                    utils.set_process_status(0)
+                    utils.set_step(1, 0)
+                    utils.set_event_status(1)
+                    self.event.set()
+                    utils.set_view("clear")
+                    self.view_init()
+                    self.SetTitle(utils.get_config("software"))
+                    self.disable()
+                    self.init()
+                    self.result_timer.Stop()
+                    utils.allow_sleep()
+            except Exception as e:
+                logging.exception(f"[Main UI] {e}")
+                self.show_message(str(e))
 
     def on_go_forward(self, event):
         self.on_go(step_num = 1)
@@ -460,6 +561,12 @@ class MyFrame(wx.Frame):
         dlg.ShowModal()  # 显示模态对话框
         dlg.Destroy()  # 关闭后销毁对话框
 
+    def on_refresh(self, event):
+        self.view_init()
+
+    def on_copy(self, event):
+        pass
+
     def disable(self):
         self.on_btn.Enable(False)
         self.on_go_back_btn.Enable(False)
@@ -482,9 +589,18 @@ class MyFrame(wx.Frame):
 
 if __name__ == '__main__':
     multiprocessing.freeze_support()  # 推荐，尤其在 Windows 或打包应用时
+    central_auth.initialize_api_client()
     app = wx.App()
+    central_auth.set_app_instance(app)
     frame = MyFrame()
     frame.Show()
+
+    is_logged_in = central_auth.get_api_client().is_logged_in_sync()
+    frame.token_init(is_logged_in, "")
+
+    # 启动时尝试通过refresh token自动登录
+    # central_auth.get_api_client().is_logged_in_sync(frame.token_init)
+
     keyboard.on_press_key("F11", frame.on_on)
     keyboard.on_press_key("F12", frame.on_off)
     app.MainLoop()
