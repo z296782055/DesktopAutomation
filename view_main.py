@@ -1,4 +1,6 @@
 import logging
+from functools import partial
+
 from util.logger_util import setup_logging
 import multiprocessing
 import os
@@ -224,65 +226,81 @@ class MyFrame(wx.Frame):
         self.step_text.Label = next(iter(utils.get_step_data(utils.get_config("software"), utils.get_step(), default="")))
 
     def view_init(self):
-        try:
-            self.view_sizer.Clear(delete_windows=True)
-            request_args = {
-                "method": "get",
-                "endpoint": "ai_post/getlist",
-                "params": {
-                    "software": utils.get_config("software")
-                }
-            }
-            response = central_auth.get_api_client().make_api_request_sync(**request_args)
-            if response.status_code == 200:
-                response = response.json()
-                if response["success"] is True:
-                    for i,ai_post in enumerate(response["data"]):
-                        if ai_post.get("index") != 0:
-                            content_static_text = wx.adv.HyperlinkCtrl(self.view_panel, wx.ID_ANY,
-                                                                       name=f"{ai_post.get("id")}request_file_url",
-                                                                       label=str(Path(f"{ai_post.get("request_file_url")}")),
-                                                                       url=f"file://"+str(Path(f"{ai_post.get("request_file_url")}")))
-                            # 绑定 EVT_HYPERLINK 事件来自定义行为（例如，处理错误或执行额外操作）
-                            content_static_text.Bind(wx.adv.EVT_HYPERLINK, lambda evt: self.OnOpenFileLink(evt,
-                                                            request_file_url=ai_post.get("request_file_url"),
-                                                            software=utils.get_config("software"),
-                                                            group=ai_post.get("group"),
-                                                            file_name=ai_post.get("request_img")))
+        def show_view(success, message, response):
+            try:
+                if success:
+                    if response.status_code == 200:
+                        response = response.json()
+                        if response["success"] is True:
+                            for i, ai_post in enumerate(response["data"]):
+                                if ai_post.get("index") != 0:
+                                    content_static_text = wx.adv.HyperlinkCtrl(self.view_panel, wx.ID_ANY,
+                                                                               name=f"{ai_post.get("id")}request_file_url",
+                                                                               label=str(Path(
+                                                                                   f"{ai_post.get("request_file_url")}")),
+                                                                               url=f"file://" + str(Path(
+                                                                                   f"{ai_post.get("request_file_url")}")))
+                                    # 绑定 EVT_HYPERLINK 事件来自定义行为（例如，处理错误或执行额外操作）
+                                    content_static_text.Bind(wx.adv.EVT_HYPERLINK, lambda evt: self.OnOpenFileLink(evt,
+                                                                                                                   request_file_url=ai_post.get(
+                                                                                                                       "request_file_url"),
+                                                                                                                   software=utils.get_config(
+                                                                                                                       "software"),
+                                                                                                                   group=ai_post.get(
+                                                                                                                       "group"),
+                                                                                                                   file_name=ai_post.get(
+                                                                                                                       "request_img")))
 
-                            self.view_sizer.Add(content_static_text, 0, wx.LEFT, 20)
-                        index_static_text = wx.StaticText(parent=self.view_panel)
-                        index_static_text.SetLabel("第"+str(i+1)+"次循环")
-                        index_text_font = wx.Font(10, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD)
-                        index_static_text.SetFont(index_text_font)
-                        index_static_text.SetForegroundColour(wx.RED)
-                        self.view_sizer.Add(index_static_text, 0, wx.ALL | wx.EXPAND, 5)
+                                    self.view_sizer.Add(content_static_text, 0, wx.LEFT, 20)
+                                index_static_text = wx.StaticText(parent=self.view_panel)
+                                index_static_text.SetLabel("第" + str(i + 1) + "次循环")
+                                index_text_font = wx.Font(10, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL,
+                                                          wx.FONTWEIGHT_BOLD)
+                                index_static_text.SetFont(index_text_font)
+                                index_static_text.SetForegroundColour(wx.RED)
+                                self.view_sizer.Add(index_static_text, 0, wx.ALL | wx.EXPAND, 5)
 
-                        title_static_text = wx.StaticText(parent=self.view_panel)
-                        title_static_text.SetLabel("AI返回")
-                        title_text_font = wx.Font(10, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD)
-                        title_static_text.SetFont(title_text_font)
-                        title_static_text.SetForegroundColour(wx.Colour(150, 50, 200))
-                        self.view_sizer.Add(title_static_text, 0, wx.LEFT, 10)
+                                title_static_text = wx.StaticText(parent=self.view_panel)
+                                title_static_text.SetLabel("AI返回")
+                                title_text_font = wx.Font(10, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL,
+                                                          wx.FONTWEIGHT_BOLD)
+                                title_static_text.SetFont(title_text_font)
+                                title_static_text.SetForegroundColour(wx.Colour(150, 50, 200))
+                                self.view_sizer.Add(title_static_text, 0, wx.LEFT, 10)
 
-                        content_static_text = wx.StaticText(parent=self.view_panel)
-                        content_static_text.SetLabel(ai_post.get("response_text"))
-                        ConfigDialog.draw_static_text(content_static_text)
-                        self.view_sizer.Add(content_static_text, 0, wx.LEFT, 20)
+                                content_static_text = wx.StaticText(parent=self.view_panel)
+                                content_static_text.SetLabel(ai_post.get("response_text"))
+                                ConfigDialog.draw_static_text(content_static_text)
+                                self.view_sizer.Add(content_static_text, 0, wx.LEFT, 20)
 
-                        title_static_text = wx.StaticText(parent=self.view_panel)
-                        title_static_text.SetLabel("图谱文件")
-                        title_text_font = wx.Font(10, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD)
-                        title_static_text.SetFont(title_text_font)
-                        title_static_text.SetForegroundColour(wx.Colour(150, 50, 200))
-                        self.view_sizer.Add(title_static_text, 0, wx.LEFT, 10)
+                                title_static_text = wx.StaticText(parent=self.view_panel)
+                                title_static_text.SetLabel("图谱文件")
+                                title_text_font = wx.Font(10, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL,
+                                                          wx.FONTWEIGHT_BOLD)
+                                title_static_text.SetFont(title_text_font)
+                                title_static_text.SetForegroundColour(wx.Colour(150, 50, 200))
+                                self.view_sizer.Add(title_static_text, 0, wx.LEFT, 10)
 
-                    self.view_panel.SetSizer(self.view_sizer)
-                    self.view_panel.SetupScrolling()
-                    self.view_panel.Layout()
-                    wx.CallAfter(self.view_panel_scroll_bottom)
-        except ViewException as ve:
-            self.show_message(str(ve))
+                            self.view_panel.SetSizer(self.view_sizer)
+                            self.view_panel.SetupScrolling()
+                            self.view_panel.Layout()
+                            wx.CallAfter(self.view_panel_scroll_bottom)
+                else:
+                    self.show_message(message)
+            except ViewException as ve:
+                self.show_message(str(ve))
+
+        self.view_sizer.Clear(delete_windows=True)
+        request_args = {
+            "method": "get",
+            "endpoint": "ai_post/getlist",
+            "params": {
+                "software": utils.get_config("software")
+            },
+            "callback": show_view
+        }
+        central_auth.get_api_client().make_api_request(**request_args)
+
 
     def OnOpenFileLink(self, event, software, group, file_name, request_file_url):
         """处理点击本地文件链接的事件"""
@@ -458,7 +476,8 @@ class MyFrame(wx.Frame):
                     thread.daemon = True
                     thread.start()
                 else:
-                    getattr(self, method)(**args)
+                    callable_with_args = partial(getattr(self, method), **args)
+                    wx.CallAfter(callable_with_args)
         except queue.Empty:
             # 队列为空是正常情况，表示这次检查没有新的结果
             # print("[Main UI] 结果队列暂时为空")
@@ -561,7 +580,7 @@ class MyFrame(wx.Frame):
         dlg.Destroy()  # 关闭后销毁对话框
 
     def on_refresh(self, event):
-        self.view_init()
+        wx.CallAfter(self.view_init)
 
     def on_copy(self, event):
         pass
