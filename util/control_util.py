@@ -619,9 +619,6 @@ def ai_post(command_queue, result_queue, event, step, sleep_time=default_sleep_t
                 img_url = file_url + ".png"
                 if not Path(pdf_url).exists():
                     raise ViewException("没有找到新的图谱，请先完成实验")
-                else:
-                    utils.set_view("add", utils.get_index(0), title="图谱文件:", type="url", content=pdf_url)
-                    result_queue.put({"method": "view_init"})
                 pages = convert_from_path(
                     Path(pdf_url),
                     poppler_path=r'tools\poppler\Library\bin',  # 明确指定 Poppler 的 bin 路径
@@ -758,7 +755,6 @@ def ai_post(command_queue, result_queue, event, step, sleep_time=default_sleep_t
                 if response["message"] == "请求重复":
                     utils.set_index(1)
                 elif response["message"] == "请求无效":
-                    utils.set_view(key="delete", index=utils.get_index())
                     result_queue.put({"method": "view_init"})
                     utils.set_index(-1)
                 raise Exception(response["message"])
@@ -780,6 +776,5 @@ def ai_post(command_queue, result_queue, event, step, sleep_time=default_sleep_t
             logging.exception(e)
             continue
         utils.set_index(1)
-        utils.set_view(key="add", index=utils.get_index(), title="AI返回:", type="text", content=response["data"])
         result_queue.put({"method": "view_init"})
         loop = False
