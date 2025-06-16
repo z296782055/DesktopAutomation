@@ -4,7 +4,6 @@ import logging
 import os
 import time
 from pathlib import Path
-
 import _ctypes
 import pyperclip
 import pywinauto
@@ -15,15 +14,17 @@ from pywinauto.controls.uiawrapper import UIAWrapper
 
 from util import utils
 from util.exception_util import ViewException, ProcessException
-import util.central_auth as central_auth
-from util.logger_util import logger
 from pywinauto.timings import TimeoutError
+
+from util.logger_util import configure_worker_logging
 
 default_sleep_time = float(utils.get_config('default_sleep_time', 1))
 default_backend = "uia"
 
-def start(command_queue, result_queue, event):
+def start(command_queue, result_queue, event, log_queue):
     try:
+        if log_queue:
+            configure_worker_logging(log_queue)
         while utils.get_flag():
             step_list = utils.get_step_data_all(utils.get_config('software'))
             now_step_list = step_list[int(utils.get_step())-1:]
@@ -39,7 +40,7 @@ def start(command_queue, result_queue, event):
         utils.set_event_status(0)
         utils.set_process_status(0)
     except ProcessException:
-        logger.log("进程关闭")
+        logging.info("进程关闭")
 
 def get_detail(step, automation):
     auto_type = automation.get("auto_type")
@@ -168,11 +169,11 @@ def connect_window(command_queue, result_queue, event, title, backend = default_
             window.wait('ready',timeout=1)
             utils.window_dict[title] = window
         except (pywinauto.findwindows.ElementNotFoundError,pywinauto.timings.TimeoutError):
-            logger.log("找不到窗口:\ntitle:" + title)
+            logging.info("找不到窗口:\ntitle:" + title)
             time.sleep(sleep_time)
             continue
         except pywinauto.findwindows.ElementAmbiguousError:
-            logger.log("找到了多个窗口:\ntitle:" + title)
+            logging.info("找到了多个窗口:\ntitle:" + title)
             time.sleep(sleep_time)
             continue
         loop = False
@@ -192,11 +193,11 @@ def connect_child_window(command_queue, result_queue, event, window, kwargs, tit
                         target_child_window = target_child_window[0]
             utils.window_dict[title] = target_child_window
         except pywinauto.findwindows.ElementNotFoundError:
-            logger.log("找不到子窗口:\nwindow:" + window + "\ntitle:" + title+"")
+            logging.info("找不到子窗口:\nwindow:" + window + "\ntitle:" + title+"")
             time.sleep(sleep_time)
             continue
         except pywinauto.findwindows.ElementAmbiguousError:
-            logger.log("找到了多个子窗口:\nwindow:" + window + "\ntitle:" + title+"")
+            logging.info("找到了多个子窗口:\nwindow:" + window + "\ntitle:" + title+"")
             time.sleep(sleep_time)
             continue
         loop = False
@@ -232,7 +233,7 @@ def control_click(command_queue, result_queue, event, window, kwargs, step, clic
             except AttributeError:
                 getattr(target_control, click_type+"_input")()
         except (pywinauto.findwindows.ElementNotFoundError,IndexError,_ctypes.COMError,base_wrapper.ElementNotEnabled,TimeoutError) as e:
-            logger.log("找不到控件:\nwindow:" + window + "\nkwargs:" + str(kwargs))
+            logging.info("找不到控件:\nwindow:" + window + "\nkwargs:" + str(kwargs))
             time.sleep(sleep_time)
             if ignore:
                 ignore -= 1
@@ -240,7 +241,7 @@ def control_click(command_queue, result_queue, event, window, kwargs, step, clic
                 loop = False
             continue
         except pywinauto.findwindows.ElementAmbiguousError:
-            logger.log("找到了多个控件:\nwindow:" + window + "\nkwargs:" + str(kwargs))
+            logging.info("找到了多个控件:\nwindow:" + window + "\nkwargs:" + str(kwargs))
             time.sleep(sleep_time)
             continue
         loop = False
@@ -295,11 +296,11 @@ def list_select(command_queue, result_queue, event, window, kwargs, step, click_
                 if len(target_list_item) != 0:
                     target_list_item[0].click_input()
         except (pywinauto.findwindows.ElementNotFoundError,IndexError,_ctypes.COMError,base_wrapper.ElementNotEnabled,TimeoutError) as e:
-            logger.log("找不到列表:\nwindow:" + window + "\nkwargs:" + str(kwargs))
+            logging.info("找不到列表:\nwindow:" + window + "\nkwargs:" + str(kwargs))
             time.sleep(sleep_time)
             continue
         except pywinauto.findwindows.ElementAmbiguousError:
-            logger.log("找到了多个列表:\nwindow:" + window + "\nkwargs:" + str(kwargs))
+            logging.info("找到了多个列表:\nwindow:" + window + "\nkwargs:" + str(kwargs))
             time.sleep(sleep_time)
             continue
         loop = False
@@ -338,11 +339,11 @@ def edit_write(command_queue, result_queue, event, window, kwargs, step, edit_ty
                     pyperclip.copy(text)
                     target_edit.type_keys("^v")
         except (pywinauto.findwindows.ElementNotFoundError,IndexError,_ctypes.COMError,base_wrapper.ElementNotEnabled,TimeoutError):
-            logger.log("找不到控件:\nwindow:" + window + "\nkwargs:" + str(kwargs))
+            logging.info("找不到控件:\nwindow:" + window + "\nkwargs:" + str(kwargs))
             time.sleep(sleep_time)
             continue
         except pywinauto.findwindows.ElementAmbiguousError:
-            logger.log("找到了多个控件:\nwindow:" + window + "\nkwargs:" + str(kwargs))
+            logging.info("找到了多个控件:\nwindow:" + window + "\nkwargs:" + str(kwargs))
             time.sleep(sleep_time)
             continue
         loop = False
@@ -375,11 +376,11 @@ def check(command_queue, result_queue, event, window, kwargs, step, ready=None, 
                 if check_status == "True":
                     target_check_box.click_input()
         except (pywinauto.findwindows.ElementNotFoundError,IndexError,_ctypes.COMError,base_wrapper.ElementNotEnabled,TimeoutError):
-            logger.log("找不到控件:\nwindow:" + window + "\nkwargs:" + str(kwargs))
+            logging.info("找不到控件:\nwindow:" + window + "\nkwargs:" + str(kwargs))
             time.sleep(sleep_time)
             continue
         except pywinauto.findwindows.ElementAmbiguousError:
-            logger.log("找到了多个控件:\nwindow:" + window + "\nkwargs:" + str(kwargs))
+            logging.info("找到了多个控件:\nwindow:" + window + "\nkwargs:" + str(kwargs))
             time.sleep(sleep_time)
             continue
         loop = False
@@ -405,11 +406,11 @@ def table_fill(command_queue, result_queue, event, window, step, table_kwargs, t
                     column_item["kwargs"] = json.loads(json.dumps(column_item["kwargs"]) %i)
                     do_automation(command_queue, result_queue, event, step, column_item)
         except pywinauto.findwindows.ElementNotFoundError as e:
-            logger.log("找不到表格:\nwindow:" + window + "\ntable_kwargs:" + str(table_kwargs))
+            logging.info("找不到表格:\nwindow:" + window + "\ntable_kwargs:" + str(table_kwargs))
             time.sleep(sleep_time)
             continue
         except pywinauto.findwindows.ElementAmbiguousError:
-            logger.log("找到了多个表格:\nwindow:" + window + "\ntable_kwargs:" + str(table_kwargs))
+            logging.info("找到了多个表格:\nwindow:" + window + "\ntable_kwargs:" + str(table_kwargs))
             time.sleep(sleep_time)
             continue
         loop = False
@@ -459,15 +460,15 @@ def tree_click(command_queue, result_queue, event, window, kwargs, step, title, 
             if flag:
                 for down_item in down:
                     do_automation(command_queue, result_queue, event, step, down_item)
-                logger.log("找不到树状图:\nwindow:" + window + "\nkwargs:" + str(kwargs))
+                logging.info("找不到树状图:\nwindow:" + window + "\nkwargs:" + str(kwargs))
                 time.sleep(sleep_time)
                 continue
         except (pywinauto.findwindows.ElementNotFoundError,IndexError,_ctypes.COMError,base_wrapper.ElementNotEnabled) as e:
-            logger.log("找不到树状图:\nwindow:" + window + "\nkwargs:" + str(kwargs))
+            logging.info("找不到树状图:\nwindow:" + window + "\nkwargs:" + str(kwargs))
             time.sleep(sleep_time)
             continue
         except pywinauto.findwindows.ElementAmbiguousError:
-            logger.log("找到了多个树状图:\nwindow:" + window + "\nkwargs:" + str(kwargs))
+            logging.info("找到了多个树状图:\nwindow:" + window + "\nkwargs:" + str(kwargs))
             time.sleep(sleep_time)
             continue
         loop = False
@@ -497,11 +498,11 @@ def table_click(command_queue, result_queue, event, window, table_kwargs, kwargs
             target_table.set_focus()
             control_click(command_queue=command_queue, result_queue=result_queue, event=event, window=title, kwargs=json.loads(json.dumps(kwargs) % i), step=step, click_type=click_type, sleep_time=sleep_time, before_sleep_time=before_sleep_time)
         except (pywinauto.findwindows.ElementNotFoundError,IndexError,_ctypes.COMError,base_wrapper.ElementNotEnabled) as e:
-            logger.log("找不到表格:\nwindow:" + window + "\nkwargs:" + str(kwargs))
+            logging.info("找不到表格:\nwindow:" + window + "\nkwargs:" + str(kwargs))
             time.sleep(sleep_time)
             continue
         except pywinauto.findwindows.ElementAmbiguousError:
-            logger.log("找不到表格:\nwindow:" + window + "\nkwargs:" + str(kwargs))
+            logging.info("找不到表格:\nwindow:" + window + "\nkwargs:" + str(kwargs))
             time.sleep(sleep_time)
             continue
         loop = False
@@ -527,14 +528,14 @@ def wait(command_queue, result_queue, event, window, kwargs, step, ready, condit
                 if ready == "text":
                     if target_wait.legacy_properties()["Value"] != condition:
                         target_wait.click_input()
-                        logger.log("等待:\nwindow:" + window + "\nkwargs:" + str(kwargs))
+                        logging.info("等待:\nwindow:" + window + "\nkwargs:" + str(kwargs))
                         time.sleep(30)
                         continue
                 else:
-                    logger.log("等待:\nwindow:" + window + "\nkwargs:" + str(kwargs))
+                    logging.info("等待:\nwindow:" + window + "\nkwargs:" + str(kwargs))
                     target_wait.wait(ready, timeout=30)
         except (pywinauto.findwindows.ElementNotFoundError,TimeoutError) as e:
-            logger.log("等待:\nwindow:" + window + "\nkwargs:" + str(kwargs))
+            logging.info("等待:\nwindow:" + window + "\nkwargs:" + str(kwargs))
             time.sleep(sleep_time)
             continue
         loop = False
@@ -560,7 +561,7 @@ def window_close(command_queue, result_queue, event, title, kwargs, step, index=
                         target_window = target_window[index]
             target_window.close()
         except (pywinauto.findwindows.ElementNotFoundError,TimeoutError) as e:
-            logger.log("关闭窗口:\nwindow:" + title + "\nkwargs:" + str(kwargs))
+            logging.info("关闭窗口:\nwindow:" + title + "\nkwargs:" + str(kwargs))
             time.sleep(sleep_time)
             if ignore:
                 ignore -= 1
@@ -769,13 +770,13 @@ def ai_post(command_queue, result_queue, event, step, sleep_time=default_sleep_t
                 raise Exception(response["message"])
         except ViewException as ve:
             result_queue.put({"method": "show_message", "args":{"message":str(ve)}})
-            logger.log(ve)
+            logging.info(ve)
             logging.exception(ve)
             utils.set_process_status(0)
             result_queue.put({"method": "init"})
             continue
         except Exception as e:
-            logger.log(e)
+            logging.info(e)
             logging.exception(e)
             continue
         utils.set_index(1)

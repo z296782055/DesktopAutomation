@@ -1,4 +1,5 @@
 import logging
+from util.logger_util import setup_logging
 import multiprocessing
 import os
 import queue
@@ -8,7 +9,7 @@ from pathlib import Path
 
 import wx
 import wx.adv
-from util import utils
+from util import utils, logger_util
 from util.central_auth import EVT_FORCE_RELOGIN_TYPE, EVT_FORCE_RELOGIN
 from util import central_auth
 from util.exception_util import ViewException
@@ -403,7 +404,7 @@ class MyFrame(wx.Frame):
                     self.result_queue = multiprocessing.Queue()
                     process = multiprocessing.Process(
                         target=getattr(control_util, "start"),
-                        args=(self.command_queue, self.result_queue, self.event),
+                        args=(self.command_queue, self.result_queue, self.event, self.log_queue),
                         daemon=True,
                         name="auto_process"
                     )
@@ -589,17 +590,19 @@ class MyFrame(wx.Frame):
 
 if __name__ == '__main__':
     multiprocessing.freeze_support()  # 推荐，尤其在 Windows 或打包应用时
-    central_auth.initialize_api_client()
+    # 1. 设置日志系统，并接收返回的日志队列
+    log_queue = logger_util.setup_logging()
+    # 2. 初始化API客户端，并将日志队列传递进去
+    central_auth.initialize_api_client(log_queue=log_queue)
     app = wx.App()
-    central_auth.set_app_instance(app)
     frame = MyFrame()
     frame.Show()
+    frame.log_queue = log_queue
+    central_auth.set_app_instance(app)
+
 
     is_logged_in = central_auth.get_api_client().is_logged_in_sync()
     frame.token_init(is_logged_in, "")
-
-    # 启动时尝试通过refresh token自动登录
-    # central_auth.get_api_client().is_logged_in_sync(frame.token_init)
 
     keyboard.on_press_key("F11", frame.on_on)
     keyboard.on_press_key("F12", frame.on_off)
