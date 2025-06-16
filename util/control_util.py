@@ -667,6 +667,7 @@ def ai_post(command_queue, result_queue, event, step, sleep_time=default_sleep_t
                     }
                 })
                 response = command_queue.get()
+                logging.info("response：",response)
                 try:
                     os.remove(img_url)
                 except:
@@ -675,10 +676,11 @@ def ai_post(command_queue, result_queue, event, step, sleep_time=default_sleep_t
             if response.status_code == 200:
                 try:
                     response = response.json()
+                    ai_post_id = response["data"]["ai_post_id"]
                     if response["success"] is True:
                         utils.clean_temporary()
                         result_dict = dict()
-                        for item in response["data"].split("\n"):
+                        for item in response["data"]["ai_response"].split("\n"):
                             kv = item.split(": ", 1)
                             if len(kv) == 2:
                                 result_dict.update({kv[0]: kv[1]})
@@ -747,6 +749,18 @@ def ai_post(command_queue, result_queue, event, step, sleep_time=default_sleep_t
                                 new_data.update({"时间(min) row"+str(i): str(gradient[0])})
                                 new_data.update({"事件值 row"+str(i): result_dict["Column_Temperature_C"]})
                             utils.set_data("柱温箱", new_data)
+
+                            result_queue.put({
+                                "method": "proxy_api_request",
+                                "args": {
+                                    "method": "post",
+                                    "endpoint": "ai_post/effective",
+                                    "data": {"ai_post_id":ai_post_id}
+                                }
+                            })
+                            response = command_queue.get()
+                            if response.json()["success"] is not True:
+                                continue
                 except Exception as e:
                     logging.error(e)
                     raise ViewException("AI返回数据格式不对，请检查提示词")

@@ -311,7 +311,7 @@ class CentralAuthClient:
             except Exception as e:
                 logging.error(f"[CentralAuthClient] Error in response listener: {e}")
 
-    def _send_request(self, command, payload, timeout=300):
+    def _send_request(self, command, payload, timeout=3000):
         """发送请求并同步等待响应的通用方法"""
         request_id = str(uuid.uuid4())
         event = threading.Event()
