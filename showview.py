@@ -1,8 +1,13 @@
+import tempfile
+import threading
+
 import wx
 import wx.grid as gridlib
 import json
 import os
 from collections import OrderedDict
+
+from util import utils
 
 # --- 全局常量 ---
 DATA_FILE_PATH = "step/step.json"
@@ -22,7 +27,7 @@ DEFAULT_JSON_DATA_STRING = """
     ]}
 ]
 """
-
+step_update_lock = threading.Lock()
 
 class TextEditorDialog(wx.Dialog):
     def __init__(self, parent, title, value):
@@ -203,7 +208,7 @@ class GenericJsonEditorDialog(wx.Dialog):
         event.Skip()
 
     def open_nested_text_editor(self, row, data_to_edit):
-        current_val_str = json.dumps(data_to_edit, indent=2, ensure_ascii=False)
+        current_val_str = json.dumps(data_to_edit, indent=None, ensure_ascii=False)
         dlg = TextEditorDialog(self, "编辑文本值", current_val_str)
         if dlg.ShowModal() == wx.ID_OK:
             try:
@@ -288,21 +293,32 @@ class JsonEditorFrame(wx.Frame):
         if not os.path.exists(DEFAULTS_FILE_PATH): return {}
         try:
             with open(DEFAULTS_FILE_PATH, 'r', encoding='utf-8') as f:
-                data = json.load(f);
+                data = json.load(f).get(utils.get_config("software"));
                 return data if isinstance(data, dict) else {}
         except (json.JSONDecodeError, IOError):
             return {}
 
     def _save_defaults_to_file(self):
         try:
-            with open(DEFAULTS_FILE_PATH, 'w', encoding='utf-8') as f:
-                json.dump(self.defaults_data, f, indent=2, ensure_ascii=False)
+            with utils.data_lock:
+                with open(DEFAULTS_FILE_PATH, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                with open(DEFAULTS_FILE_PATH, 'w', encoding='utf-8') as f:
+                    with tempfile.NamedTemporaryFile(mode='w', delete=False, encoding='utf-8',
+                                                     dir=os.path.dirname(DEFAULTS_FILE_PATH)) as temp_f:
+                        if data.get(utils.get_config("software")) is None:
+                            data.update({utils.get_config("software"): {}})
+                        data.update({utils.get_config("software"):self.defaults_data})
+                        json.dump(data, temp_f, indent=4, ensure_ascii=False)
+                        temp_file_path = temp_f.name
+                os.replace(temp_file_path, DEFAULTS_FILE_PATH)
         except IOError as e:
             print(f"警告: 无法保存默认值文件: {e}")
 
     def _validate_and_sanitize_data(self, loaded_data):
+        loaded_data = loaded_data.get(utils.get_config("software"))
         if not isinstance(loaded_data, list):
-            print("警告: 文件中的数据不是一个列表，将重置为默认值。");
+            print("警告: 文件中的数据不是一个列表，将重置为默认值。")
             return json.loads(DEFAULT_JSON_DATA_STRING)
         clean_data = []
         for item in loaded_data:
@@ -328,8 +344,18 @@ class JsonEditorFrame(wx.Frame):
 
     def _save_data_to_file(self):
         try:
-            with open(self.file_path, 'w', encoding='utf-8') as f:
-                json.dump(self.data, f, indent=2, ensure_ascii=False)
+            with step_update_lock:
+                with open(self.file_path, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                with open(self.file_path, 'w', encoding='utf-8') as f:
+                    with tempfile.NamedTemporaryFile(mode='w', delete=False, encoding='utf-8',
+                                                     dir=os.path.dirname(self.file_path)) as temp_f:
+                        if data.get(utils.get_config("software")) is None:
+                            data.update({utils.get_config("software"): {}})
+                        data.update({utils.get_config("software"):self.data})
+                        json.dump(data, temp_f, indent=4, ensure_ascii=False)
+                        temp_file_path = temp_f.name
+                os.replace(temp_file_path, self.file_path)
         except IOError as e:
             wx.MessageBox(f"无法保存文件到 '{self.file_path}'！\n错误: {e}", "保存失败", wx.OK | wx.ICON_ERROR)
 
@@ -364,7 +390,7 @@ class JsonEditorFrame(wx.Frame):
                     self.prop_grid.SetCellBackgroundColour(row, 0,
                                                            wx.Colour(240, 240, 240) if key == 'auto_type' else wx.WHITE)
                     if isinstance(value, (dict, list)):
-                        self.prop_grid.SetCellValue(row, 1, json.dumps(value, ensure_ascii=False, indent=2))
+                        self.prop_grid.SetCellValue(row, 1, json.dumps(value, ensure_ascii=False, indent=None))
                         self.prop_grid.SetReadOnly(row, 1, True);
                         self.prop_grid.SetCellBackgroundColour(row, 1, wx.Colour(230, 230, 230))
                     else:
@@ -432,7 +458,7 @@ class JsonEditorFrame(wx.Frame):
         event.Skip()
 
     def open_text_editor(self, key, data_to_edit, step_idx, action_idx):
-        current_val_str = json.dumps(data_to_edit, indent=2, ensure_ascii=False)
+        current_val_str = json.dumps(data_to_edit, indent=None, ensure_ascii=False)
         dlg = TextEditorDialog(self, f"编辑属性 '{key}' 的文本值", current_val_str)
         if dlg.ShowModal() == wx.ID_OK:
             try:
@@ -508,8 +534,10 @@ class JsonEditorFrame(wx.Frame):
             self.populate_prop_list()
 
     def on_tree_select(self, event):
-        self.selected_item = self.tree.GetSelection(); self.populate_prop_list(); self.update_button_states()
-
+        try:
+            self.selected_item = self.tree.GetSelection(); self.populate_prop_list(); self.update_button_states()
+        except RuntimeError:
+            pass
     def update_button_states(self):
         item = self.tree.GetSelection();
         is_item_selected = item and item.IsOk()
