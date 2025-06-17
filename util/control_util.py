@@ -667,7 +667,6 @@ def ai_post(command_queue, result_queue, event, step, sleep_time=default_sleep_t
                     }
                 })
                 response = command_queue.get()
-                logging.info("response：",response)
                 try:
                     os.remove(img_url)
                 except:
