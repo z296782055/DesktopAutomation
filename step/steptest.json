@@ -1,0 +1,71 @@
+{
+  "SmartLab CDS": [
+    {"自动进样器":[
+      {"auto_type" : "connect_window", "title" : "实时采集 "},
+      {"auto_type" : "connect_child_window", "title" : "自动进样器", "window" : "实时采集 ", "kwargs": [
+        {"child_window":{"title":"sidePanel2", "auto_id":"sidePanel2", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"_Container", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"_ucInsMethodEditor", "control_type":"Pane"}},
+        {"child_window":{"title":"xtraScrollableControl1", "auto_id":"xtraScrollableControl1", "control_type":"Pane"}},
+        {"child_window":{"title":"panelControlMain", "auto_id":"panelControlMain", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"InstrumentEditor", "control_type":"Window"}},
+        {"child_window":{"title":"xtraTabPage1", "auto_id":"xtraTabPage1", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"NavBar", "control_type":"Pane"}}
+      ]},
+      {"auto_type" : "control_click", "window" : "自动进样器", "kwargs": [
+        {"child_window":{"title":"组件列表", "auto_id":"navBarControl1", "control_type":"Pane"}},
+        {"child_window":{"title":"方法信息", "control_type":"List"}},
+        {"child_window":{"title":"AS3230_(AS3230)", "control_type":"Hyperlink"}}
+      ]},
+      {"auto_type" : "connect_child_window", "title" : "常规 ", "window" : "自动进样器", "kwargs": [
+        {"child_window":{"title":"panelControl", "auto_id":"panelControl", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"AS3110IMEUI", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"tabMain", "control_type":"Tab"}},
+        {"child_window":{"title":"常规 ", "auto_id":"tpGeneral", "control_type":"Pane"}}
+      ]},
+      {"auto_type" : "list_select", "window" : "常规 ", "click_type":"no_click", "kwargs": [
+        {"child_window":{"auto_id":"rgInjectType", "control_type":"List"}}
+      ]},
+      {"auto_type" : "list_select", "window" : "常规 ", "click_type":"no_click", "kwargs": [
+        {"child_window":{"auto_id":"rgSamplingSpeed", "control_type":"List"}}
+      ]},
+      {"auto_type" : "edit_write", "window" : "常规 ", "kwargs": [
+        {"child_window":{"auto_id":"seTransfersVolume", "control_type":"Edit"}}
+      ]},
+      {"auto_type" : "edit_write", "window" : "常规 ", "kwargs": [
+        {"child_window":{"auto_id":"seInjectNeedleHeight", "control_type":"Edit"}}
+      ]},
+      {"auto_type" : "edit_write", "window" : "常规 ", "kwargs": [
+        {"child_window":{"auto_id":"seAfterWashVolume", "control_type":"Edit"}}
+      ]},
+      {"auto_type" : "edit_write", "window" : "常规 ", "kwargs": [
+        {"child_window":{"auto_id":"seRinseViscosityDelay", "control_type":"Edit"}}
+      ]},
+      {"auto_type" : "edit_write", "window" : "常规 ", "kwargs": [
+        {"child_window":{"auto_id":"seRinseVolume", "control_type":"Edit"}}
+      ]},
+      {"auto_type" : "edit_write", "window" : "常规 ", "kwargs": [
+        {"child_window":{"auto_id":"seSampleViscosityDelay", "control_type":"Edit"}}
+      ]},
+      {"auto_type" : "control_click", "window" : "常规 ", "kwargs": [
+        {"child_window":{"title":"Accordion Menu", "auto_id":"accordionControl1", "control_type":"Pane"}},
+        {"child_window":{"title":"高级参数", "control_type":"ListItem"}}
+      ]},
+      {"auto_type" : "list_select", "window" : "常规 ", "click_type":"no_click", "kwargs": [
+        {"child_window":{"title":"Accordion Menu", "auto_id":"accordionControl1", "control_type":"Pane"}},
+        {"child_window":{"title":"accordionContentContainer2", "auto_id":"accordionContentContainer2", "control_type":"Pane"}},
+        {"child_window":{"title":"highPanel", "auto_id":"highPanel", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"rgSamplingMethod", "control_type":"List"}}
+      ]},
+      {"auto_type" : "list_select", "window" : "常规 ", "click_type":"no_click", "kwargs": [
+        {"child_window":{"title":"Accordion Menu", "auto_id":"accordionControl1", "control_type":"Pane"}},
+        {"child_window":{"title":"accordionContentContainer2", "auto_id":"accordionContentContainer2", "control_type":"Pane"}},
+        {"child_window":{"title":"highPanel", "auto_id":"highPanel", "control_type":"Pane"}},
+        {"child_window":{"auto_id":"rgSamplePressure", "control_type":"List"}}
+      ]},
+      {"auto_type" : "edit_write", "window" : "常规 ", "kwargs": [
+        {"child_window":{"auto_id":"seObjectTemperature", "control_type":"Edit"}}
+      ]}
+    ]}
+  ]
+}

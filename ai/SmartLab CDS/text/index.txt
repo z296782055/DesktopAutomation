@@ -1,0 +1,24 @@
+环丙沙星：pKa 5.708，logP 0.096，pH7.4时logD 1.135
+左氧氟沙星：pKa 5.126，logP -0.106，pH7.4时logD 0.887
+洛美沙星：pKa 4.447，logP -0.17，pH7.4时logD 0.907
+沙拉沙星：pKa 3.986，logP -0.205，pH7.4时logD 1.275
+恩诺沙星：pKa 4.956，logP 0.524，pH7.4时logD 1.447
+以上是五种待分离物质的部分理化性质参数，限定流动相B为乙腈。请为使用C18色谱柱 (250 x 4.6 mm, 5µm) 和 1 mL/min 流速分离检测以上五种物质提供 HPLC 条件。目标是在保证分离的前提下尽量缩短分析时间。
+输出要求仅输出结果： 严格禁止包含任何推理、解释、依据、建议、引言或结论性文字。只提供具体的条件参数。格式化输出： 使用清晰的结构，便于 Python 解析。
+输出方案要求： 仅输出一个你认为最有可能的方案。
+参数格式： 每个参数使用 "参数名: 值" 的格式，每行一个参数。
+参数命名： 使用统一且明确的英文或拼音参数名（便于编程处理），并包含最多四个流动相组分。例如：Method_Type: (Isocratic / Gradient)
+Mobile_Phase_A:
+Mobile_Phase_B:
+Mobile_Phase_C:
+Mobile_Phase_D:
+Ratio_A_B:(仅用于等度，如果涉及更多组分，请相应调整或说明)
+Gradient_Program: (仅用于梯度, 使用列表嵌套列表格式, e.g., [[time_min, percent_B], [time_min, percent_B]] 或包含更多组分百分比)
+Flow_Rate_mL_min:
+Column_Temperature_C:
+Detection_Wavelength_nm:
+Estimated_RT_Ibuprofen_min:
+Estimated_RT_Ketoprofen_min:
+Estimated_Run_Time_min:
+处理未使用的流动相： 如果流动相 C 或 D 未被使用，则其对应的参数值必须明确输出为 无。
+直接开始输出结果，不要包含任何这句话之前或之后的多余文字，不要包含多余的空白符和换行符。

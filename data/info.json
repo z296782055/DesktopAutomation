@@ -1,0 +1,63 @@
+{
+  "SmartLab CDS": {
+    "选择项目及色谱系统": {
+      "listBoxItemA" : {"info":"项目列表"},
+      "listBoxItemB": {"info":"色谱系统列表"}
+    },
+    "方法概要": {
+      "txtRunTime": {"info":"运行时间"}
+    },
+    "泵": {
+      "txtFlowVelocity": {"info":"流速"},
+      "txtMaxLimit": {"info":"最大压力"},
+      "txtMinLimit": {"info":"最小压力"},
+      "txtSolventCompressibility": {"info":"溶剂压缩系数"},
+      "A": {"team":"阀A/B/C/D比例"},
+      "B": {"team":"阀A/B/C/D比例"},
+      "C": {"team":"阀A/B/C/D比例"},
+      "D": {"team":"阀A/B/C/D比例"},
+      "txtSolventA": {"info":"A阀溶液"},
+      "txtSolventB": {"info":"B阀溶液"},
+      "txtSolventC": {"info":"C阀溶液"},
+      "txtSolventD": {"info":"D阀溶液"}
+    },
+    "柱温箱": {
+      "txtWaitTime": {"info":"稳定时间"},
+      "txtTemperatureAccuracy": {"info":"控温精度"},
+      "txtAimTemperatureSet": {"info":"目标温度"}
+    },
+    "检测器": {
+      "txtLambda1": {"info":"波长1"},
+      "txtLambda2": {"info":"波长2"},
+      "rbLightType": {"info":"灯选择"},
+      "rblAnalysisType": {"info":"程序类型"},
+      "chkRefSmpChannel": {"info":"诊断通道"}
+    },
+    "自动进样器": {
+        "rgInjectType": {"info":"进样类型"},
+        "rgSamplingSpeed": {"info":"取样速度"},
+        "seTransfersVolume": {"info":"填充转移液体积"},
+        "seInjectNeedleHeight": {"info":"下针高度"},
+        "seAfterWashVolume": {"info":"清洗外针体积"},
+        "seRinseViscosityDelay": {"info":"润洗液粘度延时"},
+        "seRinseVolume": {"info":"润洗体积"},
+        "seSampleViscosityDelay": {"info":"样品粘度延时"},
+        "rgSamplingMethod": {"info":"进样方式"},
+        "rgSamplePressure": {"info":"采样加压"},
+        "seObjectTemperature": {"info":"目标温度"}
+    },
+    "保存": {
+      "txtAuditTrace": {"info":"添加或更新理由"}
+    },
+    "数据采集": {
+      "sampleNameBtnEdit": {"info":"样品名称"},
+      "spinEditInjectVolume": {"info":"进样体积"},
+      "cbxSampleType": {"info":"样品类型"},
+      "tbxSampleVia": {"info":"样品位置"},
+      "cbxInjectFunction": {"info":"仪器方法"}
+    },
+    "数据处理": {
+      "lupReportMethod": {"info":"选择报告方法"}
+    }
+  }
+}
