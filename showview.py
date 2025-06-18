@@ -12,25 +12,12 @@ from util import utils
 
 # --- 辅助函数：获取紧凑的JSON字符串 ---
 def _get_compact_json_string(data_obj):
-    """
-    递归地将任何Python对象转换为其最紧凑的单行JSON字符串表示。
-    此函数用于强制那些“不需要”换行的字典保持单行。
-    """
     # 使用 separators=(',', ':') 来确保没有空格，生成最紧凑的JSON
     return json.dumps(data_obj, ensure_ascii=False, separators=(',', ':'))
 
 
 # --- 最终版自定义JSON格式化函数 ---
 def _format_json_for_save(data_obj, indent_level=0, is_root=False):
-    """
-    递归格式化 JSON 数据，实现字典和列表的精确换行规则。
-    核心规则：
-    - 顶级字典（is_root=True）采用标准多行缩进。
-    - 所有非顶级字典：
-        - 如果其任何直接值是列表，则字典本身多行（混合格式）。
-        - 否则（所有直接值都是基本类型或非列表字典），则字典单行。
-    - 所有列表，无论内容多短或是否包含复杂元素，都强制多行显示。
-    """
     current_indent_str = " " * indent_level
     next_indent_str = " " * (indent_level + 4)
 
@@ -168,12 +155,12 @@ step_update_lock = threading.Lock()
 class TextEditorDialog(wx.Dialog):
     def __init__(self, parent, title, value):
         super().__init__(parent, title=title, size=(600, 450), style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
-        sizer = wx.BoxSizer(wx.VERTICAL);
+        sizer = wx.BoxSizer(wx.VERTICAL)
         self.text_ctrl = wx.TextCtrl(self, value=value, style=wx.TE_MULTILINE | wx.TE_DONTWRAP)
-        font = wx.Font(10, wx.FONTFAMILY_MODERN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL);
+        font = wx.Font(10, wx.FONTFAMILY_MODERN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
         self.text_ctrl.SetFont(font)
-        sizer.Add(self.text_ctrl, 1, wx.EXPAND | wx.ALL, 5);
-        sizer.Add(self.CreateButtonSizer(wx.OK | wx.CANCEL), 0, wx.EXPAND | wx.ALL, 5);
+        sizer.Add(self.text_ctrl, 1, wx.EXPAND | wx.ALL, 5)
+        sizer.Add(self.CreateButtonSizer(wx.OK | wx.CANCEL), 0, wx.EXPAND | wx.ALL, 5)
         self.SetSizer(sizer)
 
     def GetValue(self): return self.text_ctrl.GetValue()
@@ -182,8 +169,8 @@ class TextEditorDialog(wx.Dialog):
 class GenericJsonEditorDialog(wx.Dialog):
     def __init__(self, parent, title, data):
         super().__init__(parent, title=title, size=(700, 500), style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
-        self.data = json.loads(json.dumps(data));
-        self.is_dict_mode = True;
+        self.data = json.loads(json.dumps(data))
+        self.is_dict_mode = True
         self.is_list_passthrough_mode = False
         if isinstance(self.data, list):
             if all(isinstance(item, dict) and len(item) == 1 for item in self.data):
@@ -191,33 +178,33 @@ class GenericJsonEditorDialog(wx.Dialog):
                 self.is_dict_mode = False
             else:
                 self.is_dict_mode = False
-        main_sizer = wx.BoxSizer(wx.VERTICAL);
+        main_sizer = wx.BoxSizer(wx.VERTICAL)
         self.grid = gridlib.Grid(self)
         if self.is_dict_mode or self.is_list_passthrough_mode:
-            self.grid.CreateGrid(0, 2);
-            self.grid.SetColLabelValue(0, "键");
+            self.grid.CreateGrid(0, 2)
+            self.grid.SetColLabelValue(0, "键")
             self.grid.SetColLabelValue(1, "值")
-            self.grid.SetColSize(0, 200);
+            self.grid.SetColSize(0, 200)
             self.grid.SetColSize(1, 400)
         else:
-            self.grid.CreateGrid(0, 1);
-            self.grid.SetColLabelValue(0, "值");
+            self.grid.CreateGrid(0, 1)
+            self.grid.SetColLabelValue(0, "值")
             self.grid.SetColSize(0, 600)
-        self.grid.SetRowLabelSize(40);
+        self.grid.SetRowLabelSize(40)
         self.populate_grid()
-        btn_sizer = wx.BoxSizer(wx.HORIZONTAL);
-        add_btn = wx.Button(self, label="添加");
+        btn_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        add_btn = wx.Button(self, label="添加")
         del_btn = wx.Button(self, label="删除")
-        btn_sizer.Add(add_btn, 0, wx.ALL, 5);
+        btn_sizer.Add(add_btn, 0, wx.ALL, 5)
         btn_sizer.Add(del_btn, 0, wx.ALL, 5)
         dialog_btn_sizer = self.CreateButtonSizer(wx.OK | wx.CANCEL)
-        main_sizer.Add(self.grid, 1, wx.EXPAND | wx.ALL, 5);
+        main_sizer.Add(self.grid, 1, wx.EXPAND | wx.ALL, 5)
         main_sizer.Add(btn_sizer, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 5)
-        main_sizer.Add(dialog_btn_sizer, 0, wx.EXPAND | wx.ALL, 5);
+        main_sizer.Add(dialog_btn_sizer, 0, wx.EXPAND | wx.ALL, 5)
         self.SetSizer(main_sizer)
-        add_btn.Bind(wx.EVT_BUTTON, self.on_add);
+        add_btn.Bind(wx.EVT_BUTTON, self.on_add)
         del_btn.Bind(wx.EVT_BUTTON, self.on_delete)
-        self.grid.Bind(gridlib.EVT_GRID_CELL_CHANGED, self.on_cell_changed);
+        self.grid.Bind(gridlib.EVT_GRID_CELL_CHANGED, self.on_cell_changed)
         self.grid.Bind(gridlib.EVT_GRID_CELL_LEFT_DCLICK, self.on_cell_dclick)
         self.grid.Bind(gridlib.EVT_GRID_CELL_RIGHT_CLICK, self.on_grid_right_click)
 
@@ -226,15 +213,15 @@ class GenericJsonEditorDialog(wx.Dialog):
         if self.is_list_passthrough_mode:
             self.grid.AppendRows(len(self.data))
             for row, item_dict in enumerate(self.data):
-                key = list(item_dict.keys())[0];
+                key = list(item_dict.keys())[0]
                 value = item_dict[key]
-                self.grid.SetCellValue(row, 0, key);
-                self.grid.SetReadOnly(row, 0, True);
+                self.grid.SetCellValue(row, 0, key)
+                self.grid.SetReadOnly(row, 0, True)
                 self._render_value_cell(row, 1, value)
         elif self.is_dict_mode:
             self.grid.AppendRows(len(self.data))
             for row, (key, value) in enumerate(self.data.items()):
-                self.grid.SetCellValue(row, 0, key);
+                self.grid.SetCellValue(row, 0, key)
                 self._render_value_cell(row, 1, value)
         else:
             self.grid.AppendRows(len(self.data))
@@ -246,24 +233,24 @@ class GenericJsonEditorDialog(wx.Dialog):
             # 使用自定义格式化，但为了显示在单元格中，可能需要紧凑模式
             # 这里为了兼容性，可以继续使用 json.dumps(..., indent=None) 或者
             # 考虑用一个更紧凑的自定义格式化版本
-            self.grid.SetCellValue(row, col, json.dumps(value, ensure_ascii=False, indent=None)); # 保持紧凑显示
+            self.grid.SetCellValue(row, col, json.dumps(value, ensure_ascii=False, indent=None)) # 保持紧凑显示
             self.grid.SetReadOnly(row, col, True)
             self.grid.SetCellBackgroundColour(row, col, wx.Colour(230, 230, 230))
         else:
-            self.grid.SetCellValue(row, col, str(value));
+            self.grid.SetCellValue(row, col, str(value))
             self.grid.SetReadOnly(row, col, False)
             self.grid.SetCellBackgroundColour(row, col, wx.WHITE)
 
     def on_cell_dclick(self, event):
-        row, col = event.GetRow(), event.GetCol();
+        row, col = event.GetRow(), event.GetCol()
         target_data, is_editable = None, False
         if self.is_list_passthrough_mode and col == 1:
-            key = list(self.data[row].keys())[0];
-            target_data = self.data[row][key];
+            key = list(self.data[row].keys())[0]
+            target_data = self.data[row][key]
             is_editable = True
         elif self.is_dict_mode and col == 1:
-            key = list(self.data.keys())[row];
-            target_data = self.data[key];
+            key = list(self.data.keys())[row]
+            target_data = self.data[key]
             is_editable = True
         elif not self.is_dict_mode and col == 0:
             target_data = self.data[row]; is_editable = True
@@ -287,12 +274,12 @@ class GenericJsonEditorDialog(wx.Dialog):
             if col == 1: self.data[row][list(self.data[row].keys())[0]] = self.grid.GetCellValue(row, col)
         elif self.is_dict_mode:
             if col == 0:
-                old_key = list(self.data.keys())[row];
+                old_key = list(self.data.keys())[row]
                 new_key = self.grid.GetCellValue(row, col)
                 if new_key == old_key: return
                 if not new_key or new_key in self.data:
-                    wx.MessageBox(f"键 '{new_key}' 无效或已存在!", "错误", wx.OK | wx.ICON_ERROR);
-                    self.grid.SetCellValue(row, col, old_key);
+                    wx.MessageBox(f"键 '{new_key}' 无效或已存在!", "错误", wx.OK | wx.ICON_ERROR)
+                    self.grid.SetCellValue(row, col, old_key)
                     return
                 self.data = dict(OrderedDict((new_key if k == old_key else k, v) for k, v in self.data.items()))
             else:
@@ -304,7 +291,7 @@ class GenericJsonEditorDialog(wx.Dialog):
         if self.is_list_passthrough_mode:
             self.data.append({"新项目": {}})
         elif self.is_dict_mode:
-            new_key = f"新键_{len(self.data)}";
+            new_key = f"新键_{len(self.data)}"
             while new_key in self.data: new_key += "_"
             self.data[new_key] = "新值"
         else:
@@ -312,7 +299,7 @@ class GenericJsonEditorDialog(wx.Dialog):
         self.populate_grid()
 
     def on_delete(self, event):
-        row = self.grid.GetGridCursorRow();
+        row = self.grid.GetGridCursorRow()
         if row < 0: return
         if self.is_dict_mode:
             del self.data[list(self.data.keys())[row]]
@@ -324,7 +311,7 @@ class GenericJsonEditorDialog(wx.Dialog):
         return self.data
 
     def on_grid_right_click(self, event):
-        row, col = event.GetRow(), event.GetCol();
+        row, col = event.GetRow(), event.GetCol()
         target_data, is_editable_col = None, False
         if (self.is_dict_mode or self.is_list_passthrough_mode) and col == 1:
             is_editable_col = True
@@ -339,10 +326,10 @@ class GenericJsonEditorDialog(wx.Dialog):
         else:
             target_data = self.data[row]
         if isinstance(target_data, (dict, list)):
-            menu = wx.Menu();
+            menu = wx.Menu()
             edit_item = menu.Append(wx.ID_ANY, "编辑...")
             self.Bind(wx.EVT_MENU, lambda evt: self.open_nested_text_editor(row, target_data), edit_item)
-            self.PopupMenu(menu);
+            self.PopupMenu(menu)
             menu.Destroy()
         event.Skip()
 
@@ -371,13 +358,13 @@ class JsonEditorFrame(wx.Frame):
         self.file_path = DATA_FILE_PATH
         self.data = self._load_data_from_file()
         self.defaults_data = self._load_defaults_from_file()
-        self.dragged_item = None;
+        self.dragged_item = None
         self.clipboard = None
         splitter = wx.SplitterWindow(self)
         self.selected_item = None
         self.left_panel = wx.Panel(splitter)
         self.right_panel = wx.Panel(splitter)
-        splitter.SplitVertically(self.left_panel, self.right_panel, 400);
+        splitter.SplitVertically(self.left_panel, self.right_panel, 400)
         splitter.SetMinimumPaneSize(200)
         left_sizer = wx.BoxSizer(wx.VERTICAL)
         self.tree = wx.TreeCtrl(self.left_panel, style=wx.TR_DEFAULT_STYLE | wx.TR_FULL_ROW_HIGHLIGHT | wx.TR_HIDE_ROOT)
@@ -385,35 +372,35 @@ class JsonEditorFrame(wx.Frame):
         left_sizer.Add(self.tree, 1, wx.EXPAND | wx.ALL, 5)
         left_sizer.Add(add_step_btn, 0, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.BOTTOM, 5)
         self.left_panel.SetSizer(left_sizer)
-        right_sizer = wx.BoxSizer(wx.VERTICAL);
+        right_sizer = wx.BoxSizer(wx.VERTICAL)
         self.prop_grid = gridlib.Grid(self.right_panel)
-        self.prop_grid.CreateGrid(0, 2);
-        self.prop_grid.SetColLabelValue(0, "属性");
+        self.prop_grid.CreateGrid(0, 2)
+        self.prop_grid.SetColLabelValue(0, "属性")
         self.prop_grid.SetColLabelValue(1, "值")
-        self.prop_grid.SetRowLabelSize(0);
-        self.prop_grid.SetColSize(0, 150);
+        self.prop_grid.SetRowLabelSize(0)
+        self.prop_grid.SetColSize(0, 150)
         self.prop_grid.SetColSize(1, 450)
         prop_btn_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.add_prop_btn = wx.Button(self.right_panel, label="添加属性");
+        self.add_prop_btn = wx.Button(self.right_panel, label="添加属性")
         self.del_prop_btn = wx.Button(self.right_panel, label="删除属性")
-        prop_btn_sizer.Add(self.add_prop_btn, 0, wx.ALL, 5);
+        prop_btn_sizer.Add(self.add_prop_btn, 0, wx.ALL, 5)
         prop_btn_sizer.Add(self.del_prop_btn, 0, wx.ALL, 5)
-        right_sizer.Add(self.prop_grid, 1, wx.EXPAND | wx.ALL, 5);
+        right_sizer.Add(self.prop_grid, 1, wx.EXPAND | wx.ALL, 5)
         right_sizer.Add(prop_btn_sizer, 0, wx.EXPAND | wx.RIGHT | wx.BOTTOM, 5)
-        self.right_panel.SetSizer(right_sizer);
+        self.right_panel.SetSizer(right_sizer)
         self.populate_tree()
         add_step_btn.Bind(wx.EVT_BUTTON, self.on_add_step)
-        self.tree.Bind(wx.EVT_TREE_SEL_CHANGED, self.on_tree_select);
+        self.tree.Bind(wx.EVT_TREE_SEL_CHANGED, self.on_tree_select)
         self.tree.Bind(wx.EVT_TREE_ITEM_RIGHT_CLICK, self.on_tree_right_click)
-        self.tree.Bind(wx.EVT_TREE_BEGIN_DRAG, self.on_begin_drag);
+        self.tree.Bind(wx.EVT_TREE_BEGIN_DRAG, self.on_begin_drag)
         self.tree.Bind(wx.EVT_TREE_END_DRAG, self.on_end_drag)
-        self.prop_grid.Bind(gridlib.EVT_GRID_CELL_CHANGED, self.on_prop_edit);
+        self.prop_grid.Bind(gridlib.EVT_GRID_CELL_CHANGED, self.on_prop_edit)
         self.prop_grid.Bind(gridlib.EVT_GRID_CELL_LEFT_DCLICK, self.on_prop_dclick)
         self.prop_grid.Bind(gridlib.EVT_GRID_CELL_RIGHT_CLICK, self.on_prop_right_click)
-        self.add_prop_btn.Bind(wx.EVT_BUTTON, self.on_add_prop);
+        self.add_prop_btn.Bind(wx.EVT_BUTTON, self.on_add_prop)
         self.del_prop_btn.Bind(wx.EVT_BUTTON, self.on_del_prop)
-        self.update_button_states();
-        self.Centre();
+        self.update_button_states()
+        self.Centre()
         self.Show()
 
     # --- 新增：获取当前展开节点的方法 ---
@@ -615,9 +602,9 @@ class JsonEditorFrame(wx.Frame):
             try:
                 item_data = self.tree.GetItemData(self.selected_item)
                 if not (item_data and item_data[1] != -1): return
-                step_idx, action_idx = item_data;
+                step_idx, action_idx = item_data
                 step_title = list(self.data[step_idx].keys())[0]
-                action_dict = self.data[step_idx][step_title][action_idx];
+                action_dict = self.data[step_idx][step_title][action_idx]
                 self.prop_grid.AppendRows(len(action_dict))
                 for row, (key, value) in enumerate(action_dict.items()):
                     self.prop_grid.SetCellValue(row, 0, key)
@@ -627,10 +614,10 @@ class JsonEditorFrame(wx.Frame):
                     if isinstance(value, (dict, list)):
                         # 属性网格单元格中也使用紧凑显示
                         self.prop_grid.SetCellValue(row, 1, json.dumps(value, ensure_ascii=False, indent=None))
-                        self.prop_grid.SetReadOnly(row, 1, True);
+                        self.prop_grid.SetReadOnly(row, 1, True)
                         self.prop_grid.SetCellBackgroundColour(row, 1, wx.Colour(230, 230, 230))
                     else:
-                        self.prop_grid.SetCellValue(row, 1, str(value));
+                        self.prop_grid.SetCellValue(row, 1, str(value))
                         self.prop_grid.SetReadOnly(row, 1, False)
                         self.prop_grid.SetCellBackgroundColour(row, 1, wx.WHITE)
                     if key == 'auto_type':
@@ -642,25 +629,25 @@ class JsonEditorFrame(wx.Frame):
                     default_key = self._get_default_key_from_action(action_dict)
                     if default_key:
                         default_value = self.defaults_data.get(step_title, {}).get(default_key, "")
-                        self.prop_grid.AppendRows(1);
+                        self.prop_grid.AppendRows(1)
                         row_idx = self.prop_grid.GetNumberRows() - 1
-                        self.prop_grid.SetCellValue(row_idx, 0, default_key);
+                        self.prop_grid.SetCellValue(row_idx, 0, default_key)
                         self.prop_grid.SetReadOnly(row_idx, 0, True)
                         self.prop_grid.SetCellBackgroundColour(row_idx, 0, wx.Colour(220, 255, 220))
-                        self.prop_grid.SetCellValue(row_idx, 1, default_value);
+                        self.prop_grid.SetCellValue(row_idx, 1, default_value)
                         self.prop_grid.SetReadOnly(row_idx, 1, False)
             except (IndexError, wx.wxAssertionError, TypeError):
                 pass
         self.prop_grid.ForceRefresh()
 
     def on_prop_edit(self, event):
-        row, col = event.GetRow(), event.GetCol();
+        row, col = event.GetRow(), event.GetCol()
         item_data = self.tree.GetItemData(self.selected_item)
         if not item_data or col != 1: return
-        step_idx, action_idx = item_data;
+        step_idx, action_idx = item_data
         step_title = list(self.data[step_idx].keys())[0]
         action_dict = self.data[step_idx][step_title][action_idx]
-        key = self.prop_grid.GetCellValue(row, 0);
+        key = self.prop_grid.GetCellValue(row, 0)
         new_value_str = self.prop_grid.GetCellValue(row, 1)
         if key in action_dict:
             if not self.prop_grid.IsReadOnly(row, col):
@@ -668,28 +655,28 @@ class JsonEditorFrame(wx.Frame):
                     new_value = json.loads(new_value_str)
                 except json.JSONDecodeError:
                     new_value = new_value_str
-                action_dict[key] = new_value;
+                action_dict[key] = new_value
                 self._commit_changes()
         else:
-            self.defaults_data.setdefault(step_title, {})[key] = new_value_str;
+            self.defaults_data.setdefault(step_title, {})[key] = new_value_str
             self._save_defaults_to_file()
 
     def on_prop_right_click(self, event):
         row, col = event.GetRow(), event.GetCol()
         if col != 1: event.Skip(); return
-        self.prop_grid.SetGridCursor(row, col);
+        self.prop_grid.SetGridCursor(row, col)
         item_data = self.tree.GetItemData(self.selected_item)
         if not item_data: return
-        step_idx, action_idx = item_data;
+        step_idx, action_idx = item_data
         step_title = list(self.data[step_idx].keys())[0]
-        action_dict = self.data[step_idx][step_title][action_idx];
+        action_dict = self.data[step_idx][step_title][action_idx]
         key = self.prop_grid.GetCellValue(row, 0)
         target_data = action_dict.get(key)
         if isinstance(target_data, (dict, list)):
-            menu = wx.Menu();
+            menu = wx.Menu()
             edit_item = menu.Append(wx.ID_ANY, "编辑...")
             self.Bind(wx.EVT_MENU, lambda evt: self.open_text_editor(key, target_data, step_idx, action_idx), edit_item)
-            self.PopupMenu(menu);
+            self.PopupMenu(menu)
             menu.Destroy()
         event.Skip()
 
@@ -699,9 +686,9 @@ class JsonEditorFrame(wx.Frame):
         dlg = TextEditorDialog(self, f"编辑属性 '{key}' 的文本值", current_val_str)
         if dlg.ShowModal() == wx.ID_OK:
             try:
-                new_val = json.loads(dlg.GetValue());
+                new_val = json.loads(dlg.GetValue())
                 step_title = list(self.data[step_idx].keys())[0]
-                self.data[step_idx][step_title][action_idx][key] = new_val;
+                self.data[step_idx][step_title][action_idx][key] = new_val
                 self._commit_changes()
             except json.JSONDecodeError as e:
                 wx.MessageBox(f"无效的JSON格式！\n\n错误: {e}", "解析错误", wx.OK | wx.ICON_ERROR)
@@ -710,17 +697,17 @@ class JsonEditorFrame(wx.Frame):
     def on_prop_dclick(self, event):
         row, col = event.GetRow(), event.GetCol()
         if col != 1: event.Skip(); return
-        item_data = self.tree.GetItemData(self.selected_item);
+        item_data = self.tree.GetItemData(self.selected_item)
         step_idx, action_idx = item_data
-        step_title = list(self.data[step_idx].keys())[0];
+        step_title = list(self.data[step_idx].keys())[0]
         action_dict = self.data[step_idx][step_title][action_idx]
-        key = self.prop_grid.GetCellValue(row, 0);
+        key = self.prop_grid.GetCellValue(row, 0)
         target_data = action_dict.get(key)
         if isinstance(target_data, (dict, list)):
             dlg = GenericJsonEditorDialog(self, f"编辑属性 '{key}' 的值", target_data)
             if dlg.ShowModal() == wx.ID_OK:
                 step_title = list(self.data[step_idx].keys())[0]
-                self.data[step_idx][step_title][action_idx][key] = dlg.GetValue();
+                self.data[step_idx][step_title][action_idx][key] = dlg.GetValue()
                 self._commit_changes()
             dlg.Destroy()
         else:
@@ -733,14 +720,14 @@ class JsonEditorFrame(wx.Frame):
         choices = ["普通属性 (文本值)", "复杂属性 (字典)", "复杂属性 (列表)"]
         dlg = wx.SingleChoiceDialog(self, "请选择要添加的属性类型:", "添加属性", choices)
         if dlg.ShowModal() != wx.ID_OK: dlg.Destroy(); return
-        prop_type = dlg.GetStringSelection();
+        prop_type = dlg.GetStringSelection()
         dlg.Destroy()
         key_dlg = wx.TextEntryDialog(self, "请输入新属性的名称(Key):", "添加属性")
         if key_dlg.ShowModal() != wx.ID_OK: key_dlg.Destroy(); return
-        key = key_dlg.GetValue();
+        key = key_dlg.GetValue()
         key_dlg.Destroy()
         if not key: wx.MessageBox("属性名不能为空！", "错误", wx.OK | wx.ICON_ERROR); return
-        step_idx, action_idx = item_data;
+        step_idx, action_idx = item_data
         step_title = list(self.data[step_idx].keys())[0]
         action_dict = self.data[step_idx][step_title][action_idx]
         if key in action_dict: wx.MessageBox(f"属性名 '{key}' 已存在！", "错误", wx.OK | wx.ICON_ERROR); return
@@ -756,9 +743,9 @@ class JsonEditorFrame(wx.Frame):
         row = self.prop_grid.GetGridCursorRow()
         if row < 0: return
         key_to_del = self.prop_grid.GetCellValue(row, 0)
-        item_data = self.tree.GetItemData(self.selected_item);
+        item_data = self.tree.GetItemData(self.selected_item)
         step_idx, action_idx = item_data
-        step_title = list(self.data[step_idx].keys())[0];
+        step_title = list(self.data[step_idx].keys())[0]
         action_dict = self.data[step_idx][step_title][action_idx]
         if key_to_del in action_dict:
             if key_to_del == 'auto_type': wx.MessageBox("'auto_type' 是必需属性，无法删除。", "操作无效",
@@ -776,11 +763,11 @@ class JsonEditorFrame(wx.Frame):
         except RuntimeError:
             pass
     def update_button_states(self):
-        item = self.tree.GetSelection();
+        item = self.tree.GetSelection()
         is_item_selected = item and item.IsOk()
         if not is_item_selected: self.add_prop_btn.Disable(); self.del_prop_btn.Disable(); return
         try:
-            data = self.tree.GetItemData(item);
+            data = self.tree.GetItemData(item)
             is_action = data and data[1] != -1
             self.add_prop_btn.Enable(is_action);
             self.del_prop_btn.Enable(is_action and self.prop_grid.GetGridCursorRow() >= 0)
@@ -796,11 +783,11 @@ class JsonEditorFrame(wx.Frame):
                 selected_item_data = self.tree.GetItemData(self.tree.GetSelection())
             except wx.wxAssertionError:
                 selected_item_data = None
-        self.tree.DeleteAllItems();
-        root = self.tree.AddRoot("Root");
+        self.tree.DeleteAllItems()
+        root = self.tree.AddRoot("Root")
         new_selection_item = None
         for i, step_dict in enumerate(self.data):
-            step_title = list(step_dict.keys())[0];
+            step_title = list(step_dict.keys())[0]
             step_item = self.tree.AppendItem(root, step_title)
             self.tree.SetItemData(step_item, (i, -1))
             if selected_item_data and selected_item_data == (i, -1): new_selection_item = step_item
@@ -815,14 +802,14 @@ class JsonEditorFrame(wx.Frame):
         if new_selection_item: self.tree.SelectItem(new_selection_item)
 
     def on_tree_right_click(self, event):
-        item = event.GetItem();
+        item = event.GetItem()
         menu = wx.Menu()
         if not item.IsOk():
             if self.clipboard and self.clipboard['type'] == 'step':
                 paste_step_item = menu.Append(wx.ID_ANY, "粘贴步骤")
                 self.Bind(wx.EVT_MENU, self.on_paste_step, paste_step_item)
         else:
-            self.tree.SelectItem(item);
+            self.tree.SelectItem(item)
             item_data = self.tree.GetItemData(item)
             if item_data is None: return
             is_step = (item_data[1] == -1)
@@ -837,24 +824,24 @@ class JsonEditorFrame(wx.Frame):
                     paste_step_item = menu.Append(wx.ID_ANY, "粘贴步骤")
                     self.Bind(wx.EVT_MENU, self.on_paste_step, paste_step_item)
                 menu.AppendSeparator()
-                rename_item = menu.Append(wx.ID_ANY, "重命名步骤");
-                add_action_item = menu.Append(wx.ID_ANY, "添加动作");
+                rename_item = menu.Append(wx.ID_ANY, "重命名步骤")
+                add_action_item = menu.Append(wx.ID_ANY, "添加动作")
                 del_step_item = menu.Append(wx.ID_ANY, "删除此步骤")
-                self.Bind(wx.EVT_MENU, self.on_rename_step, rename_item);
+                self.Bind(wx.EVT_MENU, self.on_rename_step, rename_item)
                 self.Bind(wx.EVT_MENU, self.on_add_action, add_action_item)
                 self.Bind(wx.EVT_MENU, self.on_del_step, del_step_item)
             else:
-                del_action_item = menu.Append(wx.ID_ANY, "删除此动作");
+                del_action_item = menu.Append(wx.ID_ANY, "删除此动作")
                 self.Bind(wx.EVT_MENU, self.on_del_action, del_action_item)
-        self.PopupMenu(menu);
+        self.PopupMenu(menu)
         menu.Destroy()
 
     def on_rename_step(self, event):
-        item = self.tree.GetSelection();
+        item = self.tree.GetSelection()
         if not item or not item.IsOk(): return
         item_data = self.tree.GetItemData(item)
         if not (item_data and item_data[1] == -1): return
-        step_idx, _ = item_data;
+        step_idx, _ = item_data
         old_title = self.tree.GetItemText(item)
         dlg = wx.TextEntryDialog(self, "请输入新的步骤标题:", "重命名步骤", old_title)
         if dlg.ShowModal() == wx.ID_OK:
@@ -863,7 +850,7 @@ class JsonEditorFrame(wx.Frame):
                 if old_title in self.defaults_data:
                     self.defaults_data[new_title] = self.defaults_data.pop(old_title)
                     self._save_defaults_to_file()
-                self.data[step_idx] = {new_title: list(self.data[step_idx].values())[0]};
+                self.data[step_idx] = {new_title: list(self.data[step_idx].values())[0]}
                 self._commit_changes()
         dlg.Destroy()
 
@@ -872,7 +859,7 @@ class JsonEditorFrame(wx.Frame):
 
     def on_end_drag(self, event):
         if not self.dragged_item: return
-        drag_item, drop_target = self.dragged_item, event.GetItem();
+        drag_item, drop_target = self.dragged_item, event.GetItem()
         self.dragged_item = None
         if not drop_target.IsOk() or drag_item == drop_target: return
         parent = drop_target
@@ -886,7 +873,7 @@ class JsonEditorFrame(wx.Frame):
         is_drag_step, is_drop_step = drag_data[1] == -1, drop_data[1] == -1
         if is_drag_step:
             if not is_drop_step: drop_data = self.tree.GetItemData(self.tree.GetItemParent(drop_target))
-            item_to_move = self.data.pop(drag_data[0]);
+            item_to_move = self.data.pop(drag_data[0])
             self.data.insert(drop_data[0], item_to_move)
         else:
             drag_step_idx, drag_action_idx = drag_data
@@ -917,7 +904,7 @@ class JsonEditorFrame(wx.Frame):
             if step_name in self.defaults_data:
                 del self.defaults_data[step_name]
                 self._save_defaults_to_file()
-            del self.data[step_idx];
+            del self.data[step_idx]
             self._commit_changes()
             if self.prop_grid.GetNumberRows() > 0: self.prop_grid.DeleteRows(0, self.prop_grid.GetNumberRows())
 
