@@ -46,8 +46,14 @@ class MyFrame(wx.Frame):
         # new_item = menu_menu.Append(wx.ID_NEW, "新建(&N)\tCtrl+N")
         # open_item = menu_menu.Append(wx.ID_OPEN, "打开(&O)\tCtrl+O")
 
+        software_list = ["SmartLab CDS", "new"]
+        software_menu = wx.Menu()
+        for software in software_list:
+            software_item = software_menu.Append(wx.ID_ANY, software)
+            self.Bind(wx.EVT_MENU, self.on_software, software_item)
+        menu_menu.AppendSubMenu(software_menu, "切换软件")
         config_item = menu_menu.Append(wx.ID_ANY, "配置(&F)\tCtrl+F")
-        log_itm = menu_menu.Append(wx.ID_ANY, "日志(&L)\tCtrl+L")
+        log_item = menu_menu.Append(wx.ID_ANY, "日志(&L)\tCtrl+L")
 
         menu_menu.AppendSeparator()  # 添加分隔线:ml-citation{ref="2" data="citationList"}
         exit_item = menu_menu.Append(wx.ID_EXIT, "退出(&Q)\tCtrl+Q")
@@ -66,7 +72,7 @@ class MyFrame(wx.Frame):
 
         # self.Bind(wx.EVT_MENU, self.on_new, new_item)
         self.Bind(wx.EVT_MENU, self.on_config, config_item)
-        self.Bind(wx.EVT_MENU, self.on_log, log_itm)
+        self.Bind(wx.EVT_MENU, self.on_log, log_item)
         self.Bind(wx.EVT_MENU, self.on_exit, exit_item)
         self.Bind(wx.EVT_MENU, self.on_info, info_item)
         self.Bind(wx.EVT_MENU, self.on_restart, restart_item)
@@ -186,6 +192,19 @@ class MyFrame(wx.Frame):
         self.result_timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.on_check_result, self.result_timer)  #
 
+    def recover(self):
+        utils.set_index(0, 0)
+        utils.set_process_status(0)
+        utils.set_step(1, 0)
+        utils.set_event_status(1)
+        self.event.set()
+        self.view_init()
+        self.SetTitle(utils.get_config("software"))
+        self.disable()
+        self.init()
+        self.result_timer.Stop()
+        utils.allow_sleep()
+
     def token_init(self, success, message):
         if success:
             image = wx.Bitmap("img/icon/logon.png", wx.BITMAP_TYPE_ANY).ConvertToImage()
@@ -223,7 +242,10 @@ class MyFrame(wx.Frame):
             self.on_login_btn.Enable(True)
             self.menubar.EnableTop(0, True)
             self.menubar.EnableTop(1, True)
-        self.step_text.Label = next(iter(utils.get_step_data(utils.get_config("software"), utils.get_step(), default="")))
+        try:
+            self.step_text.Label = next(iter(utils.get_step_data(utils.get_config("software"), utils.get_step(), default="")))
+        except StopIteration:
+            self.step_text.Label = ""
 
     def view_init(self):
         def show_view(success, message, response):
@@ -511,7 +533,7 @@ class MyFrame(wx.Frame):
         utils.allow_sleep()
 
     def on_restart(self, event):
-        result = wx.MessageBox("初始化后将重新开始，您确定吗？", "确认", wx.YES_NO | wx.ICON_QUESTION)
+        result = wx.MessageBox("将重新开始，您确定吗？", "确认", wx.YES_NO | wx.ICON_QUESTION)
         if result == wx.YES:
             try:
                 request_args = {
@@ -523,17 +545,7 @@ class MyFrame(wx.Frame):
                 }
                 response = central_auth.get_api_client().make_api_request_sync(**request_args)
                 if response.status_code == 200:
-                    utils.set_index(0, 0)
-                    utils.set_process_status(0)
-                    utils.set_step(1, 0)
-                    utils.set_event_status(1)
-                    self.event.set()
-                    self.view_init()
-                    self.SetTitle(utils.get_config("software"))
-                    self.disable()
-                    self.init()
-                    self.result_timer.Stop()
-                    utils.allow_sleep()
+                    self.recover()
             except Exception as e:
                 logging.exception(f"[Main UI] {e}")
                 self.show_message(str(e))
@@ -604,6 +616,16 @@ class MyFrame(wx.Frame):
         dlg = wx.MessageDialog(self, message, "提示", wx.OK | wx.ICON_INFORMATION)
         dlg.ShowModal()  # 显示对话框
         dlg.Destroy()  # 销毁对话框，释放资源
+
+    def on_software(self, event):
+        item_id = event.GetId()
+        menubar = self.GetMenuBar()
+        menu_item = menubar.FindItemById(item_id)
+        if menu_item:
+            # 4. 获取菜单项的标签文本
+            label = menu_item.GetItemLabel()
+            utils.set_config("software", label)
+            self.recover()
 
 if __name__ == '__main__':
     multiprocessing.freeze_support()  # 推荐，尤其在 Windows 或打包应用时

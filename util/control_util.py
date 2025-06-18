@@ -236,6 +236,8 @@ def control_click(command_queue, result_queue, event, window, kwargs, step, clic
             logging.info("找不到控件:\nwindow:" + window + "\nkwargs:" + str(kwargs))
             time.sleep(sleep_time)
             if ignore:
+                if not isinstance(ignore, int):
+                    ignore = int(ignore)
                 ignore -= 1
             if ignore == 0:
                 loop = False
@@ -564,6 +566,8 @@ def window_close(command_queue, result_queue, event, title, kwargs, step, index=
             logging.info("关闭窗口:\nwindow:" + title + "\nkwargs:" + str(kwargs))
             time.sleep(sleep_time)
             if ignore:
+                if not isinstance(ignore, int):
+                    ignore = int(ignore)
                 ignore -= 1
             if ignore == 0:
                 loop = False
