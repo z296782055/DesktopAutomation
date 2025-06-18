@@ -9,6 +9,151 @@ from collections import OrderedDict
 
 from util import utils
 
+
+# --- 辅助函数：获取紧凑的JSON字符串 ---
+def _get_compact_json_string(data_obj):
+    """
+    递归地将任何Python对象转换为其最紧凑的单行JSON字符串表示。
+    此函数用于强制那些“不需要”换行的字典保持单行。
+    """
+    # 使用 separators=(',', ':') 来确保没有空格，生成最紧凑的JSON
+    return json.dumps(data_obj, ensure_ascii=False, separators=(',', ':'))
+
+
+# --- 最终版自定义JSON格式化函数 ---
+def _format_json_for_save(data_obj, indent_level=0, is_root=False):
+    """
+    递归格式化 JSON 数据，实现字典和列表的精确换行规则。
+    核心规则：
+    - 顶级字典（is_root=True）采用标准多行缩进。
+    - 所有非顶级字典：
+        - 如果其任何直接值是列表，则字典本身多行（混合格式）。
+        - 否则（所有直接值都是基本类型或非列表字典），则字典单行。
+    - 所有列表，无论内容多短或是否包含复杂元素，都强制多行显示。
+    """
+    current_indent_str = " " * indent_level
+    next_indent_str = " " * (indent_level + 4)
+
+    if isinstance(data_obj, dict):
+        # 1. 处理根字典：始终采用标准多行缩进
+        if is_root:
+            lines = []
+            lines.append("{")  # Opening brace on its own line
+
+            items_to_add = []
+            for k, v in data_obj.items():
+                formatted_value = _format_json_for_save(v, indent_level + 4)
+                # 确保格式化后的值不以换行符结尾，因为外层列表的 joiner 会添加
+                if formatted_value.endswith('\n'):
+                    formatted_value = formatted_value.rstrip('\n')
+                items_to_add.append(f'{next_indent_str}"{k}": {formatted_value}')
+
+            # 将所有键值对以 ",\\n" 连接，并添加到 lines 中
+            if items_to_add:
+                lines.append(",\n".join(items_to_add))
+
+            lines.append(f"{current_indent_str}}}")  # Closing brace
+
+            return "\n".join(lines)
+
+        # 2. 处理非根字典：
+        # 找到第一个列表值的位置，以应用混合多行格式
+        first_list_key_index = -1
+        keys = list(data_obj.keys())
+        for i, k in enumerate(keys):
+            if isinstance(data_obj[k], list):
+                first_list_key_index = i
+                break
+
+        if first_list_key_index != -1:  # 此字典包含至少一个列表值，应用混合多行格式
+            segments = []  # 用于构建最终的字符串片段
+
+            if first_list_key_index == 0:
+                # 情况1: 字典的第一个键的值就是列表 (例如 {"AI请求":[...])
+                # 期望格式: {"key":[...
+                list_key = keys[0]
+                list_value = data_obj[list_key]
+                # 递归格式化列表值，它会返回一个包含多行内容的字符串（如 "[\n  item,\n]"）
+                formatted_list_value_string = _format_json_for_save(list_value, indent_level + 4)
+                # 移除 formatted_list_value_string 末尾的换行符
+                if formatted_list_value_string.endswith('\n'):
+                    formatted_list_value_string = formatted_list_value_string.rstrip('\n')
+
+                # 将 '{', 第一个键, 冒号, 以及格式化后的列表值（包含 '[' 和内部内容）连接起来
+                segments.append(f'{{"{list_key}":{formatted_list_value_string}')
+
+                # 处理第一个列表键之后的所有键值对
+                for i in range(1, len(keys)):  # 从第二个键开始
+                    k = keys[i]
+                    v = data_obj[k]
+                    formatted_v = _format_json_for_save(v, indent_level + 4)
+                    if formatted_v.endswith('\n'):
+                        formatted_v = formatted_v.rstrip('\n')
+                    segments.append(f',\n{next_indent_str}"{k}": {formatted_v}')
+            else:
+                # 情况2: 字典的非第一个键的值是列表 (例如 {key1:value1, "kwargs":[...])
+                # 期望格式: {key1:value1,\n"kwargs":[...
+                inline_kv_parts_before_list = []
+                for i in range(first_list_key_index):
+                    k = keys[i]
+                    v = data_obj[k]
+                    formatted_v = _get_compact_json_string(v)
+                    inline_kv_parts_before_list.append(f'"{k}":{formatted_v}')
+
+                # 将 '{' 和所有内联键值对连接起来
+                segments.append("{" + ",".join(inline_kv_parts_before_list))
+
+                # 添加第一个列表键值对，它会从新行开始
+                list_key = keys[first_list_key_index]
+                list_value = data_obj[list_key]
+                formatted_list_value_string = _format_json_for_save(list_value, indent_level + 4)
+                if formatted_list_value_string.endswith('\n'):
+                    formatted_list_value_string = formatted_list_value_string.rstrip('\n')
+
+                segments.append(f',\n{next_indent_str}"{list_key}":{formatted_list_value_string}')
+
+                # 处理第一个列表键之后的所有键值对
+                for i in range(first_list_key_index + 1, len(keys)):
+                    k = keys[i]
+                    v = data_obj[k]
+                    formatted_v = _format_json_for_save(v, indent_level + 4)
+                    if formatted_v.endswith('\n'):
+                        formatted_v = formatted_v.rstrip('\n')
+                    segments.append(f',\n{next_indent_str}"{k}": {formatted_v}')
+
+            # 字典的结束 '}' 在新行，并与字典的起始 '{' 对齐
+            segments.append(f'\n{current_indent_str}}}')
+
+            return "".join(segments)
+
+        else:
+            # 如果字典不包含任何列表值，则保持单行。
+            # 这是确保 {"child_window": {...}} 这样的字典不换行的关键。
+            return _get_compact_json_string(data_obj)
+
+    elif isinstance(data_obj, list):
+        # 1. 空列表直接返回 "[]"
+        if not data_obj:
+            return "[]"
+
+        # 2. 所有非空列表：无论内容多短或是否包含复杂元素，都强制多行显示。
+        items = []
+        for item in data_obj:
+            # 递归格式化每个元素，缩进级别增加。
+            formatted_item = _format_json_for_save(item, indent_level + 4)
+            # 关键改动：移除 formatted_item 末尾的换行符，因为外层列表的 joiner 会添加
+            if formatted_item.endswith('\n'):
+                formatted_item = formatted_item.rstrip('\n')
+            items.append(f'{next_indent_str}{formatted_item}')
+
+        # 列表的开头 '[' 应该在新行，每个元素在新行，结尾 ']' 在新行。
+        return "[\n" + ",\n".join(items) + f"\n{current_indent_str}]"
+
+    else:
+        # 对于基本类型 (字符串, 数字, 布尔值, None)，直接使用 json.dumps 获得紧凑表示。
+        # 这些类型不会以换行符结尾，所以不需要 rstrip
+        return json.dumps(data_obj, ensure_ascii=False)
+
 # --- 全局常量 ---
 DATA_FILE_PATH = "step/step.json"
 DEFAULTS_FILE_PATH = "data/data.json"
@@ -18,15 +163,6 @@ AUTO_TYPE_CHOICES = [
     "wait", "window_close", "ai_post"
 ]
 CLICK_TYPE_CHOICES = ["click", "double_click", "right_click", "no_click", "set_focus"]
-DEFAULT_JSON_DATA_STRING = """
-[
-    {"AI请求":[{"auto_type" : "ai_post"}]},
-    {"点击“实时采集”":[
-      {"auto_type" : "connect_window", "title" : "导航"},
-      {"auto_type" : "control_click", "window" : "实时采集", "kwargs": [{"child_window":{"title":"实时采集", "auto_id":"btRealTimeAnalysis", "control_type":"Text"}}]}
-    ]}
-]
-"""
 step_update_lock = threading.Lock()
 
 class TextEditorDialog(wx.Dialog):
@@ -107,7 +243,10 @@ class GenericJsonEditorDialog(wx.Dialog):
 
     def _render_value_cell(self, row, col, value):
         if isinstance(value, (dict, list)):
-            self.grid.SetCellValue(row, col, json.dumps(value, ensure_ascii=False));
+            # 使用自定义格式化，但为了显示在单元格中，可能需要紧凑模式
+            # 这里为了兼容性，可以继续使用 json.dumps(..., indent=None) 或者
+            # 考虑用一个更紧凑的自定义格式化版本
+            self.grid.SetCellValue(row, col, json.dumps(value, ensure_ascii=False, indent=None)); # 保持紧凑显示
             self.grid.SetReadOnly(row, col, True)
             self.grid.SetCellBackgroundColour(row, col, wx.Colour(230, 230, 230))
         else:
@@ -208,7 +347,8 @@ class GenericJsonEditorDialog(wx.Dialog):
         event.Skip()
 
     def open_nested_text_editor(self, row, data_to_edit):
-        current_val_str = json.dumps(data_to_edit, indent=None, ensure_ascii=False)
+        # 使用自定义格式化函数来生成文本编辑器的初始值
+        current_val_str = _format_json_for_save(data_to_edit, indent_level=0)  # 从0缩进开始
         dlg = TextEditorDialog(self, "编辑文本值", current_val_str)
         if dlg.ShowModal() == wx.ID_OK:
             try:
@@ -227,14 +367,15 @@ class GenericJsonEditorDialog(wx.Dialog):
 
 class JsonEditorFrame(wx.Frame):
     def __init__(self):
-        super().__init__(None, title=f"自动化流程JSON编辑器 - [{DATA_FILE_PATH}]", size=(1200, 800))
+        super().__init__(None, title="步骤编辑器", size=(1200, 800))
         self.file_path = DATA_FILE_PATH
-        self.data = self._load_data_from_file();
+        self.data = self._load_data_from_file()
         self.defaults_data = self._load_defaults_from_file()
         self.dragged_item = None;
         self.clipboard = None
-        splitter = wx.SplitterWindow(self);
-        self.left_panel = wx.Panel(splitter);
+        splitter = wx.SplitterWindow(self)
+        self.selected_item = None
+        self.left_panel = wx.Panel(splitter)
         self.right_panel = wx.Panel(splitter)
         splitter.SplitVertically(self.left_panel, self.right_panel, 400);
         splitter.SetMinimumPaneSize(200)
@@ -290,74 +431,168 @@ class JsonEditorFrame(wx.Frame):
         return expanded
 
     def _load_defaults_from_file(self):
-        if not os.path.exists(DEFAULTS_FILE_PATH): return {}
+        # 确保目录存在
+        os.makedirs(os.path.dirname(DEFAULTS_FILE_PATH), exist_ok=True)
+
+        software_name = utils.get_config("software")
+        if not os.path.exists(DEFAULTS_FILE_PATH) or os.path.getsize(DEFAULTS_FILE_PATH) == 0:
+            print(f"'{DEFAULTS_FILE_PATH}' 未找到或为空，将创建初始结构。")
+            initial_data_to_save = {software_name: {}}
+            try:
+                with open(DEFAULTS_FILE_PATH, 'w', encoding='utf-8') as f:
+                    f.write(_format_json_for_save(initial_data_to_save))  # 使用自定义格式化
+            except IOError as e:
+                print(f"警告: 无法创建初始默认值文件 '{DEFAULTS_FILE_PATH}': {e}")
+            return {}  # 返回空字典作为初始值
+
         try:
             with open(DEFAULTS_FILE_PATH, 'r', encoding='utf-8') as f:
-                data = json.load(f).get(utils.get_config("software"));
-                return data if isinstance(data, dict) else {}
-        except (json.JSONDecodeError, IOError):
-            return {}
+                full_defaults_content = json.load(f)
 
-    def _save_defaults_to_file(self):
-        try:
-            with utils.data_lock:
-                with open(DEFAULTS_FILE_PATH, 'r', encoding='utf-8') as f:
-                    data = json.load(f)
-                with open(DEFAULTS_FILE_PATH, 'w', encoding='utf-8') as f:
-                    with tempfile.NamedTemporaryFile(mode='w', delete=False, encoding='utf-8',
-                                                     dir=os.path.dirname(DEFAULTS_FILE_PATH)) as temp_f:
-                        if data.get(utils.get_config("software")) is None:
-                            data.update({utils.get_config("software"): {}})
-                        data.update({utils.get_config("software"):self.defaults_data})
-                        json.dump(data, temp_f, indent=4, ensure_ascii=False)
-                        temp_file_path = temp_f.name
-                os.replace(temp_file_path, DEFAULTS_FILE_PATH)
-        except IOError as e:
-            print(f"警告: 无法保存默认值文件: {e}")
-
-    def _validate_and_sanitize_data(self, loaded_data):
-        loaded_data = loaded_data.get(utils.get_config("software"))
-        if not isinstance(loaded_data, list):
-            print("警告: 文件中的数据不是一个列表，将重置为默认值。")
-            return json.loads(DEFAULT_JSON_DATA_STRING)
-        clean_data = []
-        for item in loaded_data:
-            if isinstance(item, dict) and len(item) == 1 and isinstance(list(item.values())[0], list):
-                clean_data.append(item)
+            if isinstance(full_defaults_content, dict):
+                # 尝试从软件名键中获取默认值字典
+                potential_defaults = full_defaults_content.get(software_name)
+                if isinstance(potential_defaults, dict):
+                    return potential_defaults
+                else:
+                    print(
+                        f"警告: 默认值文件 '{DEFAULTS_FILE_PATH}' 中 '{software_name}' 键的值不是一个字典，将使用空默认值。")
             else:
-                print(f"警告: 跳过文件中的无效项目: {item}")
+                print(f"警告: 默认值文件 '{DEFAULTS_FILE_PATH}' 的顶级结构不是一个字典，将使用空默认值。")
+
+        except (json.JSONDecodeError, IOError) as e:
+            print(f"加载 '{DEFAULTS_FILE_PATH}' 出错: {e}，将使用空默认值。")
+
+        # 如果加载失败或格式无效，确保 self.defaults_data 是空字典，并以正确格式保存到文件。
+        self.defaults_data = {}
+        self._save_defaults_to_file()  # 修复文件格式
+        return {}
+
+    def _validate_and_sanitize_data(self, steps_list_from_file):
+        # 这里的 steps_list_from_file 已经是从文件内容中提取出来的步骤列表
+        if not isinstance(steps_list_from_file, list):
+            print("警告: 传递给 _validate_and_sanitize_data 的不是一个列表，将返回空列表。")
+            return []
+
+        clean_data = []
+        for item in steps_list_from_file:
+            # 验证每个步骤是否是形如 {"StepTitle": [list of actions]} 的字典
+            if isinstance(item, dict) and len(item) == 1:
+                step_title = list(item.keys())[0]
+                actions = item[step_title]
+                if isinstance(actions, list):
+                    # 可以选择在这里进一步验证 actions 列表中的每个字典的结构
+                    clean_data.append(item)
+                else:
+                    print(f"警告: 跳过文件中的无效步骤 (actions不是列表): {item}")
+            else:
+                print(f"警告: 跳过文件中的无效步骤 (不是单键字典): {item}")
         return clean_data
 
     def _load_data_from_file(self):
-        if not os.path.exists(self.file_path):
-            print(f"'{self.file_path}' 未找到，将使用默认数据创建。")
-            default_data = self._validate_and_sanitize_data(json.loads(DEFAULT_JSON_DATA_STRING))
-            self.data = default_data;
-            self._save_data_to_file();
-            return default_data
+        # 确保文件所在的目录存在
+        os.makedirs(os.path.dirname(self.file_path), exist_ok=True)
+
+        software_name = utils.get_config("software")
+        loaded_steps = []  # 默认值，如果文件为空或格式不正确
+
+        # 如果文件不存在或为空，则创建初始结构并返回空列表
+        if not os.path.exists(self.file_path) or os.path.getsize(self.file_path) == 0:
+            print(f"'{self.file_path}' 未找到或为空，将使用默认数据创建。")
+            initial_data_to_save = {software_name: []}
+            try:
+                with open(self.file_path, 'w', encoding='utf-8') as f:
+                    f.write(_format_json_for_save(initial_data_to_save))  # 使用自定义格式化
+            except IOError as e:
+                print(f"警告: 无法创建初始文件 '{self.file_path}': {e}")
+            return []  # 返回空列表作为 self.data 的初始值
+
         try:
             with open(self.file_path, 'r', encoding='utf-8') as f:
-                return self._validate_and_sanitize_data(json.load(f))
+                full_file_content = json.load(f)  # 加载整个文件内容
+
+            if isinstance(full_file_content, dict):
+                # 尝试从软件名键中获取步骤列表
+                potential_steps = full_file_content.get(software_name)
+                if isinstance(potential_steps, list):
+                    # 如果是列表，则进行内容验证和清理
+                    loaded_steps = self._validate_and_sanitize_data(potential_steps)
+                else:
+                    print(f"警告: 文件 '{self.file_path}' 中 '{software_name}' 键的值不是一个列表，将重置为默认值。")
+            else:
+                print(f"警告: 文件 '{self.file_path}' 的顶级结构不是一个字典，将重置为默认值。")
+
         except (json.JSONDecodeError, IOError) as e:
             print(f"加载 '{self.file_path}' 出错: {e}，将使用默认数据。")
-            return self._validate_and_sanitize_data(json.loads(DEFAULT_JSON_DATA_STRING))
+
+        # 如果加载的步骤列表仍然为空（因为错误或格式无效），
+        # 确保 self.data 是一个空列表，并以正确格式保存到文件。
+        if not loaded_steps:
+            self.data = []  # 确保 self.data 是一个空列表
+            self._save_data_to_file()  # 修复文件格式
+            return []
+
+        return loaded_steps
 
     def _save_data_to_file(self):
         try:
             with step_update_lock:
-                with open(self.file_path, 'r', encoding='utf-8') as f:
-                    data = json.load(f)
-                with open(self.file_path, 'w', encoding='utf-8') as f:
-                    with tempfile.NamedTemporaryFile(mode='w', delete=False, encoding='utf-8',
-                                                     dir=os.path.dirname(self.file_path)) as temp_f:
-                        if data.get(utils.get_config("software")) is None:
-                            data.update({utils.get_config("software"): {}})
-                        data.update({utils.get_config("software"):self.data})
-                        json.dump(data, temp_f, indent=4, ensure_ascii=False)
-                        temp_file_path = temp_f.name
+                software_name = utils.get_config("software")
+
+                existing_full_data = {}
+                if os.path.exists(self.file_path) and os.path.getsize(self.file_path) > 0:
+                    try:
+                        with open(self.file_path, 'r', encoding='utf-8') as f:
+                            existing_full_data = json.load(f)
+                        if not isinstance(existing_full_data, dict):
+                            existing_full_data = {}
+                    except json.JSONDecodeError:
+                        existing_full_data = {}
+
+                existing_full_data[software_name] = self.data
+
+                temp_dir = os.path.dirname(self.file_path)
+                os.makedirs(temp_dir, exist_ok=True)
+
+                with tempfile.NamedTemporaryFile(mode='w', delete=False, encoding='utf-8', dir=temp_dir) as temp_f:
+                    # 关键：为顶级对象传递 is_root=True
+                    formatted_string = _format_json_for_save(existing_full_data, is_root=True)
+                    temp_f.write(formatted_string)
+                    temp_file_path = temp_f.name
+
                 os.replace(temp_file_path, self.file_path)
+
         except IOError as e:
             wx.MessageBox(f"无法保存文件到 '{self.file_path}'！\n错误: {e}", "保存失败", wx.OK | wx.ICON_ERROR)
+
+    def _save_defaults_to_file(self):
+        try:
+            software_name = utils.get_config("software")
+
+            existing_full_defaults = {}
+            if os.path.exists(DEFAULTS_FILE_PATH) and os.path.getsize(DEFAULTS_FILE_PATH) > 0:
+                try:
+                    with open(DEFAULTS_FILE_PATH, 'r', encoding='utf-8') as f:
+                        existing_full_defaults = json.load(f)
+                    if not isinstance(existing_full_defaults, dict):
+                        existing_full_defaults = {}
+                except json.JSONDecodeError:
+                    existing_full_defaults = {}
+
+            existing_full_defaults[software_name] = self.defaults_data
+
+            temp_dir = os.path.dirname(DEFAULTS_FILE_PATH)
+            os.makedirs(temp_dir, exist_ok=True)
+
+            with tempfile.NamedTemporaryFile(mode='w', delete=False, encoding='utf-8', dir=temp_dir) as temp_f:
+                # 关键：为顶级对象传递 is_root=True
+                formatted_string = _format_json_for_save(existing_full_defaults, is_root=True)
+                temp_f.write(formatted_string)
+                temp_file_path = temp_f.name
+
+            os.replace(temp_file_path, DEFAULTS_FILE_PATH)
+        except IOError as e:
+            print(f"警告: 无法保存默认值文件: {e}")
 
     # --- 改动点：commit方法现在会保存和传递树的展开状态 ---
     def _commit_changes(self):
@@ -390,6 +625,7 @@ class JsonEditorFrame(wx.Frame):
                     self.prop_grid.SetCellBackgroundColour(row, 0,
                                                            wx.Colour(240, 240, 240) if key == 'auto_type' else wx.WHITE)
                     if isinstance(value, (dict, list)):
+                        # 属性网格单元格中也使用紧凑显示
                         self.prop_grid.SetCellValue(row, 1, json.dumps(value, ensure_ascii=False, indent=None))
                         self.prop_grid.SetReadOnly(row, 1, True);
                         self.prop_grid.SetCellBackgroundColour(row, 1, wx.Colour(230, 230, 230))
@@ -458,7 +694,8 @@ class JsonEditorFrame(wx.Frame):
         event.Skip()
 
     def open_text_editor(self, key, data_to_edit, step_idx, action_idx):
-        current_val_str = json.dumps(data_to_edit, indent=None, ensure_ascii=False)
+        # 使用自定义格式化函数来生成文本编辑器的初始值
+        current_val_str = _format_json_for_save(data_to_edit, indent_level=0)  # 从0缩进开始
         dlg = TextEditorDialog(self, f"编辑属性 '{key}' 的文本值", current_val_str)
         if dlg.ShowModal() == wx.ID_OK:
             try:
@@ -526,11 +763,11 @@ class JsonEditorFrame(wx.Frame):
         if key_to_del in action_dict:
             if key_to_del == 'auto_type': wx.MessageBox("'auto_type' 是必需属性，无法删除。", "操作无效",
                                                         wx.OK | wx.ICON_WARNING); return
-            del action_dict[key_to_del];
+            del action_dict[key_to_del]
             self._commit_changes()
         else:
             self.defaults_data.setdefault(step_title, {}).pop(key_to_del, None)
-            self._save_defaults_to_file();
+            self._save_defaults_to_file()
             self.populate_prop_list()
 
     def on_tree_select(self, event):
@@ -675,10 +912,10 @@ class JsonEditorFrame(wx.Frame):
         if not self.selected_item or not self.selected_item.IsOk(): return
         item_data = self.tree.GetItemData(self.selected_item)
         if item_data and item_data[1] == -1:
-            step_idx, _ = item_data;
+            step_idx, _ = item_data
             step_name = list(self.data[step_idx].keys())[0]
             if step_name in self.defaults_data:
-                del self.defaults_data[step_name];
+                del self.defaults_data[step_name]
                 self._save_defaults_to_file()
             del self.data[step_idx];
             self._commit_changes()
@@ -696,7 +933,7 @@ class JsonEditorFrame(wx.Frame):
         if not self.selected_item or not self.selected_item.IsOk(): return
         item_data = self.tree.GetItemData(self.selected_item)
         if item_data and item_data[1] != -1:
-            step_idx, action_idx = item_data;
+            step_idx, action_idx = item_data
             step_title = list(self.data[step_idx].keys())[0]
             action_dict = self.data[step_idx][step_title][action_idx]
             default_key = self._get_default_key_from_action(action_dict)
@@ -704,7 +941,7 @@ class JsonEditorFrame(wx.Frame):
                 self.defaults_data[step_title].pop(default_key, None)
                 if not self.defaults_data[step_title]: del self.defaults_data[step_title]
                 self._save_defaults_to_file()
-            del self.data[step_idx][step_title][action_idx];
+            del self.data[step_idx][step_title][action_idx]
             self._commit_changes()
             if self.prop_grid.GetNumberRows() > 0: self.prop_grid.DeleteRows(0, self.prop_grid.GetNumberRows())
 
