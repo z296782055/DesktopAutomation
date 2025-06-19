@@ -59,9 +59,9 @@ def generate_random_string(length=36):
 def get_data(key=None, default=None):
     with open(data_url, 'r', encoding='utf-8') as f:
         if key is None:
-            return json.load(f).get(get_config("software"))
+            return json.load(f).get(get_config("software"),{})
         else:
-            return json.load(f).get(get_config("software")).get(key, default)
+            return json.load(f).get(get_config("software"),{}).get(key, default)
 
 def set_data(key, value):
     with data_lock:
@@ -92,7 +92,7 @@ def set_config(key, value):
 
 def get_dictionary(key, default=None):
     with open(dictionary_url, 'r', encoding='utf-8') as f:
-        return json.load(f).get(get_config("software")).get(key, default)
+        return json.load(f).get(get_config("software"),{}).get(key, default)
 
 def set_dictionary(key, value):
     with dictionary_lock:
@@ -110,7 +110,7 @@ def set_dictionary(key, value):
 
 def get_temporary(step, key):
     with open(temporary_url, 'r', encoding='utf-8') as f:
-        return json.load(f).get(get_config("software")).get(step,{}).get(key, "")
+        return json.load(f).get(get_config("software"),{}).get(step,{}).get(key, "")
 
 def clean_temporary():
     with temporary_lock:
@@ -143,9 +143,9 @@ def set_temporary(step, key, value):
 def get_info(step, key=None, default=None):
     with open(info_url, 'r', encoding='utf-8') as f:
         if key is None:
-            return json.load(f).get(get_config("software")).get(step, {})
+            return json.load(f).get(get_config("software"),{}).get(step, {})
         else:
-            return json.load(f).get(get_config("software")).get(step, {}).get(key, default)
+            return json.load(f).get(get_config("software"),{}).get(step, {}).get(key, default)
 
 def refer_dictionary(step, key):
     dictionary = get_dictionary(str(key))
