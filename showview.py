@@ -275,31 +275,39 @@ class GenericJsonEditorDialog(wx.Dialog):
 
     def on_cell_changed(self, event):
         row, col = event.GetRow(), event.GetCol()
+
+        def parse_value(value_str):
+            """一个辅助函数，尝试将字符串解析为JSON，失败则返回原字符串"""
+            try:
+                # 这样可以正确处理数字、布尔值 (true/false) 和 null
+                return json.loads(value_str)
+            except json.JSONDecodeError:
+                # 如果不是有效的JSON，就当作普通字符串处理
+                return value_str
+
         if self.is_list_passthrough_mode:
-            # --- 修改点：添加对键列 (col == 0) 的处理逻辑 ---
-            if col == 0:
-                # 获取旧的字典项
+            if col == 0:  # “键”列被修改
                 item_dict = self.data[row]
                 old_key = list(item_dict.keys())[0]
                 value = item_dict[old_key]
-
-                # 获取新的键
                 new_key = self.grid.GetCellValue(row, col)
 
-                # 验证新键
                 if not new_key or new_key == old_key:
-                    # 如果新键为空或未改变，则不做任何事
-                    if not new_key: self.grid.SetCellValue(row, col, old_key)  # 恢复旧值
+                    if not new_key: self.grid.SetCellValue(row, col, old_key)
                     return
 
                 # 更新数据：用一个包含新键和旧值的新字典替换旧字典
+                # 这个改动会保存在对话框的 self.data 中
                 self.data[row] = {new_key: value}
 
-            elif col == 1:
-                # 这是原有的值列处理逻辑，保持不变
-                self.data[row][list(self.data[row].keys())[0]] = self.grid.GetCellValue(row, col)
+            elif col == 1:  # “值”列被修改
+                key = list(self.data[row].keys())[0]
+                new_value_str = self.grid.GetCellValue(row, col)
+                # 使用辅助函数解析值，然后更新
+                self.data[row][key] = parse_value(new_value_str)
+
         elif self.is_dict_mode:
-            if col == 0:
+            if col == 0:  # “键”列被修改
                 old_key = list(self.data.keys())[row]
                 new_key = self.grid.GetCellValue(row, col)
                 if new_key == old_key: return
@@ -307,11 +315,17 @@ class GenericJsonEditorDialog(wx.Dialog):
                     wx.MessageBox(f"键 '{new_key}' 无效或已存在!", "错误", wx.OK | wx.ICON_ERROR)
                     self.grid.SetCellValue(row, col, old_key)
                     return
+                # 更新整个有序字典以保持顺序
                 self.data = dict(OrderedDict((new_key if k == old_key else k, v) for k, v in self.data.items()))
-            else:
-                self.data[list(self.data.keys())[row]] = self.grid.GetCellValue(row, col)
-        else:
-            self.data[row] = self.grid.GetCellValue(row, col)
+            else:  # “值”列被修改
+                key = list(self.data.keys())[row]
+                new_value_str = self.grid.GetCellValue(row, col)
+                # 使用辅助函数解析值，然后更新
+                self.data[key] = parse_value(new_value_str)
+        else:  # 列表模式
+            new_value_str = self.grid.GetCellValue(row, col)
+            # 使用辅助函数解析值，然后更新
+            self.data[row] = parse_value(new_value_str)
 
     def on_add(self, event):
         if self.is_list_passthrough_mode:
@@ -670,23 +684,68 @@ class JsonEditorFrame(wx.Frame):
     def on_prop_edit(self, event):
         row, col = event.GetRow(), event.GetCol()
         item_data = self.tree.GetItemData(self.selected_item)
-        if not item_data or col != 1: return
+        if not item_data:
+            return
+
         step_idx, action_idx = item_data
         step_title = list(self.data[step_idx].keys())[0]
         action_dict = self.data[step_idx][step_title][action_idx]
-        key = self.prop_grid.GetCellValue(row, 0)
-        new_value_str = self.prop_grid.GetCellValue(row, 1)
-        if key in action_dict:
-            if not self.prop_grid.IsReadOnly(row, col):
+
+        # --- 分别处理对“键”和“值”的修改 ---
+
+        if col == 1:  # 情况1：修改的是“值”列 (原有逻辑，稍作整理)
+            key = self.prop_grid.GetCellValue(row, 0)
+            new_value_str = self.prop_grid.GetCellValue(row, 1)
+
+            if key in action_dict:  # 如果是 action 的属性
+                if self.prop_grid.IsReadOnly(row, col): return  # 复杂类型的值在网格中只读
                 try:
                     new_value = json.loads(new_value_str)
                 except json.JSONDecodeError:
                     new_value = new_value_str
                 action_dict[key] = new_value
                 self._commit_changes()
-        else:
-            self.defaults_data.setdefault(step_title, {})[key] = new_value_str
-            self._save_defaults_to_file()
+            else:  # 如果是 defaults_data 的属性
+                self.defaults_data.setdefault(step_title, {})[key] = new_value_str
+                self._save_defaults_to_file()
+
+        elif col == 0:  # 情况2：修改的是“键”列 (这是新增的关键逻辑)
+            # 检查此键是否为只读（如 'auto_type' 或默认值键）
+            if self.prop_grid.IsReadOnly(row, 0):
+                wx.MessageBox("此属性的键是只读的，无法修改。", "操作无效", wx.OK | wx.ICON_WARNING)
+                # 需要找到旧键来恢复显示
+                keys_list = list(action_dict.keys())
+                if row < len(keys_list):
+                    self.prop_grid.SetCellValue(row, 0, keys_list[row])
+                return
+
+            # 获取旧键和新键
+            keys_list = list(action_dict.keys())
+            old_key = keys_list[row]
+            new_key = self.prop_grid.GetCellValue(row, 0)
+
+            # 验证新键
+            if not new_key or new_key == old_key:
+                if not new_key: self.prop_grid.SetCellValue(row, 0, old_key)  # 恢复旧值
+                return
+            if new_key in action_dict:
+                wx.MessageBox(f"属性名 '{new_key}' 已存在！", "错误", wx.OK | wx.ICON_ERROR)
+                self.prop_grid.SetCellValue(row, 0, old_key)  # 恢复旧值
+                return
+
+            # 重建字典以更改键名并保持顺序
+            new_action_dict = OrderedDict()
+            for k, v in action_dict.items():
+                if k == old_key:
+                    new_action_dict[new_key] = v
+                else:
+                    new_action_dict[k] = v
+
+            # 将更新后的字典写回主数据
+            self.data[step_idx][step_title][action_idx] = dict(new_action_dict)
+
+            # 提交更改到文件并刷新UI
+            self._commit_changes()
 
     def on_prop_right_click(self, event):
         row, col = event.GetRow(), event.GetCol()
