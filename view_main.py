@@ -46,7 +46,7 @@ class MyFrame(wx.Frame):
         # new_item = menu_menu.Append(wx.ID_NEW, "新建(&N)\tCtrl+N")
         # open_item = menu_menu.Append(wx.ID_OPEN, "打开(&O)\tCtrl+O")
 
-        software_list = ["SmartLab CDS", "new"]
+        software_list = ["SmartLab CDS", "LabSolutions"]
         software_menu = wx.Menu()
         for software in software_list:
             software_item = software_menu.Append(wx.ID_ANY, software)
