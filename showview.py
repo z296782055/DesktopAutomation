@@ -216,7 +216,9 @@ class GenericJsonEditorDialog(wx.Dialog):
                 key = list(item_dict.keys())[0]
                 value = item_dict[key]
                 self.grid.SetCellValue(row, 0, key)
-                self.grid.SetReadOnly(row, 0, True)
+                # --- 修改点 ---
+                # 将键列设置为可编辑，以允许用户修改
+                self.grid.SetReadOnly(row, 0, False)
                 self._render_value_cell(row, 1, value)
         elif self.is_dict_mode:
             self.grid.AppendRows(len(self.data))
@@ -243,6 +245,9 @@ class GenericJsonEditorDialog(wx.Dialog):
 
     def on_cell_dclick(self, event):
         row, col = event.GetRow(), event.GetCol()
+        if (self.is_dict_mode or self.is_list_passthrough_mode) and col == 0:
+            event.Skip()
+            return
         target_data, is_editable = None, False
         if self.is_list_passthrough_mode and col == 1:
             key = list(self.data[row].keys())[0]
@@ -271,7 +276,28 @@ class GenericJsonEditorDialog(wx.Dialog):
     def on_cell_changed(self, event):
         row, col = event.GetRow(), event.GetCol()
         if self.is_list_passthrough_mode:
-            if col == 1: self.data[row][list(self.data[row].keys())[0]] = self.grid.GetCellValue(row, col)
+            # --- 修改点：添加对键列 (col == 0) 的处理逻辑 ---
+            if col == 0:
+                # 获取旧的字典项
+                item_dict = self.data[row]
+                old_key = list(item_dict.keys())[0]
+                value = item_dict[old_key]
+
+                # 获取新的键
+                new_key = self.grid.GetCellValue(row, col)
+
+                # 验证新键
+                if not new_key or new_key == old_key:
+                    # 如果新键为空或未改变，则不做任何事
+                    if not new_key: self.grid.SetCellValue(row, col, old_key)  # 恢复旧值
+                    return
+
+                # 更新数据：用一个包含新键和旧值的新字典替换旧字典
+                self.data[row] = {new_key: value}
+
+            elif col == 1:
+                # 这是原有的值列处理逻辑，保持不变
+                self.data[row][list(self.data[row].keys())[0]] = self.grid.GetCellValue(row, col)
         elif self.is_dict_mode:
             if col == 0:
                 old_key = list(self.data.keys())[row]
@@ -427,7 +453,8 @@ class JsonEditorFrame(wx.Frame):
             initial_data_to_save = {software_name: {}}
             try:
                 with open(DEFAULTS_FILE_PATH, 'w', encoding='utf-8') as f:
-                    f.write(_format_json_for_save(initial_data_to_save))  # 使用自定义格式化
+                    # --- 修改点：使用标准的 json.dumps 和 indent=4 ---
+                    json.dump(initial_data_to_save, f, ensure_ascii=False, indent=4)
             except IOError as e:
                 print(f"警告: 无法创建初始默认值文件 '{DEFAULTS_FILE_PATH}': {e}")
             return {}  # 返回空字典作为初始值
@@ -572,9 +599,9 @@ class JsonEditorFrame(wx.Frame):
             os.makedirs(temp_dir, exist_ok=True)
 
             with tempfile.NamedTemporaryFile(mode='w', delete=False, encoding='utf-8', dir=temp_dir) as temp_f:
-                # 关键：为顶级对象传递 is_root=True
-                formatted_string = _format_json_for_save(existing_full_defaults, is_root=True)
-                temp_f.write(formatted_string)
+                # --- 修改点：使用标准的 json.dumps 和 indent=4 ---
+                # 不再使用 _format_json_for_save
+                json.dump(existing_full_defaults, temp_f, ensure_ascii=False, indent=4)
                 temp_file_path = temp_f.name
 
             os.replace(temp_file_path, DEFAULTS_FILE_PATH)
